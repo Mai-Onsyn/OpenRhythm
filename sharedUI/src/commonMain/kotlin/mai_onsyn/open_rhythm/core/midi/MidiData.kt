@@ -24,7 +24,98 @@ class MidiTrack(
     var name: String = "Unnumbered Track",
     val notes: MutableList<Note> = mutableListOf(),
     val controllerEvents: MutableList<MidiEvent> = mutableListOf()
-)
+) {
+    val instrumentEvent: MidiPCEvent get() {
+        return controllerEvents.first { it is MidiPCEvent } as MidiPCEvent
+    }
+
+    private enum class EventType { PC, CC_PB, NOTE }
+    fun splitTrackByPC(): List<MidiTrack> {
+        if (this.notes.isEmpty() && this.controllerEvents.isEmpty()) {
+            return emptyList()
+        }
+
+        // ---------- 1. 构建事件包装列表 ----------
+        // 事件类型优先级：PC > CC/PB > NOTE（用于同 tick 排序）
+        data class EventWrapper(val tick: Long, val type: EventType, val data: Any)
+
+        val wrappers = mutableListOf<EventWrapper>()
+
+        // 将 Note 包装为事件
+        this.notes.forEach { note ->
+            wrappers.add(EventWrapper(note.tick, EventType.NOTE, note))
+        }
+
+        // 将控制器事件包装，区分 PC 和其他
+        this.controllerEvents.forEach { event ->
+            when (event) {
+                is MidiPCEvent -> wrappers.add(EventWrapper(event.tick, EventType.PC, event))
+                is MidiCCEvent, is MidiPBEvent -> wrappers.add(EventWrapper(event.tick, EventType.CC_PB, event))
+                else -> {
+                    // 其他未知类型，当作普通控制事件处理（不影响拆分）
+                    wrappers.add(EventWrapper(event.tick, EventType.CC_PB, event))
+                }
+            }
+        }
+
+        // ---------- 2. 按 tick 排序，同 tick 时优先 PC ----------
+        val sortedWrappers = wrappers.sortedWith(compareBy<EventWrapper> { it.tick }
+            .thenBy { when (it.type) {
+                EventType.PC -> 0
+                EventType.CC_PB -> 1
+                EventType.NOTE -> 2
+            } })
+
+        // ---------- 3. 扫描拆分 ----------
+        val result = mutableListOf<MidiTrack>()
+        var lastPC: MidiPCEvent? = null
+        val currentNotes = mutableListOf<Note>()
+        val currentControllers = mutableListOf<MidiEvent>()
+
+        // 辅助函数：将当前积累的内容生成一个子轨道
+        fun flushCurrentSegment() {
+            if (currentNotes.isEmpty() && currentControllers.isEmpty()) return
+
+            val newTrack = MidiTrack(
+                name = "${this.name}_part${result.size + 1}"
+            )
+            // 如果有 lastPC，将其作为第一个控制器事件（头部）
+            lastPC?.let { newTrack.controllerEvents.add(it) }
+            // 添加当前积累的音符和控制事件
+            newTrack.notes.addAll(currentNotes)
+            newTrack.controllerEvents.addAll(currentControllers)
+
+            result.add(newTrack)
+            currentNotes.clear()
+            currentControllers.clear()
+        }
+
+        for (wrapper in sortedWrappers) {
+            when (wrapper.type) {
+                EventType.PC -> {
+                    // 遇到 PC：结束当前段（若有内容），并更新 lastPC
+                    flushCurrentSegment()
+                    lastPC = wrapper.data as MidiPCEvent
+                }
+                EventType.CC_PB -> {
+                    // 控制事件（非 PC）归入当前段
+                    currentControllers.add(wrapper.data as MidiEvent)
+                }
+                EventType.NOTE -> {
+                    // 音符归入当前段
+                    currentNotes.add(wrapper.data as Note)
+                }
+            }
+        }
+
+        // 处理最后一段
+        flushCurrentSegment()
+
+        // 如果没有任何分段（例如只有 PC 事件而无其他事件），result 可能为空
+        // 此时我们仍然可能希望保留 PC 事件本身？但既然没有音符，通常丢弃。
+        return result
+    }
+}
 
 open class MidiEvent(
     val tick: Long,

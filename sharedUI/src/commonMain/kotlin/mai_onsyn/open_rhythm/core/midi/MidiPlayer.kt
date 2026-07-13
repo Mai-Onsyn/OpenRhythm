@@ -7,8 +7,10 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import mai_onsyn.open_rhythm.core.util.Time
 
 class MidiPlayer(var deviceOutput: MidiOutput?) {
@@ -30,6 +32,7 @@ class MidiPlayer(var deviceOutput: MidiOutput?) {
     private var eventList: MutableList<ScheduledEvent> = mutableListOf()
 
     private val midiStateTracker = MidiStateTracker()
+    private val channelIndices = Array(16) { ChannelControllerIndex() }
     private val scope = CoroutineScope(Dispatchers.Default + SupervisorJob())
     private var playJob: Job? = null
 
@@ -80,6 +83,12 @@ class MidiPlayer(var deviceOutput: MidiOutput?) {
     fun setMidi(midi: Midi) {
         this.midi = midi
 
+        eventList.clear()
+        channelIndices.forEach {
+            it.programChanges.clear()
+            it.pitchBends.clear()
+            it.ccByController.clear()
+        }
         for (track in midi.tracks) {
             for (note in track.notes) {
                 val onMsg = byteArrayOf(
@@ -99,6 +108,13 @@ class MidiPlayer(var deviceOutput: MidiOutput?) {
 
             for (event in track.controllerEvents) {
                 eventList.add(ScheduledEvent(event.tick, -1, event.event, "ControllerEvent{$event}", event))
+
+                val idx = channelIndices[event.channel]
+                when (event) {
+                    is MidiPCEvent -> idx.programChanges.add(event)
+                    is MidiPBEvent -> idx.pitchBends.add(event)
+                    is MidiCCEvent -> idx.ccByController.getOrPut(event.controller) { mutableListOf() }.add(event)
+                }
             }
         }
         eventList.sortWith(compareBy({ it.tick }, { it.order }))
@@ -117,11 +133,12 @@ class MidiPlayer(var deviceOutput: MidiOutput?) {
             play()
         }
         else currentTick = tick
+        resyncControllerState(tick)
     }
 
     fun pause() {
         state = State.PAUSED
-        playJob?.cancel()
+        runBlocking { playJob?.cancelAndJoin() }
         playJob = null
         deviceOutput?.let {
             midiStateTracker.stopActiveNotes(it)
@@ -133,15 +150,68 @@ class MidiPlayer(var deviceOutput: MidiOutput?) {
 
     fun stop() {
         state = State.STOPPED
-        playJob?.cancel()
+        runBlocking { playJob?.cancelAndJoin() }
         playJob = null
         currentTick = 0
         currentEventIndex = 0
         currentTempo = 120.0
+        deviceOutput?.let {
+            midiStateTracker.stopActiveNotes(it)
+            midiStateTracker.resetControllers(it)
+        }
+        midiStateTracker.clear()
         Logger.i { "Player stopped" }
     }
 
+    private fun resyncControllerState(targetTick: Long) {
+        val output = deviceOutput ?: return
 
+        for (channel in 0 until 16) {
+            val idx = channelIndices[channel]
+
+            // Program Change：找最后一个 <= targetTick 的
+            findLastAtOrBefore(idx.programChanges, targetTick) { it.tick }?.let { pc ->
+                output.send(byteArrayOf((0xC0 or channel).toByte(), pc.program.toByte()), 0, 2, Time.nanos)
+            }
+
+            // Pitch Bend
+            findLastAtOrBefore(idx.pitchBends, targetTick) { it.tick }?.let { pb ->
+                val lsb = pb.value and 0x7F
+                val msb = (pb.value shr 7) and 0x7F
+                output.send(byteArrayOf((0xE0 or channel).toByte(), lsb.toByte(), msb.toByte()), 0, 3, Time.nanos)
+            }
+
+            // 每个出现过的 CC 号，各自找最后状态
+            for ((controller, list) in idx.ccByController) {
+                findLastAtOrBefore(list, targetTick) { it.tick }?.let { cc ->
+                    output.send(byteArrayOf((0xB0 or channel).toByte(), controller.toByte(), cc.value.toByte()), 0, 3, Time.nanos)
+                }
+            }
+        }
+    }
+
+    private inline fun <T> findLastAtOrBefore(list: List<T>, target: Long, tick: (T) -> Long): T? {
+        if (list.isEmpty()) return null
+        var lo = 0
+        var hi = list.size - 1
+        var result = -1
+        while (lo <= hi) {
+            val mid = (lo + hi) ushr 1
+            if (tick(list[mid]) <= target) {
+                result = mid
+                lo = mid + 1
+            } else {
+                hi = mid - 1
+            }
+        }
+        return if (result >= 0) list[result] else null
+    }
+
+    private class ChannelControllerIndex {
+        val programChanges = mutableListOf<MidiPCEvent>()
+        val pitchBends = mutableListOf<MidiPBEvent>()
+        val ccByController = mutableMapOf<Int, MutableList<MidiCCEvent>>() // controller number -> 该 controller 的事件列表
+    }
 
     private class MidiStateTracker {
         // channel -> pitch集合
@@ -153,13 +223,10 @@ class MidiPlayer(var deviceOutput: MidiOutput?) {
         fun handle(event: ScheduledEvent) {
             when (event.originalData) {
                 is Note -> {
-                    val velocity = event.originalData.velocity
-
-                    if (velocity == 0) {
-                        activeNotes[event.originalData.channel].remove(event.originalData.pitch)
-                    }
-                    else {
+                    if (event.order == 1) {
                         activeNotes[event.originalData.channel].add(event.originalData.pitch)
+                    } else {
+                        activeNotes[event.originalData.channel].remove(event.originalData.pitch)
                     }
                 }
                 is MidiCCEvent -> {

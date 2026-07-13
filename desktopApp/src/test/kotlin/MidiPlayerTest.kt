@@ -10,7 +10,8 @@ import kotlin.test.Test
 class MidiPlayerTest {
     @Test
     fun testPlay() {
-        val file = FileUtils.fromString("D:\\Users\\Desktop\\Files\\voice\\MIDI\\蓬莱伝説 v1.11.mid", false)
+        val file = FileUtils.fromString("D:\\Users\\Desktop\\Files\\voice\\MIDI\\最终鬼畜妹.mid", false)
+//        val file = FileUtils.fromString("D:\\Users\\Desktop\\Files\\voice\\MIDI\\蓬莱伝説 v1.11.mid", false)
 //        val file = FileUtils.fromString("D:\\Users\\Desktop\\天球の奇蹟.mid", false)
         if (file == null) {
             Logger.e { "Cant find test.mid" }
@@ -36,9 +37,10 @@ class MidiPlayerTest {
 
         player.setMidi(midi)
 
+        player.seek(0.3)
         player.play()
         Thread.sleep(5_000)
-        player.seek(0.1)
+//        player.seek(0.3)
 
         Thread.sleep(5_000)
         player.pause()
@@ -46,9 +48,9 @@ class MidiPlayerTest {
         Thread.sleep(5_000)
         player.play()
 
-        player.seek(0.5)
+//        player.seek(0.5)
         Thread.sleep(5_000)
-        player.seek(0.8)
+//        player.seek(0.8)
         Thread.sleep(5_000)
 
         player.pause()

@@ -1,5 +1,6 @@
 package mai_onsyn.open_rhythm.core.midi
 
+import co.touchlab.kermit.Logger
 import dev.atsushieno.ktmidi.Midi1CompoundMessage
 import dev.atsushieno.ktmidi.Midi1Music
 import dev.atsushieno.ktmidi.read
@@ -8,7 +9,7 @@ class Midi(
     val name: String,
     val ppq: Int,
     val totalTicks: Int,
-    val tracks: List<MidiTrack> = mutableListOf(),
+    val tracks: MutableList<MidiTrack> = mutableListOf(),
     val tempoEvents: MutableList<TempoEvent> = mutableListOf(),
     val timeSignatureEvents: MutableList<TimeSignatureEvent> = mutableListOf()
 ) {
@@ -133,7 +134,34 @@ class Midi(
                 tracks.add(resultTrack)
             }
 
-            return Midi(name, ppq, midiFile.getTotalTicks(), tracks, tempoEvents, timeSignatureEvents)
+            return Midi(
+                name, ppq,
+                midiFile.getTotalTicks(),
+                tracks, tempoEvents, timeSignatureEvents
+            ).apply { divideMultiChannelTrack(this) }
+        }
+
+        private fun divideMultiChannelTrack(midi: Midi) {
+            for (i in 0 until midi.tracks.size) {
+                val splitTracks = midi.tracks[i].splitTrackByPC()
+                if (splitTracks.isEmpty()) {
+                    midi.tracks.removeAt(i)
+                    continue
+                }
+                midi.tracks[i] = splitTracks[0]
+                for (j in 1 until splitTracks.size) {
+                    midi.tracks.add(splitTracks[j])
+                    Logger.d { "Added track ${midi.tracks.size - 1} from track ${splitTracks[j].name}" }
+                }
+            }
+
+            for (track in midi.tracks) {
+                track.controllerEvents.forEach {
+                    if (it is MidiPCEvent) {
+                        Logger.d { "${track.name} has PC event: channel ${it.channel} at tick ${it.tick} change to ${it.program}" }
+                    }
+                }
+            }
         }
     }
 }

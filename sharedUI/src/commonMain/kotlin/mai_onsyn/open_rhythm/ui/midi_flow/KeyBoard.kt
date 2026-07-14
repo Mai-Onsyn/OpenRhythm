@@ -1,31 +1,41 @@
 package mai_onsyn.open_rhythm.ui.midi_flow
 
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.focusable
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onKeyEvent
+import androidx.compose.ui.input.key.type
+import androidx.compose.ui.input.pointer.PointerIcon
+import androidx.compose.ui.input.pointer.pointerHoverIcon
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import mai_onsyn.open_rhythm.bridge.AppCursors
+import mai_onsyn.open_rhythm.ui.utility.blackKeyOffset
+import mai_onsyn.open_rhythm.ui.utility.countWhiteKeys
+import mai_onsyn.open_rhythm.ui.utility.isBlackKey
 
-private val W_pref = arrayOf(1, 1, 2, 2, 3, 4, 4, 5, 5, 6, 6, 7)
-private val B_pref = arrayOf(false, true, false, true, false, false, true, false, true, false, true, false)
-private val B_offset = arrayOf(0f, -1/6f, 1f, 1/6f, 0f, 0f, -1/4f, 0f, 0f, 0f, 1/4f, 0f)
-
-private fun countWhiteKeys(min: Int, max: Int): Int {
-    val hi = max / 12 * 7 + W_pref[max % 12]
-    val lo = min / 12 * 7 + W_pref[min % 12]
-    return hi - lo + 1
-}
-
-private fun isBlackKey(pitch: Int): Boolean = B_pref[pitch % 12]
-
-private fun blackKeyOffset(pitch: Int): Float = B_offset[pitch % 12]
 
 @Composable
 fun MidiKeyBoard(
@@ -37,17 +47,164 @@ fun MidiKeyBoard(
     blackHorizontalPercentage: Float = 0.75f,   // 单个黑键宽度相对于白键宽度的比例
     spacing: Dp = 1.dp,
     darkPart: Color = Color.Black,
-    onPress: (Int) -> Unit = {},
-    onRelease: (Int, Int) -> Unit = { pitch, velocity -> }
+    onPress: (Int, Int) -> Unit = { pitch, velocity -> },
+    onRelease: (Int) -> Unit = {},
+    onHeightDragged: (Float) -> Unit = {}
 ) {
     require(minPitch >= 0 && maxPitch <= 127) { "Pitch out of range [0, 127]" }
     require(minPitch <= maxPitch) { "minPitch must be <= maxPitch [$minPitch, $maxPitch]" }
     val colorScheme = MaterialTheme.colorScheme
+    val density = LocalDensity.current
 
     val whiteKeyCount = countWhiteKeys(minPitch, maxPitch)
 
+    val keyRegions = remember(minPitch, maxPitch, blackVerticalPercentage, blackHorizontalPercentage, spacing) {
+        // (blackKeys, whiteKeys)
+        mutableStateOf(Pair(emptyList<Pair<Rect, Int>>(), emptyList<Pair<Rect, Int>>()))
+    }
+
+    val spacingPx = with(density) { spacing.toPx() }
+    val offsetStartY = with(density) { 12.dp.toPx() }
+    val endPadding = with(density) { 4.dp.toPx() }
+
+    val focusRequester = remember { FocusRequester() }
+    val keyboardPressedKey = remember { mutableSetOf<Int>() }
+    val pointerPressedKey = mutableSetOf<Int>()
+    var currentCursor by remember { mutableStateOf(PointerIcon.Default) }
     Canvas(
         modifier = modifier
+            .focusRequester(focusRequester)
+            .focusable()
+            .onSizeChanged { size ->
+                val width = size.width.toFloat()
+                val height = size.height.toFloat()
+                val whiteKeyWidth = (width - (whiteKeyCount - 1) * spacingPx) / whiteKeyCount
+
+                val wRects = mutableListOf<Pair<Rect, Int>>()
+                val bRects = mutableListOf<Pair<Rect, Int>>()
+
+                // 白键 Rect
+                for (pitch in minPitch..maxPitch) {
+                    if (!isBlackKey(pitch)) {
+                        val x = (countWhiteKeys(minPitch, pitch) - 1) * (whiteKeyWidth + spacingPx)
+                        val topLeft = Offset(x, offsetStartY)
+                        val keySize = Size(whiteKeyWidth, height - offsetStartY - endPadding)
+                        wRects.add(Pair(Rect(topLeft, keySize), pitch))
+                    }
+                }
+                // 黑键 Rect
+                for (pitch in minPitch..maxPitch) {
+                    if (isBlackKey(pitch)) {
+                        val offsetPercent = blackKeyOffset(pitch)
+                        val centerX = (countWhiteKeys(minPitch, pitch)) * (whiteKeyWidth + spacingPx) - spacingPx / 2
+                        val blackBaseSize = Size(whiteKeyWidth * blackHorizontalPercentage, (height - offsetStartY - endPadding) * blackVerticalPercentage)
+                        val blackBaseOffset = Offset(centerX - blackBaseSize.width / 2 + blackBaseSize.width * offsetPercent, offsetStartY)
+                        bRects.add(Pair(Rect(blackBaseOffset, blackBaseSize), pitch))
+                    }
+                }
+                keyRegions.value = Pair(bRects, wRects)
+            }
+            .pointerHoverIcon(currentCursor)
+            .pointerInput(keyRegions) {
+                awaitPointerEventScope {
+                    var inHeightRegionPressed = false
+                    var lastCursorPressed = false
+                    while (true) {
+                        val event = awaitPointerEvent()
+
+                        // =========== Height adjust region ==========
+                        var inAdjust = false
+                        val firstChange = event.changes.first()
+                        val activeRect = Rect(Offset.Zero, Size(size.width.toFloat(), 8.dp.toPx()))
+                        if (firstChange.position in activeRect) {
+                            currentCursor = AppCursors.verticalResize
+                        } else currentCursor = PointerIcon.Default
+                        if (inHeightRegionPressed) {
+                            onHeightDragged(firstChange.position.y - firstChange.previousPosition.y)
+                            inAdjust = true
+                        }
+                        if (firstChange.pressed && !lastCursorPressed) {
+                            lastCursorPressed = true
+                            if (firstChange.position in activeRect)
+                                inHeightRegionPressed = true
+                        } else if (!firstChange.pressed && lastCursorPressed) {
+                            lastCursorPressed = false
+                            inHeightRegionPressed = false
+                        }
+                        if (inAdjust) continue
+                        // =========== Height adjust region ==========
+
+                        val currentPressedKeys = mutableMapOf<Int, Float>()
+                        val (blackKeyRect, whiteKeyRect) = keyRegions.value
+                        for (change in event.changes) {
+                            if (change.pressed) {
+                                var findInBlackRegion = false
+                                for (blackKeyRegion in blackKeyRect) {
+                                    if (change.position in blackKeyRegion.first) {
+                                        currentPressedKeys[blackKeyRegion.second] = (change.position.y - offsetStartY) / blackKeyRegion.first.height
+                                        findInBlackRegion = true
+                                        break
+                                    }
+                                }
+                                if (!findInBlackRegion) {
+                                    for (whiteKeyRegion in whiteKeyRect) {
+                                        if (change.position in whiteKeyRegion.first) {
+                                            currentPressedKeys[whiteKeyRegion.second] = (change.position.y - offsetStartY) / whiteKeyRegion.first.height
+                                            break
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        for (currentKey in currentPressedKeys) {
+                            if (!pointerPressedKey.contains(currentKey.key)) {
+                                pointerPressedKey.add(currentKey.key)
+                                onPress(currentKey.key, (currentKey.value * 127).toInt())
+                                focusRequester.requestFocus()
+                            }
+                        }
+                        val userIterator = pointerPressedKey.iterator()
+                        while (userIterator.hasNext()) {
+                            val userKey = userIterator.next()
+                            if (!currentPressedKeys.contains(userKey)) {
+                                userIterator.remove()   // 安全删除
+                                onRelease(userKey)
+                            }
+                        }
+                    }
+                }
+            }
+            .onKeyEvent { keyEvent ->
+                if (keyEvent.type != KeyEventType.KeyDown && keyEvent.type != KeyEventType.KeyUp) {
+                    return@onKeyEvent false
+                }
+
+                val userKeys = arrayOf(Key.A, Key.W, Key.S, Key.E, Key.D, Key.F, Key.T, Key.G, Key.Y, Key.H, Key.U, Key.J, Key.K, Key.O, Key.L, Key.P, Key.Semicolon, Key.Apostrophe)
+                val idx = userKeys.indexOf(keyEvent.key)
+                if (idx != -1) {
+                    val midiKey = idx + 60
+                    if (keyEvent.type == KeyEventType.KeyDown) {
+                        if (!keyboardPressedKey.contains(midiKey)) {
+                            onPress(midiKey, 100)
+                            keyboardPressedKey.add(midiKey)
+                        }
+                    } else {
+                        onRelease(midiKey)
+                        keyboardPressedKey.remove(midiKey)
+                    }
+                    return@onKeyEvent true
+                }
+                false
+            }
+            .onFocusChanged {
+                if (!it.isFocused) {
+                    keyboardPressedKey.forEach { key -> onRelease(key) }
+                    keyboardPressedKey.clear()
+
+                    pointerPressedKey.forEach { key -> onRelease(key) }
+                    pointerPressedKey.clear()
+                }
+            }
     ) {
         val whiteKeyWidth = (size.width - (whiteKeyCount - 1) * spacing.toPx()) / whiteKeyCount
 
@@ -62,63 +219,54 @@ fun MidiKeyBoard(
         )
 
         val offsetStartY = 12.dp.toPx()
-        val endPadding = 4.dp.toPx()
 
+        // 白键
         for (pitch in minPitch..maxPitch) {
-            if (!isBlackKey(pitch))  drawWhiteKey(minPitch, pitch, whiteKeyWidth, spacing, offsetStartY, endPadding, maxPitch, darkPart)
+            if (!isBlackKey(pitch)) {
+                val x = (countWhiteKeys(minPitch, pitch) - 1) * (whiteKeyWidth + spacing.toPx())
+                val rect = keyRegions.value.second[keyRegions.value.second.binarySearchBy(pitch) { it.second }].first
+                val isActive = activeKey.containsKey(pitch)
+                drawRoundedBottomShape(
+                    topLeft = rect.topLeft,
+                    size = if (isActive) Size(rect.size.width, rect.size.height + endPadding * 0.6f) else rect.size,
+                    rx = whiteKeyWidth * 0.3f,
+                    ry = whiteKeyWidth * 0.15f,
+                    color = if (isActive) activeKey[pitch]!! else Color.White
+                )
+                if (pitch != maxPitch) {
+                    drawRect(   // 分割线
+                        color = darkPart,
+                        topLeft = Offset(x + whiteKeyWidth, offsetStartY),
+                        size = Size(spacing.toPx(), size.height - offsetStartY)
+                    )
+                }
+            }
         }
+        // 黑键
         for (pitch in minPitch..maxPitch) {
             if (isBlackKey(pitch)) {
-                val offsetPercent = blackKeyOffset(pitch)
-
-                val centerX = (countWhiteKeys(minPitch, pitch)) * (whiteKeyWidth + spacing.toPx()) - spacing.toPx() / 2
-                val blackBaseSize = Size(whiteKeyWidth * blackHorizontalPercentage, (size.height - offsetStartY - endPadding) * blackVerticalPercentage)
-                val blackBaseOffset = Offset(centerX - blackBaseSize.width / 2 + blackBaseSize.width * offsetPercent, offsetStartY)
-
+                val rect = keyRegions.value.first[keyRegions.value.first.binarySearchBy(pitch) { it.second }].first
                 val radiusUnit = whiteKeyWidth * 0.03f
                 drawRoundedBottomShape(
                     color = darkPart,
-                    topLeft = blackBaseOffset,
-                    size = blackBaseSize,
+                    topLeft = rect.topLeft,
+                    size = rect.size,
                     rx = radiusUnit,
                     ry = radiusUnit
                 )
 
                 drawRoundedBottomShape(
-                    color = Color.Magenta,
-                    topLeft = Offset(blackBaseOffset.x + blackBaseSize.width * 0.07f, blackBaseOffset.y),
-                    size = Size(blackBaseSize.width * 0.86f, blackBaseSize.height - blackBaseSize.width * 0.1f),
+                    color = if (activeKey.containsKey(pitch)) {
+                        val targetColor = activeKey[pitch]!!
+                        Color(targetColor.red, targetColor.green, targetColor.blue, 0.8f).compositeOver(Color.Black)
+                    } else Color.Black,
+                    topLeft = Offset(rect.topLeft.x + rect.size.width * 0.07f, rect.topLeft.y),
+                    size = Size(rect.size.width * 0.86f, rect.size.height - rect.size.width * 0.1f),
                     rx = radiusUnit * 4,
                     ry = radiusUnit * 2
                 )
             }
         }
-    }
-}
-
-private fun DrawScope.drawWhiteKey(
-    minPitch: Int,
-    pitch: Int,
-    whiteKeyWidth: Float,
-    spacing: Dp,
-    offsetStartY: Float,
-    endPadding: Float,
-    maxPitch: Int,
-    darkPart: Color
-) {
-    val x = (countWhiteKeys(minPitch, pitch) - 1) * (whiteKeyWidth + spacing.toPx())
-    drawRoundedBottomShape(
-        topLeft = Offset(x, offsetStartY),
-        size = Size(whiteKeyWidth, size.height - offsetStartY - endPadding),
-        rx = whiteKeyWidth * 0.3f,
-        ry = whiteKeyWidth * 0.15f
-    )
-    if (pitch != maxPitch) {
-        drawRect(   // 分割线
-            color = darkPart,
-            topLeft = Offset(x + whiteKeyWidth, offsetStartY),
-            size = Size(spacing.toPx(), size.height - offsetStartY)
-        )
     }
 }
 

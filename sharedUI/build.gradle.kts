@@ -42,6 +42,9 @@ kotlin {
             api("dev.atsushieno:ktmidi:0.12.0")
             api("org.jetbrains.kotlinx:kotlinx-io-core:0.9.1")
             api("dev.zwander:kmpfile:0.8.0")
+//            api("io.insert-koin:koin-core:4.2.2")
+//            api("androidx.lifecycle:lifecycle-viewmodel:2.11.0")
+//            api("androidx.lifecycle:lifecycle-viewmodel-compose:2.11.0")
         }
 
         commonTest.dependencies {

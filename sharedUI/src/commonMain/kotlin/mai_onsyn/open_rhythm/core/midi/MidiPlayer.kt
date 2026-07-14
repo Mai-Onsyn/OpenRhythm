@@ -28,6 +28,7 @@ class MidiPlayer(var deviceOutput: MidiOutput?) {
     private var currentTick: Long = 0L
     private var currentEventIndex: Int = 0
     private var currentTempo: Double = 120.0
+    private var performingChannel = 0
     private var midi: Midi? = null
     private var eventList: MutableList<ScheduledEvent> = mutableListOf()
 
@@ -134,6 +135,37 @@ class MidiPlayer(var deviceOutput: MidiOutput?) {
         }
         else currentTick = tick
         resyncControllerState(tick)
+    }
+
+    fun pressKey(key: Int, velocity: Int) {
+        sendShortEvent(
+            (MidiChannelStatus.NOTE_ON or performingChannel).toByte(),
+            key.toByte(),
+            velocity.toByte()
+        )
+    }
+
+    fun releaseKey(key: Int) {
+        sendShortEvent(
+            (MidiChannelStatus.NOTE_OFF or performingChannel).toByte(),
+            key.toByte(),
+            0.toByte()
+        )
+    }
+
+    fun control(controller: Int, value: Int) {
+        sendShortEvent(
+            (MidiChannelStatus.CC or performingChannel).toByte(),
+            controller.toByte(),
+            value.toByte()
+        )
+    }
+
+    private fun sendShortEvent(byte1: Byte, byte2: Byte, byte3: Byte) {
+        deviceOutput?.let {
+            val msg = byteArrayOf(byte1, byte2, byte3)
+            it.send(msg, 0, 3, Time.nanos)
+        }
     }
 
     fun pause() {

@@ -142,18 +142,32 @@ class Midi(
         }
 
         private fun divideMultiChannelTrack(midi: Midi) {
-            for (i in 0 until midi.tracks.size) {
-                val splitTracks = midi.tracks[i].splitTrackByPC()
+            var idx = 0
+            while (idx < midi.tracks.size) {
+                val splitTracks = midi.tracks[idx].splitTrackByPC()
                 if (splitTracks.isEmpty()) {
-                    midi.tracks.removeAt(i)
+                    midi.tracks.removeAt(idx)
                     continue
                 }
-                midi.tracks[i] = splitTracks[0]
+                midi.tracks[idx] = splitTracks[0]
                 for (j in 1 until splitTracks.size) {
                     midi.tracks.add(splitTracks[j])
                     Logger.d { "Added track ${midi.tracks.size - 1} from track ${splitTracks[j].name}" }
                 }
+                idx++
             }
+//            for (i in 0 until midi.tracks.size) {
+//                val splitTracks = midi.tracks[i].splitTrackByPC()
+//                if (splitTracks.isEmpty()) {
+//                    midi.tracks.removeAt(i)
+//                    continue
+//                }
+//                midi.tracks[i] = splitTracks[0]
+//                for (j in 1 until splitTracks.size) {
+//                    midi.tracks.add(splitTracks[j])
+//                    Logger.d { "Added track ${midi.tracks.size - 1} from track ${splitTracks[j].name}" }
+//                }
+//            }
 
             for (track in midi.tracks) {
                 track.controllerEvents.forEach {

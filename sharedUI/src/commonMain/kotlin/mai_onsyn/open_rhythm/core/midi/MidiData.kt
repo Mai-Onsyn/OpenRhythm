@@ -173,7 +173,7 @@ class MidiPCEvent(
 }
 
 data class TempoEvent(val tick: Long, val bpm: Double)
-data class TimeSignatureEvent(val absoluteTick: Long, val numerator: Int, val denominator: Int)
+data class TimeSignatureEvent(val tick: Long, val numerator: Int, val denominator: Int)
 
 fun List<TempoEvent>.bpmAtTick(t: Long, default: Double = 120.0): Double {
     val index = lastOrNull { it.tick <= t } ?: return default

@@ -42,14 +42,15 @@ fun MidiKeyBoard(
     modifier: Modifier = Modifier,
     minPitch: Int = 21,     // A0 default
     maxPitch: Int = 108,    // C8 default
-    activeKey: Map<Int, Color> = emptyMap(),
+    midiActiveKey: Map<Int, Color> = emptyMap(),
+    userActiveKey: Map<Int, Color> = emptyMap(),
     blackVerticalPercentage: Float = 0.64f,     // 黑键底部y在整个键盘高度的比例
     blackHorizontalPercentage: Float = 0.75f,   // 单个黑键宽度相对于白键宽度的比例
     spacing: Dp = 1.dp,
     darkPart: Color = Color.Black,
     onPress: (Int, Int) -> Unit = { pitch, velocity -> },
     onRelease: (Int) -> Unit = {},
-    onHeightDragged: (Float) -> Unit = {}
+    onVerticalDragged: (Float) -> Unit = {}
 ) {
     require(minPitch >= 0 && maxPitch <= 127) { "Pitch out of range [0, 127]" }
     require(minPitch <= maxPitch) { "minPitch must be <= maxPitch [$minPitch, $maxPitch]" }
@@ -62,6 +63,7 @@ fun MidiKeyBoard(
         // (blackKeys, whiteKeys)
         mutableStateOf(Pair(emptyList<Pair<Rect, Int>>(), emptyList<Pair<Rect, Int>>()))
     }
+    val activeKey = midiActiveKey + userActiveKey
 
     val spacingPx = with(density) { spacing.toPx() }
     val offsetStartY = with(density) { 12.dp.toPx() }
@@ -120,7 +122,7 @@ fun MidiKeyBoard(
                             currentCursor = AppCursors.verticalResize
                         } else currentCursor = PointerIcon.Default
                         if (inHeightRegionPressed) {
-                            onHeightDragged(firstChange.position.y - firstChange.previousPosition.y)
+                            onVerticalDragged(firstChange.position.y - firstChange.previousPosition.y)
                             inAdjust = true
                         }
                         if (firstChange.pressed && !lastCursorPressed) {

@@ -13,6 +13,9 @@ class Midi(
     val tempoEvents: MutableList<TempoEvent> = mutableListOf(),
     val timeSignatureEvents: MutableList<TimeSignatureEvent> = mutableListOf()
 ) {
+    var hasNoteTracks: Int = 0
+        private set
+
     companion object {
         private const val META_TRACK_NAME = 0x03
         private const val META_TEMPO = 0x51
@@ -169,13 +172,17 @@ class Midi(
 //                }
 //            }
 
-            for (track in midi.tracks) {
-                track.controllerEvents.forEach {
-                    if (it is MidiPCEvent) {
-                        Logger.d { "${track.name} has PC event: channel ${it.channel} at tick ${it.tick} change to ${it.program}" }
-                    }
-                }
-            }
+            val (nonEmpty, empty) = midi.tracks.partition { it.notes.isNotEmpty() }
+            midi.tracks.clear()
+            midi.tracks.addAll(nonEmpty + empty)
+            midi.hasNoteTracks = nonEmpty.size
+//            for (track in midi.tracks) {
+//                track.controllerEvents.forEach {
+//                    if (it is MidiPCEvent) {
+//                        Logger.d { "${track.name} has PC event: channel ${it.channel} at tick ${it.tick} change to ${it.program}" }
+//                    }
+//                }
+//            }
         }
     }
 }

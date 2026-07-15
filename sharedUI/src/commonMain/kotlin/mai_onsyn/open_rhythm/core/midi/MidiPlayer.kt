@@ -3,6 +3,7 @@ package mai_onsyn.open_rhythm.core.midi
 import co.touchlab.kermit.Logger
 import dev.atsushieno.ktmidi.MidiChannelStatus
 import dev.atsushieno.ktmidi.MidiOutput
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -31,6 +32,8 @@ class MidiPlayer(var deviceOutput: MidiOutput?) {
     private var performingChannel = 0
     private var midi: Midi? = null
     private var eventList: MutableList<ScheduledEvent> = mutableListOf()
+    private var currentPlayStartNanoOffset = -1L
+    private var currentPlayStartNanos = -1L
 
     private val midiStateTracker = MidiStateTracker()
     private val channelIndices = Array(16) { ChannelControllerIndex() }
@@ -48,6 +51,8 @@ class MidiPlayer(var deviceOutput: MidiOutput?) {
             val startTick = currentTick
             val startTickNanoOffset = midi!!.nanoAtTick(startTick)
             val startNanos = Time.nanos
+            currentPlayStartNanoOffset = startTickNanoOffset
+            currentPlayStartNanos = startNanos
             currentEventIndex = eventList.indexOfFirst { it.tick >= startTick }
             while (state == State.PLAYING) {
                 ensureActive()
@@ -63,10 +68,11 @@ class MidiPlayer(var deviceOutput: MidiOutput?) {
                 val remainingNanos = eventNanoOffset - startTickNanoOffset - (now - startNanos)
                 if (remainingNanos > 0) {
                     var shouldContinue = true
-                    Time.wait(remainingNanos / 1_000_000L) { shouldContinue = false }
+                    try {
+                        Time.wait(remainingNanos / 1_000_000L) { shouldContinue = false }
+                    } catch (_: CancellationException) {}
                     if (!shouldContinue) {
-                        val breakPointNanos = Time.nanos
-                        val elapsedTickNanos = breakPointNanos - startNanos + startTickNanoOffset
+                        val elapsedTickNanos = Time.nanos - startNanos + startTickNanoOffset
                         currentTick = midi!!.tickAtNanoOffset(elapsedTickNanos)
                         break
                     }
@@ -75,11 +81,24 @@ class MidiPlayer(var deviceOutput: MidiOutput?) {
                 deviceOutput?.send(event.message, 0, event.message.size, now)
                 midiStateTracker.handle(event)
                 currentTick = event.tick
-                Logger.v { "Send event: ${event.logMsg}" }
+//                Logger.v { "Send event: ${event.logMsg}" }
             }
         }
         Logger.i { "Start playing midi: ${midi!!.name} at tick $currentTick" }
     }
+
+    val precisTick: Long
+        get() {
+            if (midi == null) return 0
+            return when (state) {
+                State.STOPPED -> currentTick
+                State.PAUSED -> currentTick
+                State.PLAYING -> {
+                    val elapsedTickNanos = Time.nanos - currentPlayStartNanos + currentPlayStartNanoOffset
+                    midi!!.tickAtNanoOffset(elapsedTickNanos)
+                }
+            }
+        }
 
     fun setMidi(midi: Midi) {
         this.midi = midi
@@ -137,6 +156,17 @@ class MidiPlayer(var deviceOutput: MidiOutput?) {
         resyncControllerState(tick)
     }
 
+    fun seek(tick: Long) {
+        if (midi == null) return
+        if (state == State.PLAYING) {
+            pause()
+            currentTick = tick
+            play()
+        }
+        else currentTick = tick
+        resyncControllerState(tick)
+    }
+
     fun pressKey(key: Int, velocity: Int) {
         sendShortEvent(
             (MidiChannelStatus.NOTE_ON or performingChannel).toByte(),
@@ -177,7 +207,7 @@ class MidiPlayer(var deviceOutput: MidiOutput?) {
             midiStateTracker.resetControllers(it)
         }
         midiStateTracker.clear()
-        Logger.i { "Paused at tick $currentTick (${100.0 * currentTick / midi!!.totalTicks}% of song)" }
+        Logger.i { "Paused at tick $currentTick (${100.0 * currentTick / (midi?.totalTicks ?: 0)}% of song)" }
     }
 
     fun stop() {

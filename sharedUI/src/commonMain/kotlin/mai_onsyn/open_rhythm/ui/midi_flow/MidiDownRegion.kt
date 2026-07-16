@@ -23,6 +23,7 @@ import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.input.key.type
+import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
@@ -33,7 +34,7 @@ import mai_onsyn.open_rhythm.core.midi.Midi
 import kotlin.collections.set
 
 @Composable
-fun MidiDownFlow(
+fun MidiDownRegion(
     modifier: Modifier = Modifier,
     midi: Midi,
     trackColors: List<Color> = emptyList(),
@@ -48,23 +49,18 @@ fun MidiDownFlow(
 
     var keyboardHeight by remember { mutableStateOf(100.dp) }
     val focusRequester = remember { FocusRequester() }
+
+    val currentIsPlaying by rememberUpdatedState(isPlaying)
     Column(
         modifier = modifier
-            .focusable()
-            .focusRequester(focusRequester)
             .onSizeChanged {
                 if (keyboardRatio == 0f) return@onSizeChanged
 
                 keyboardHeight = with(density) { (it.width / keyboardRatio).toDp() }
             }
-            .pointerInput(Unit) {
-                detectTapGestures(
-                    onTap = { focusRequester.requestFocus() }
-                )
-            }
             .onKeyEvent {
                 if (it.key == Key.Spacebar && it.type == KeyEventType.KeyDown) {
-                    onPlayStateChange(!isPlaying)
+                    onPlayStateChange(!currentIsPlaying)
                 }
                 false
             }
@@ -75,34 +71,48 @@ fun MidiDownFlow(
         var deltaYpx by remember { mutableStateOf(0f) }
         MidiWaterFall(
             modifier = Modifier
+                .focusable()
+                .focusRequester(focusRequester)
                 .weight(1f)
-                .fillMaxWidth(),
+                .fillMaxWidth()
+                .pointerInput(Unit) {
+                    awaitPointerEventScope {
+                        while (true) {
+                            val event = awaitPointerEvent(PointerEventPass.Initial)
+                            focusRequester.requestFocus()
+
+                            if (event.changes.size == 2 && event.changes.first().pressed && event.changes.last().pressed) {
+                                Logger.i { "Double Click Toggle to ${!currentIsPlaying}" }
+                                onPlayStateChange(!currentIsPlaying)
+                            }
+                        }
+                    }
+                },
             trackColors = trackColors,
             currTick = currentTick,
             midi = midi,
             hpb = hpb,
             activeNoteOutput = midiActiveKeys,
-            onVerticalDragged = { deltaY, deltaTick ->
-//                if (!currentIsPlaying) Singleton.player?.seek(currentTick + deltaTick)
-                deltaYpx += deltaY
-            }
+            onVerticalDragged = { deltaYpx += it }
         )
         LaunchedEffect(isPlaying) {
             if (isPlaying) {
-                Singleton.player?.setMidi(midi)
-                Singleton.player?.play()
+                Singleton.player.setMidi(midi)
+                Singleton.player.onCompleted = { onPlayStateChange(false) }
+                Singleton.player.play()
             }
-            else Singleton.player?.pause()
+            else Singleton.player.pause()
         }
         LaunchedEffect(isPlaying) {
             while (true) {
                 withFrameMillis {
                     if (deltaYpx != 0f && !isPlaying) {
                         val deltaTick = (deltaYpx * midi.ppq / with(density) { hpb.toPx() }).toLong()
-                        currentTick = (Singleton.player?.precisTick ?: 0L) + deltaTick
-                        Singleton.player?.seek(currentTick)
+                        currentTick = Singleton.player.precisTick + deltaTick
+                        Logger.i { "${Singleton.player.precisTick}" }
+                        Singleton.player.seek(currentTick)
                     }
-                    else currentTick = Singleton.player?.precisTick ?: 0L
+                    else currentTick = Singleton.player.precisTick
                     deltaYpx = 0f
                 }
             }
@@ -116,11 +126,11 @@ fun MidiDownFlow(
             userActiveKey = userActiveKeys,
             onPress = { key, velocity ->
                 userActiveKeys[key] = Singleton.settings.keyboardUserInteractionDisplayColor
-                Singleton.player?.pressKey(key, velocity)
+                Singleton.player.pressKey(key, velocity)
             },
             onRelease = { key ->
                 userActiveKeys.remove(key)
-                Singleton.player?.releaseKey(key)
+                Singleton.player.releaseKey(key)
             },
             onVerticalDragged = {
                 keyboardHeight = with(density) { keyboardHeight - it.toDp() }

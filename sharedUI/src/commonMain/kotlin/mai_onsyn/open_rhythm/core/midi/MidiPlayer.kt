@@ -40,6 +40,8 @@ class MidiPlayer(var deviceOutput: MidiOutput?) {
     private val scope = CoroutineScope(Dispatchers.Default + SupervisorJob())
     private var playJob: Job? = null
 
+    var onCompleted: (() -> Unit)? = null
+
     fun play() {
         if (midi == null) {
             Logger.w { "MidiPlayer.play(): no midi loaded" }
@@ -59,6 +61,7 @@ class MidiPlayer(var deviceOutput: MidiOutput?) {
 
                 if (currentEventIndex >= eventList.size) {
                     state = State.STOPPED
+                    onCompleted?.invoke()
                     break
                 }
                 val event = eventList[currentEventIndex++]

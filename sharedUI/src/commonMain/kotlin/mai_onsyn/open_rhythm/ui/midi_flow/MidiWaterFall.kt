@@ -43,7 +43,7 @@ fun MidiWaterFall(
     activeNoteOutput: MutableMap<Int, Color> = mutableMapOf(),
     drawSectionLine: Boolean = true,
     drawPitchLine: Boolean = true,
-    onVerticalDragged: (Float, Long) -> Unit = { deltaPx, deltaTick -> }
+    onVerticalDragged: (Float) -> Unit = {}
 ) {
     require(trackColors.size >= midi.hasNoteTracks) { "Not enough colors for tracks" }
     val density = LocalDensity.current
@@ -89,7 +89,7 @@ fun MidiWaterFall(
                         val change = event.changes.first()
                         if (change.pressed && change.positionChanged()) {
                             val deltaPx = change.position.y - change.previousPosition.y
-                            onVerticalDragged(deltaPx, (deltaPx * midi.ppq / hpb.toPx()).toLong())
+                            onVerticalDragged(deltaPx)
                         }
                     }
                 }

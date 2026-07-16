@@ -9,12 +9,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowInsetsControllerCompat
-import mai_onsyn.open_rhythm.App
+import mai_onsyn.open_rhythm.bridge.initAndroid
+import mai_onsyn.open_rhythm.ui.App
 
 class AppActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        initAndroid(this)
         setContent { 
             App(onThemeChanged = { ThemeChanged(it) }) 
         }

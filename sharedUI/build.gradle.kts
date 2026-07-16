@@ -42,6 +42,9 @@ kotlin {
             api("dev.atsushieno:ktmidi:0.12.0")
             api("org.jetbrains.kotlinx:kotlinx-io-core:0.9.1")
             api("dev.zwander:kmpfile:0.8.0")
+
+            implementation("io.github.vinceglb:filekit-core:0.14.2")
+            implementation("io.github.vinceglb:filekit-dialogs-compose:0.14.2")
         }
 
         commonTest.dependencies {
@@ -51,6 +54,7 @@ kotlin {
         }
 
         androidMain.dependencies {
+            implementation(libs.androidx.activity.ktx)
             implementation(libs.kotlinx.coroutines.android)
         }
 

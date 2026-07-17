@@ -28,6 +28,7 @@ import kotlinx.io.readByteArray
 import mai_onsyn.open_rhythm.bridge.Singleton
 import mai_onsyn.open_rhythm.core.midi.Midi
 import mai_onsyn.open_rhythm.ui.midi_flow.MidiDownRegion
+import mai_onsyn.open_rhythm.ui.pages.AppNavigation
 import mai_onsyn.open_rhythm.ui.theme.AppTheme
 import mai_onsyn.open_rhythm.ui.theme.LocalThemeIsDark
 import openrhythm.sharedui.generated.resources.*
@@ -41,29 +42,34 @@ import kotlin.random.Random
 fun App(
     onThemeChanged: @Composable (isDark: Boolean) -> Unit = {}
 ) = AppTheme(onThemeChanged) {
-    var midi by remember { mutableStateOf<Midi?>(null) }
-    val trackColors = remember { _testOnly_GenerateTrackColors() }
 
-    LaunchedEffect(Unit) {
-        midi = _testOnly_LoadMidi()
-    }
+    AppNavigation(
+        modifier = Modifier.fillMaxSize()
+    )
 
-    var isPlaying by remember { mutableStateOf(false) }
-//    OriginalApp()
-    midi?.let { m ->
-        MidiDownRegion(
-            modifier = Modifier.fillMaxSize(),
-            midi = m,
-            trackColors = trackColors,
-            isPlaying = isPlaying,
-            keyboardRatio = if (Singleton.settings.KeyboardAutoAspect) Singleton.settings.KeyboardAspectRatio else 0f,
-            onPlayStateChange = { isPlaying = it }
-        )
-    }
-    LaunchedEffect(Unit) {
-        delay(5000)
-        isPlaying = true
-    }
+//    var midi by remember { mutableStateOf<Midi?>(null) }
+//    val trackColors = remember { _testOnly_GenerateTrackColors() }
+//
+//    LaunchedEffect(Unit) {
+//        midi = _testOnly_LoadMidi()
+//    }
+//
+//    var isPlaying by remember { mutableStateOf(false) }
+////    OriginalApp()
+//    midi?.let { m ->
+//        MidiDownRegion(
+//            modifier = Modifier.fillMaxSize(),
+//            midi = m,
+//            trackColors = trackColors,
+//            isPlaying = isPlaying,
+//            keyboardRatio = if (Singleton.settings.KeyboardAutoAspect) Singleton.settings.KeyboardAspectRatio else 0f,
+//            onPlayStateChange = { isPlaying = it }
+//        )
+//    }
+//    LaunchedEffect(Unit) {
+//        delay(5000)
+//        isPlaying = true
+//    }
 
 }
 

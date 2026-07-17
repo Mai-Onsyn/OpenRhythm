@@ -70,7 +70,7 @@ fun MidiKeyBoard(
     val endPadding = with(density) { 4.dp.toPx() }
 
     val focusRequester = remember { FocusRequester() }
-    val keyboardPressedKey = remember { mutableSetOf<Int>() }
+//    val keyboardPressedKey = remember { mutableSetOf<Int>() }
     val pointerPressedKey = mutableSetOf<Int>()
     var currentCursor by remember { mutableStateOf(PointerIcon.Default) }
     Canvas(
@@ -176,32 +176,10 @@ fun MidiKeyBoard(
                     }
                 }
             }
-            .onKeyEvent { keyEvent ->
-                if (keyEvent.type != KeyEventType.KeyDown && keyEvent.type != KeyEventType.KeyUp) {
-                    return@onKeyEvent false
-                }
-
-                val userKeys = arrayOf(Key.A, Key.W, Key.S, Key.E, Key.D, Key.F, Key.T, Key.G, Key.Y, Key.H, Key.U, Key.J, Key.K, Key.O, Key.L, Key.P, Key.Semicolon, Key.Apostrophe)
-                val idx = userKeys.indexOf(keyEvent.key)
-                if (idx != -1) {
-                    val midiKey = idx + 60
-                    if (keyEvent.type == KeyEventType.KeyDown) {
-                        if (!keyboardPressedKey.contains(midiKey)) {
-                            onPress(midiKey, 100)
-                            keyboardPressedKey.add(midiKey)
-                        }
-                    } else {
-                        onRelease(midiKey)
-                        keyboardPressedKey.remove(midiKey)
-                    }
-                    return@onKeyEvent true
-                }
-                false
-            }
             .onFocusChanged {
                 if (!it.isFocused) {
-                    keyboardPressedKey.forEach { key -> onRelease(key) }
-                    keyboardPressedKey.clear()
+//                    keyboardPressedKey.forEach { key -> onRelease(key) }
+//                    keyboardPressedKey.clear()
 
                     pointerPressedKey.forEach { key -> onRelease(key) }
                     pointerPressedKey.clear()

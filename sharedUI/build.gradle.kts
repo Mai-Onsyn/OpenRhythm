@@ -45,6 +45,9 @@ kotlin {
 
             implementation("io.github.vinceglb:filekit-core:0.14.2")
             implementation("io.github.vinceglb:filekit-dialogs-compose:0.14.2")
+
+            implementation("org.jetbrains.androidx.navigation:navigation-compose:2.9.2")
+            implementation("org.jetbrains.compose.ui:ui-backhandler:1.11.1")
         }
 
         commonTest.dependencies {

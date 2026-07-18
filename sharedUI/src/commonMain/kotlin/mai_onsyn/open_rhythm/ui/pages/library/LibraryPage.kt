@@ -1,11 +1,9 @@
 package mai_onsyn.open_rhythm.ui.pages.library
 
 import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
-import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -13,29 +11,17 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonColors
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.NavigationDrawerItem
-import androidx.compose.material3.NavigationDrawerItemDefaults
-import androidx.compose.material3.NavigationRail
-import androidx.compose.material3.NavigationRailDefaults
-import androidx.compose.material3.NavigationRailItem
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.VerticalDivider
-import androidx.compose.material3.contentColorFor
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -45,18 +31,23 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.backhandler.BackHandler
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.painter.Painter
-import androidx.compose.ui.input.key.Key.Companion.R
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
+import io.github.vinceglb.filekit.FileKit
+import io.github.vinceglb.filekit.absolutePath
+import io.github.vinceglb.filekit.dialogs.openDirectoryPicker
+import io.github.vinceglb.filekit.nameWithoutExtension
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.serialization.Serializable
+import mai_onsyn.open_rhythm.bridge.Singleton
+import mai_onsyn.open_rhythm.ui.icons.ic_add
+import mai_onsyn.open_rhythm.ui.icons.ic_arrow_back
 import mai_onsyn.open_rhythm.ui.modules.OpacitySurface
-import openrhythm.sharedui.generated.resources.Res
-import openrhythm.sharedui.generated.resources.ic_dark_mode
-import org.jetbrains.compose.resources.DrawableResource
-import org.jetbrains.compose.resources.painterResource
+import mai_onsyn.open_rhythm.ui.modules.dialog.SingleLineInputDialog
+import kotlin.math.max
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
@@ -75,7 +66,7 @@ fun LibraryPage(
             }
         ) { wide ->
             if (wide) WideLayout(onEnterMidiDetail)
-            else NarrowLayout(onEnterMidiDetail)
+            else WideLayout(onEnterMidiDetail)
         }
 
         Box(Modifier.padding(top = 8.dp, start = 8.dp)) {
@@ -86,7 +77,7 @@ fun LibraryPage(
                     .size(56.dp, 32.dp)
             ) {
                 Icon(
-                    painter = painterResource(Res.drawable.ic_dark_mode),
+                    imageVector = ic_arrow_back,
                     contentDescription = "Back",
                     modifier = Modifier.size(24.dp)
                 )
@@ -116,12 +107,26 @@ private fun WideLayout(
                 )
                 Text(
                     text = "Manage your MIDI folders and files",
-                    style = MaterialTheme.typography.labelMedium
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
             Spacer(Modifier.weight(1f))
+
+            var showNewFolderPopup by remember { mutableStateOf(false) }
+            var newFolderName by remember { mutableStateOf("") }
+            var newFolderDir by remember { mutableStateOf("") }
             Button(
-                onClick = {},
+                onClick = {
+                    val scope = CoroutineScope(Dispatchers.Default)
+                    scope.launch {
+                        FileKit.openDirectoryPicker()?.let {
+                            newFolderName = it.nameWithoutExtension
+                            newFolderDir = it.absolutePath()
+                            showNewFolderPopup = true
+                        }
+                    }
+                },
                 shape = MaterialTheme.shapes.small,
                 modifier = Modifier.pointerHoverIcon(PointerIcon.Hand)
             ) {
@@ -130,7 +135,7 @@ private fun WideLayout(
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     Icon(
-                        painter = painterResource(Res.drawable.ic_dark_mode),
+                        imageVector = ic_add,
                         contentDescription = "Add Folder",
                         modifier = Modifier
                             .size(24.dp)
@@ -141,9 +146,21 @@ private fun WideLayout(
                     )
                 }
             }
+            SingleLineInputDialog(
+                visible = showNewFolderPopup,
+                value = newFolderName,
+                onDismiss = { showNewFolderPopup = false },
+                title = "Name for this New Folder",
+                onConfirm = {
+                    newFolderName = it
+                    Singleton.settings.libraryFolderList.add(UILibraryFolder(newFolderName, newFolderDir))
+                    showNewFolderPopup = false
+                }
+            )
         }
         HorizontalDivider(Modifier.padding(vertical = 24.dp))
 
+        var selectedFolderIndex by remember { mutableStateOf(0) }
         Row {
             Column(
                 modifier = Modifier
@@ -161,22 +178,35 @@ private fun WideLayout(
 
                     OpacitySurface(contentPadding = 2.dp) {
                         Text(
-                            text = "5",
+                            text = Singleton.settings.libraryFolderList.size.toString(),
                             style = MaterialTheme.typography.bodyMedium
                         )
                     }
                 }
                 Spacer(Modifier.height(16.dp))
-                var selectedIndex by remember { mutableStateOf(0) }
+//                val items = remember { mutableStateListOf(
+//                    UILibraryFolder("a", "D:\\Users\\Desktop\\Files\\voice\\MIDI"),
+//                    UILibraryFolder("b", "Desktop"),
+//                    UILibraryFolder("c", "D:\\Users\\Desktop\\Files\\voice\\Midi Sounds TMP")
+//                ) }
+//                val items = remember { mutableStateListOf() }
                 FolderManageRail(
                     modifier = Modifier,
-                    items = listOf(
-                        LibraryFolder("a", "vgafgwa", 5),
-                        LibraryFolder("b", "vgafgwa", 5),
-                        LibraryFolder("c", "vgafgwa", 5)
-                    ),
-                    selectedIndex = selectedIndex
-                ) { selectedIndex = it }
+                    items = Singleton.settings.libraryFolderList,
+                    selectedIndex = selectedFolderIndex,
+                    onSelect = { selectedFolderIndex = it },
+                    onChange = { index, newValue ->
+                        Singleton.settings.libraryFolderList[index] = newValue
+                    },
+                    onDelete = {
+                        (Singleton.settings.libraryFolderList.size - 1).let { maxIdx ->
+                            if (selectedFolderIndex > maxIdx) {
+                                selectedFolderIndex = maxIdx
+                            }
+                        }
+                        Singleton.settings.libraryFolderList.removeAt(it)
+                    }
+                )
             }
 
             VerticalDivider(Modifier.padding(horizontal = 24.dp))
@@ -185,7 +215,33 @@ private fun WideLayout(
                     .fillMaxHeight()
                     .weight(0.6f)
             ) {
+                var fileCount by remember { mutableStateOf(0) }
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Text(
+                        text = "Midi Files",
+                        style = MaterialTheme.typography.titleMedium
+                    )
 
+                    OpacitySurface(contentPadding = 2.dp) {
+                        Text(
+                            text = fileCount.toString(),
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                    }
+                }
+                Spacer(Modifier.height(16.dp))
+                FileManageRail(
+                    modifier = Modifier.fillMaxSize(),
+                    path = Singleton.settings.libraryFolderList.let {
+                        if (it.isEmpty()) ""
+                        else it[selectedFolderIndex].dir
+                    },
+//                    path = Singleton.settings.libraryFolderList[selectedFolderIndex].dir,
+                    onFileCountAvailable = { fileCount = it }
+                )
             }
         }
     }
@@ -198,48 +254,8 @@ private fun NarrowLayout(
 
 }
 
-private data class LibraryFolder(
+@Serializable
+data class UILibraryFolder(
     val name: String,
-    val dir: String,
-    val fileCount: Int,
+    val dir: String
 )
-
-@OptIn(ExperimentalMaterial3ExpressiveApi::class)
-@Composable
-private fun FolderManageRail(
-    modifier: Modifier = Modifier,
-    items: List<LibraryFolder>,
-    selectedIndex: Int,
-    onSelect: (Int) -> Unit,
-) {
-    Column(
-        modifier = modifier,
-        verticalArrangement = Arrangement.spacedBy(4.dp)
-    ) {
-        items.forEachIndexed { index, item ->
-            val bgColor by animateColorAsState(
-                targetValue = if (selectedIndex == index) MaterialTheme.colorScheme.primary.copy(alpha = 0.12f)
-                                else MaterialTheme.colorScheme.primary.copy(alpha = 0f)
-            )
-            Surface(
-                onClick = { onSelect(index) },
-                color = bgColor,
-                contentColor = MaterialTheme.colorScheme.onSurface,
-                shape = MaterialTheme.shapes.small,
-                modifier = Modifier
-                    .pointerHoverIcon(PointerIcon.Hand)
-            ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp)
-                ) {
-                    Text(
-                        text = item.name,
-                        style = MaterialTheme.typography.titleMedium
-                    )
-                }
-            }
-        }
-    }
-}

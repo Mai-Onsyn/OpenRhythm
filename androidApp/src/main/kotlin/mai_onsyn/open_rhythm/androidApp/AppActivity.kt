@@ -1,14 +1,22 @@
 package mai_onsyn.open_rhythm.androidApp
 
 import android.app.Activity
+import android.content.res.Configuration
+import android.os.Build
 import android.os.Bundle
+import android.view.WindowInsets
+import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowInsetsControllerCompat
+import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import mai_onsyn.open_rhythm.bridge.initAndroid
 import mai_onsyn.open_rhythm.ui.App
 
@@ -17,7 +25,30 @@ class AppActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         initAndroid(this)
-        setContent { 
+        setContent {
+            val configuration = LocalConfiguration.current
+            val view = LocalView.current
+            val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+            DisposableEffect(isLandscape) {
+                val window = (view.context as Activity).window
+
+                if (isLandscape) {
+                    window.setFlags(
+                        WindowManager.LayoutParams.FLAG_FULLSCREEN,
+                        WindowManager.LayoutParams.FLAG_FULLSCREEN
+                    )
+                } else {
+                    window.clearFlags(
+                        WindowManager.LayoutParams.FLAG_FULLSCREEN
+                    )
+                }
+
+                onDispose {
+                    window.clearFlags(
+                        WindowManager.LayoutParams.FLAG_FULLSCREEN
+                    )
+                }
+            }
             App(onThemeChanged = { ThemeChanged(it) }) 
         }
     }

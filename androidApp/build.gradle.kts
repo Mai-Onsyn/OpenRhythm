@@ -31,4 +31,6 @@ kotlin {
 dependencies {
     implementation(project(":sharedUI"))
     implementation(libs.androidx.activityCompose)
+
+    implementation("com.google.accompanist:accompanist-systemuicontroller:0.36.0")
 }

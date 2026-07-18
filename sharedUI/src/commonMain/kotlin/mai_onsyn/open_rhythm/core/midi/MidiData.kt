@@ -26,7 +26,11 @@ class MidiTrack(
     val controllerEvents: MutableList<MidiEvent> = mutableListOf()
 ) {
     val instrumentEvent: MidiPCEvent get() {
-        return controllerEvents.first { it is MidiPCEvent } as MidiPCEvent
+        return try {
+            controllerEvents.first { it is MidiPCEvent } as MidiPCEvent
+        } catch (_: NoSuchElementException) {
+            MidiPCEvent.of(0, 0, 0)
+        }
     }
 
     private enum class EventType { PC, CC_PB, NOTE }
@@ -168,6 +172,12 @@ class MidiPCEvent(
     event: ByteArray
 ): MidiEvent(absoluteTick, event) {
     val program: Int get() = event[1].toInt()
+
+    companion object {
+        fun of(tick: Long, channel: Int, value: Int): MidiPCEvent {
+            return MidiPCEvent(tick, byteArrayOf((0xC0 + channel).toByte(), value.toByte()))
+        }
+    }
 
     override fun toString(): String = "MidiPCEvent(tick=$tick, program=$program, channel=$channel)"
 }

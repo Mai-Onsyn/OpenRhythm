@@ -27,6 +27,7 @@ import kotlinx.coroutines.isActive
 import kotlinx.io.readByteArray
 import mai_onsyn.open_rhythm.bridge.Singleton
 import mai_onsyn.open_rhythm.core.midi.Midi
+import mai_onsyn.open_rhythm.ui.icons.ic_unknown
 import mai_onsyn.open_rhythm.ui.midi_flow.MidiDownRegion
 import mai_onsyn.open_rhythm.ui.pages.AppNavigation
 import mai_onsyn.open_rhythm.ui.theme.AppTheme
@@ -159,7 +160,7 @@ fun OriginalApp() {
                 .size(250.dp)
                 .padding(16.dp)
                 .run { rotate(rotate.value) },
-            imageVector = vectorResource(Res.drawable.ic_cyclone),
+            imageVector = ic_unknown,
             colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSurface),
             contentDescription = null
         )
@@ -170,7 +171,7 @@ fun OriginalApp() {
                 .widthIn(min = 200.dp),
             onClick = { isRotating = !isRotating },
             content = {
-                Icon(vectorResource(Res.drawable.ic_rotate_right), contentDescription = null)
+                Icon(ic_unknown, contentDescription = null)
                 Spacer(Modifier.size(ButtonDefaults.IconSpacing))
                 Text(
                     stringResource(if (isRotating) Res.string.stop else Res.string.run)
@@ -180,15 +181,15 @@ fun OriginalApp() {
 
         var isDark by LocalThemeIsDark.current
         val icon = remember(isDark) {
-            if (isDark) Res.drawable.ic_light_mode
-            else Res.drawable.ic_dark_mode
+            if (isDark) ic_unknown
+            else ic_unknown
         }
 
         ElevatedButton(
             modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp).widthIn(min = 200.dp),
             onClick = { isDark = !isDark },
             content = {
-                Icon(vectorResource(icon), contentDescription = null)
+                Icon(icon, contentDescription = null)
                 Spacer(Modifier.size(ButtonDefaults.IconSpacing))
                 Text(stringResource(Res.string.theme))
             }

@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
+import androidx.compose.material3.contentColorFor
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -20,8 +21,8 @@ import kotlin.math.max
 fun OpacitySurface(
     modifier: Modifier = Modifier,
     shape: Shape = CircleShape,
-    color: Color = MaterialTheme.colorScheme.primary,
-    opacity: Float = 0.2f,
+    color: Color = MaterialTheme.colorScheme.primaryContainer,
+    contentColor: Color = contentColorFor(color),
     contentPadding: Dp = 8.dp,
     tonalElevation: Dp = 0.dp,
     shadowElevation: Dp = 0.dp,
@@ -31,8 +32,8 @@ fun OpacitySurface(
     Surface(
         modifier = modifier,
         shape = shape,
-        color = color.copy(alpha = opacity),
-        contentColor = color,
+        color = color,
+        contentColor = contentColor,
         tonalElevation = tonalElevation,
         shadowElevation = shadowElevation,
         border = border

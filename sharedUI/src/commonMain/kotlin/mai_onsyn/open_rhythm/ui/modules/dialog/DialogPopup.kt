@@ -3,6 +3,7 @@ package mai_onsyn.open_rhythm.ui.modules.dialog
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
+import androidx.compose.foundation.focusable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
@@ -10,10 +11,15 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.backhandler.BackHandler
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.key.Key
@@ -32,6 +38,7 @@ import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.PopupPositionProvider
 import androidx.compose.ui.window.PopupProperties
 
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun DialogPopup(
     visible: Boolean,
@@ -60,9 +67,12 @@ fun DialogPopup(
 //            clippingEnabled = false
 //        )
     ) {
+        val focusRequester = remember { FocusRequester() }
         Box(
             contentAlignment = Alignment.Center,
             modifier = Modifier
+                .focusable()
+                .focusRequester(focusRequester)
                 .fillMaxSize()
                 .background(MaterialTheme.colorScheme.scrim.copy(alpha = 0.32f * showProgress))
                 .pointerInput(Unit) {
@@ -76,6 +86,10 @@ fun DialogPopup(
                     false
                 }
         ) {
+            LaunchedEffect(Unit) {
+                focusRequester.requestFocus()
+            }
+            BackHandler { onDismissRequest() }
             Box(
                 modifier = Modifier
                     .graphicsLayer {

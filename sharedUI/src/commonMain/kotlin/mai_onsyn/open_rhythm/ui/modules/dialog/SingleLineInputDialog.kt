@@ -11,6 +11,7 @@ import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.delay
 import mai_onsyn.open_rhythm.ui.modules.CompactOutlinedTextField
+import mai_onsyn.open_rhythm.ui.modules.PrimaryOperationButton
 import kotlin.time.Duration.Companion.milliseconds
 
 
@@ -95,38 +96,12 @@ fun SingleLineInputDialog(
 
                 Spacer(Modifier.height(24.dp))
                 Row(horizontalArrangement = Arrangement.spacedBy(24.dp)) {
-                    Button(
-                        onClick = {
-                            if (inputText.isNotEmpty()) {
-                                onConfirm(inputText)
-                            } else isError = true
-                        },
-                        shape = MaterialTheme.shapes.small,
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = MaterialTheme.colorScheme.primary,
-                            contentColor = MaterialTheme.colorScheme.onPrimary
-                        ),
-                        modifier = Modifier.pointerHoverIcon(PointerIcon.Hand)
-                    ) {
-                        Text(
-                            text = "Confirm",
-                            style = MaterialTheme.typography.labelMedium
-                        )
+                    PrimaryOperationButton("Confirm") {
+                        if (inputText.isNotEmpty()) {
+                            onConfirm(inputText)
+                        } else isError = true
                     }
-                    Button(
-                        onClick = onDismiss,
-                        shape = MaterialTheme.shapes.small,
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = MaterialTheme.colorScheme.primary,
-                            contentColor = MaterialTheme.colorScheme.onPrimary
-                        ),
-                        modifier = Modifier.pointerHoverIcon(PointerIcon.Hand)
-                    ) {
-                        Text(
-                            text = "Cancel",
-                            style = MaterialTheme.typography.labelMedium
-                        )
-                    }
+                    PrimaryOperationButton("Cancel", onDismiss)
                 }
             }
         }

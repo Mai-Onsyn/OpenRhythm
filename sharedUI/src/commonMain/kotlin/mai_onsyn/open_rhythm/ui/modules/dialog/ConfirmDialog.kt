@@ -11,6 +11,7 @@ import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import mai_onsyn.open_rhythm.ui.modules.PrimaryOperationButton
 
 @Composable
 fun ConfirmDialog(
@@ -63,36 +64,8 @@ fun ConfirmDialog(
 
                 Spacer(Modifier.height(24.dp))
                 Row(horizontalArrangement = Arrangement.spacedBy(24.dp)) {
-                    Button(
-                        onClick = onConfirm,
-                        shape = MaterialTheme.shapes.small,
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = MaterialTheme.colorScheme.primary,
-                            contentColor = MaterialTheme.colorScheme.onPrimary
-                        ),
-                        modifier = Modifier.pointerHoverIcon(PointerIcon.Hand)
-                    ) {
-                        Text(
-                            text = "Confirm",
-                            style = MaterialTheme.typography.labelMedium
-                        )
-                    }
-                    if (showCancel) {
-                        Button(
-                            onClick = onDismiss,
-                            shape = MaterialTheme.shapes.small,
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = MaterialTheme.colorScheme.primary,
-                                contentColor = MaterialTheme.colorScheme.onPrimary
-                            ),
-                            modifier = Modifier.pointerHoverIcon(PointerIcon.Hand)
-                        ) {
-                            Text(
-                                text = "Cancel",
-                                style = MaterialTheme.typography.labelMedium
-                            )
-                        }
-                    }
+                    PrimaryOperationButton("Confirm", onConfirm)
+                    if (showCancel) PrimaryOperationButton("Cancel", onDismiss)
                 }
             }
         }

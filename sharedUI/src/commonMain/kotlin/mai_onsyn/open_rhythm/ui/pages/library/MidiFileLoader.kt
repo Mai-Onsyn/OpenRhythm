@@ -40,7 +40,7 @@ suspend fun getFileInfosInFolder(path: String): List<UIMidiData> {
                 }
 
                 result.add(UIMidiData(
-                    fileName = it.name,
+                    fileName = it.nameWithoutExtension,
                     path = it.absolutePath(),
                     duration = midi.msAtTick(midi.totalTicks.toLong()),
                     pianoOnly = pianoOnly,

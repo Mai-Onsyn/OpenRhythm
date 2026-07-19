@@ -94,7 +94,7 @@ internal fun AppTheme(
     onThemeChanged: @Composable (isDark: Boolean) -> Unit,
     content: @Composable () -> Unit
 ) {
-    val systemIsDark = false//isSystemInDarkTheme()
+    val systemIsDark = isSystemInDarkTheme()
     val isDarkState = remember(systemIsDark) { mutableStateOf(systemIsDark) }
 
     val popupHostState = remember { PopupHostState() }

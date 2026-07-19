@@ -43,11 +43,13 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
 import mai_onsyn.open_rhythm.bridge.Singleton
+import mai_onsyn.open_rhythm.bridge.pickDirectoryWithPermission
 import mai_onsyn.open_rhythm.ui.icons.ic_add
 import mai_onsyn.open_rhythm.ui.icons.ic_arrow_back
 import mai_onsyn.open_rhythm.ui.modules.OpacitySurface
 import mai_onsyn.open_rhythm.ui.modules.dialog.SingleLineInputDialog
 import kotlin.math.max
+import kotlin.math.min
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
@@ -120,7 +122,7 @@ private fun WideLayout(
                 onClick = {
                     val scope = CoroutineScope(Dispatchers.Default)
                     scope.launch {
-                        FileKit.openDirectoryPicker()?.let {
+                        FileKit.pickDirectoryWithPermission()?.let {
                             newFolderName = it.nameWithoutExtension
                             newFolderDir = it.absolutePath()
                             showNewFolderPopup = true
@@ -237,7 +239,7 @@ private fun WideLayout(
                     modifier = Modifier.fillMaxSize(),
                     path = Singleton.settings.libraryFolderList.let {
                         if (it.isEmpty()) ""
-                        else it[selectedFolderIndex].dir
+                        else it[min(selectedFolderIndex, it.size - 1)].dir
                     },
 //                    path = Singleton.settings.libraryFolderList[selectedFolderIndex].dir,
                     onFileCountAvailable = { fileCount = it }

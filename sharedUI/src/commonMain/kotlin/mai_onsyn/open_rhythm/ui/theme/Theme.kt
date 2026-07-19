@@ -1,11 +1,15 @@
 package mai_onsyn.open_rhythm.ui.theme
 
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.text.contextmenu.provider.LocalTextContextMenuToolbarProvider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.*
+import mai_onsyn.open_rhythm.ui.modules.dialog.LocalPopupHostState
+import mai_onsyn.open_rhythm.ui.modules.dialog.PopupHostState
+import mai_onsyn.open_rhythm.ui.modules.dialog.RootPopupHost
 
 private val LightColorScheme = lightColorScheme(
     primary = PrimaryLight,
@@ -92,14 +96,21 @@ internal fun AppTheme(
 ) {
     val systemIsDark = false//isSystemInDarkTheme()
     val isDarkState = remember(systemIsDark) { mutableStateOf(systemIsDark) }
+
+    val popupHostState = remember { PopupHostState() }
     CompositionLocalProvider(
-        LocalThemeIsDark provides isDarkState
+        LocalThemeIsDark provides isDarkState,
+        LocalPopupHostState provides popupHostState
     ) {
         val isDark by isDarkState
         onThemeChanged(!isDark)
         MaterialTheme(
             colorScheme = if (isDark) darkColorScheme() else lightColorScheme(),
-            content = { Surface(content = content) }
+            content = {
+                RootPopupHost {
+                    Surface(content = content)
+                }
+            }
         )
     }
 }

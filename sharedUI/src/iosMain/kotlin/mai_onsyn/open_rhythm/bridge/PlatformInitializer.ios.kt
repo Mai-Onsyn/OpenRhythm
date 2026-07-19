@@ -8,6 +8,9 @@ import com.russhwolf.settings.NSUserDefaultsSettings
 import com.russhwolf.settings.Settings
 import dev.atsushieno.ktmidi.MidiAccess
 import dev.atsushieno.ktmidi.TraditionalCoreMidiAccess
+import io.github.vinceglb.filekit.FileKit
+import io.github.vinceglb.filekit.PlatformFile
+import io.github.vinceglb.filekit.dialogs.openDirectoryPicker
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.painterResource
 import platform.Foundation.NSUserDefaults
@@ -27,4 +30,8 @@ actual fun createSetting(): Settings {
     return NSUserDefaultsSettings(
         delegate = NSUserDefaults.standardUserDefaults
     )
+}
+
+actual suspend fun FileKit.pickDirectoryWithPermission(): PlatformFile? {
+    return FileKit.openDirectoryPicker()
 }

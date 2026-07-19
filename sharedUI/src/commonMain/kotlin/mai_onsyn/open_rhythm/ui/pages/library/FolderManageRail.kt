@@ -30,6 +30,7 @@ import kotlinx.coroutines.withContext
 import mai_onsyn.open_rhythm.ui.icons.ic_delete
 import mai_onsyn.open_rhythm.ui.icons.ic_edit_square
 import mai_onsyn.open_rhythm.ui.icons.ic_folder
+import mai_onsyn.open_rhythm.ui.icons.ic_folder_eye
 import mai_onsyn.open_rhythm.ui.icons.ic_more_vert
 import mai_onsyn.open_rhythm.ui.icons.ic_unknown
 import mai_onsyn.open_rhythm.ui.modules.OpacitySurface
@@ -61,7 +62,7 @@ fun FolderManageRail(
                 onClick = { onSelect(index) },
                 color = bgColor,
                 contentColor = MaterialTheme.colorScheme.onSurface,
-                shape = MaterialTheme.shapes.small,
+                shape = MaterialTheme.shapes.medium,
                 modifier = Modifier
                     .pointerHoverIcon(PointerIcon.Hand)
             ) {
@@ -137,6 +138,7 @@ fun FolderManageRail(
 
                         var showRenameDialog by remember { mutableStateOf(false) }
                         var showDeleteConfirmDialog by remember { mutableStateOf(false) }
+                        var showPathInfoDialog by remember { mutableStateOf(false) }
 
                         DropdownMenu(
                             expanded = expanded,
@@ -151,6 +153,14 @@ fun FolderManageRail(
                                     showRenameDialog = true
                                 },
                                 icon = ic_edit_square
+                            )
+                            DropDownContextItem(
+                                text = "Show Path",
+                                onClick = {
+                                    expanded = false
+                                    showPathInfoDialog = true
+                                },
+                                icon = ic_folder_eye
                             )
                             DropDownContextItem(
                                 text = "Delete",
@@ -178,6 +188,14 @@ fun FolderManageRail(
                         )
 
                         ConfirmDialog(
+                            visible = showPathInfoDialog,
+                            onDismiss = { showPathInfoDialog = false },
+                            onConfirm = { showPathInfoDialog = false },
+                            title = "Path of ${item.name}",
+                            message = item.dir
+                        )
+
+                        ConfirmDialog(
                             visible = showDeleteConfirmDialog,
                             onDismiss = { showDeleteConfirmDialog = false },
                             onConfirm = {
@@ -186,7 +204,7 @@ fun FolderManageRail(
                             },
                             title = "Delete ${item.name}?",
                             isDangerous = true,
-                            message = "Are you sure you want to delete this folder? (This won't delete the file on your device.)",
+                            message = "Are you sure you want to delete this folder? \n(This won't delete the file on your device.)",
                         )
                     }
                 }

@@ -41,7 +41,7 @@ fun DialogPopup(
     shadowElevation: Dp = 6.dp,
     content: @Composable BoxScope.() -> Unit
 ) {
-    val popupPositionProvider = remember { GlobalPopupPositionProvider() }
+//    val popupPositionProvider = remember { GlobalPopupPositionProvider() }
 
     val showProgress by animateFloatAsState(
         targetValue = if (visible) 1f else 0f,
@@ -50,15 +50,15 @@ fun DialogPopup(
 
     if (showProgress == 0f) return
 
-    Popup(
-        popupPositionProvider = popupPositionProvider,
-        properties = PopupProperties(
-            focusable = true,
-            dismissOnBackPress = false,
-            dismissOnClickOutside = false,
-            usePlatformDefaultWidth = false,
-            clippingEnabled = false
-        )
+    RootPopup(
+//        popupPositionProvider = popupPositionProvider,
+//        properties = PopupProperties(
+//            focusable = true,
+//            dismissOnBackPress = false,
+//            dismissOnClickOutside = false,
+//            usePlatformDefaultWidth = false,
+//            clippingEnabled = false
+//        )
     ) {
         Box(
             contentAlignment = Alignment.Center,

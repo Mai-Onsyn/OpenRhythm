@@ -1,14 +1,10 @@
-package mai_onsyn.open_rhythm.ui.midi_flow
+package mai_onsyn.open_rhythm.ui.modules.midi_flow
 
 import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.focusable
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
@@ -115,14 +111,14 @@ fun MidiWaterFall(
         toDrawNotes.sortWith(compareBy({ it.note.tick }, { it.trackNum }))
 
         activeNoteOutput.clear()
-        for (pack in toDrawNotes) {
-            val (x, w) = gridPos[pack.note.pitch] ?: continue
+        fun drawNote(pack: DrawableNote) {
+            val (x, w) = gridPos[pack.note.pitch] ?: return
             val pixelPos = (pack.note.tick - currTick) * pxPerTick
             val durationPx = pack.note.duration * pxPerTick
             drawRoundRect(
                 color = if (isBlackKey(pack.note.pitch))
-                            Color(pack.color.red, pack.color.green, pack.color.blue, 0.8f).compositeOver(Color.Black)
-                        else pack.color,
+                    Color(pack.color.red, pack.color.green, pack.color.blue, 0.8f).compositeOver(Color.Black)
+                else pack.color,
                 topLeft = Offset(x, (height - pixelPos - durationPx)),
                 size = Size(w, durationPx),
                 cornerRadius = CornerRadius(w * 0.1f)
@@ -130,6 +126,13 @@ fun MidiWaterFall(
             if (pack.note.tick <= currTick && pack.note.tick + pack.note.duration >= currTick) {
                 activeNoteOutput[pack.note.pitch] = pack.color
             }
+        }
+
+        for (pack in toDrawNotes) {
+            if (!isBlackKey(pack.note.pitch)) drawNote(pack)
+        }
+        for (pack in toDrawNotes) {
+            if (isBlackKey(pack.note.pitch)) drawNote(pack)
         }
     }
 }

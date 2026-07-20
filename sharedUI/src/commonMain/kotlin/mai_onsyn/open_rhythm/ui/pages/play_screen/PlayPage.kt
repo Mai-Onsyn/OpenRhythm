@@ -1,6 +1,8 @@
 package mai_onsyn.open_rhythm.ui.pages.play_screen
 
-import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -11,9 +13,10 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.backhandler.BackHandler
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
 import mai_onsyn.open_rhythm.bridge.Singleton
 import mai_onsyn.open_rhythm.core.midi.Midi
-import mai_onsyn.open_rhythm.ui.midi_flow.MidiDownRegion
+import mai_onsyn.open_rhythm.ui.modules.midi_flow.MidiDownRegion
 import kotlin.random.Random
 
 @OptIn(ExperimentalComposeUiApi::class)
@@ -28,14 +31,35 @@ fun PlayPage(
     var isPlaying by remember { mutableStateOf(false) }
     val displayMidi by rememberUpdatedState(midi ?: Midi("Empty MIDI", 480, 4800))
 
-    MidiDownRegion(
-        modifier = Modifier.fillMaxSize(),
-        midi = displayMidi,
-        trackColors = trackColors,
-        isPlaying = isPlaying,
-        keyboardRatio = if (Singleton.settings.KeyboardAutoAspect) Singleton.settings.KeyboardAspectRatio else 0f,
-        onPlayStateChange = { isPlaying = it }
-    )
+    var playProgress by remember { mutableStateOf(0.0f) }
+
+    Column {
+        StatusBar(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(72.dp),
+            isPlaying = isPlaying,
+            onBack = onBack,
+            onToggledPlay = { isPlaying = it },
+            onHide = {  },
+            onProgressChange = {
+                playProgress = it
+                Singleton.player.seek(it.toDouble())
+            },
+            visible = true,
+            progress = playProgress
+        )
+
+        MidiDownRegion(
+            modifier = Modifier.fillMaxWidth().weight(1f),
+            midi = displayMidi,
+            trackColors = trackColors,
+            isPlaying = isPlaying,
+            keyboardRatio = if (Singleton.settings.KeyboardAutoAspect) Singleton.settings.KeyboardAspectRatio else 0f,
+            onPlayStateChange = { isPlaying = it },
+            onProgressChange = { playProgress = it },
+        )
+    }
 }
 
 private fun _testOnly_GenerateTrackColors(): List<Color> = mutableListOf(

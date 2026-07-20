@@ -1,30 +1,16 @@
-package mai_onsyn.open_rhythm.ui.midi_flow
+package mai_onsyn.open_rhythm.ui.modules.midi_flow
 
 import androidx.compose.foundation.focusable
-import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateMapOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberUpdatedState
-import androidx.compose.runtime.setValue
-import androidx.compose.runtime.withFrameMillis
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.key.Key
-import androidx.compose.ui.input.key.KeyEventType
-import androidx.compose.ui.input.key.key
-import androidx.compose.ui.input.key.onKeyEvent
-import androidx.compose.ui.input.key.type
+import androidx.compose.ui.input.key.*
 import androidx.compose.ui.input.pointer.PointerEventPass
-import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
@@ -32,7 +18,6 @@ import androidx.compose.ui.unit.dp
 import co.touchlab.kermit.Logger
 import mai_onsyn.open_rhythm.bridge.Singleton
 import mai_onsyn.open_rhythm.core.midi.Midi
-import kotlin.collections.set
 
 @Composable
 fun MidiDownRegion(
@@ -41,7 +26,8 @@ fun MidiDownRegion(
     trackColors: List<Color> = emptyList(),
     isPlaying: Boolean = false,
     keyboardRatio: Float = 0f,
-    onPlayStateChange: (Boolean) -> Unit = {}
+    onPlayStateChange: (Boolean) -> Unit = {},
+    onProgressChange: (Float) -> Unit = {},
 ) {
     val density = LocalDensity.current
 
@@ -115,7 +101,7 @@ fun MidiDownRegion(
                             for (change in event.changes) {
                                 if (change.pressed) {
                                     focusRequester.requestFocus()
-                                    Logger.d { "Waterfall request focus" }
+//                                    Logger.d { "Waterfall request focus" }
                                     break
                                 }
                             }
@@ -151,6 +137,7 @@ fun MidiDownRegion(
                         Singleton.player.seek(currentTick)
                     }
                     else currentTick = Singleton.player.precisTick
+                    onProgressChange(currentTick / midi.totalTicks.toFloat())
                     deltaYpx = 0f
                 }
             }

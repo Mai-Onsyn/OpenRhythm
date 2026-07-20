@@ -8,6 +8,8 @@ import kotlinx.coroutines.yield
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.coroutineContext
 import kotlin.time.Clock
+import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.Duration.Companion.nanoseconds
 import kotlin.time.TimeSource
 
 object Time {
@@ -20,31 +22,46 @@ object Time {
     val seconds: Long get() = Clock.System.now().epochSeconds
 
     suspend fun wait(targetDelayMs: Long, onInterrupted: () -> Unit = {}) {
-        val timer = TimeSource.Monotonic
-        val start = timer.markNow()
-
-        if (targetDelayMs > 2) {
-            val safeDelayMs = (targetDelayMs - 2).coerceAtLeast(0)
-            try {
-                delay(safeDelayMs)
-            } catch (e: CancellationException) {
-                onInterrupted()
-                throw e
-            }
+//        val timer = TimeSource.Monotonic
+//        val start = timer.markNow()
+//
+//        if (targetDelayMs > 2) {
+//            val safeDelayMs = (targetDelayMs - 2).coerceAtLeast(0)
+//            try {
+//                delay(safeDelayMs)
+//            } catch (e: CancellationException) {
+//                onInterrupted()
+//                throw e
+//            }
+//        }
+//
+//        while (true) {
+//            if (!currentCoroutineContext().isActive) {
+//                onInterrupted()
+//                break
+//            }
+//            val elapsed = start.elapsedNow().inWholeNanoseconds
+//            val targetNs = targetDelayMs * 1_000_000L
+//            if (elapsed >= targetNs) break
+//
+//            if (targetNs - elapsed > 100_000) {
+//                yield()
+//            }
+//        }
+        if (targetDelayMs <= 0) return
+        try {
+            delay(targetDelayMs.milliseconds)
+        } catch (e: CancellationException) {
+            onInterrupted()
         }
+    }
 
-        while (true) {
-            if (!currentCoroutineContext().isActive) {
-                onInterrupted()
-                break
-            }
-            val elapsed = start.elapsedNow().inWholeNanoseconds
-            val targetNs = targetDelayMs * 1_000_000L
-            if (elapsed >= targetNs) break
-
-            if (targetNs - elapsed > 100_000) {
-                yield()
-            }
+    suspend fun waitNanos(targetDelayNanos: Long, onInterrupted: () -> Unit = {}) {
+        if (targetDelayNanos <= 0) return
+        try {
+            delay(targetDelayNanos.nanoseconds)
+        } catch (e: CancellationException) {
+            onInterrupted()
         }
     }
 

@@ -22,20 +22,16 @@ import io.github.vinceglb.filekit.FileKit
 import io.github.vinceglb.filekit.dialogs.openFilePicker
 import io.github.vinceglb.filekit.nameWithoutExtension
 import io.github.vinceglb.filekit.readBytes
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.io.readByteArray
-import mai_onsyn.open_rhythm.bridge.Singleton
 import mai_onsyn.open_rhythm.core.midi.Midi
 import mai_onsyn.open_rhythm.ui.icons.ic_unknown
-import mai_onsyn.open_rhythm.ui.midi_flow.MidiDownRegion
 import mai_onsyn.open_rhythm.ui.pages.AppNavigation
 import mai_onsyn.open_rhythm.ui.theme.AppTheme
 import mai_onsyn.open_rhythm.ui.theme.LocalThemeIsDark
 import openrhythm.sharedui.generated.resources.*
 import org.jetbrains.compose.resources.Font
 import org.jetbrains.compose.resources.stringResource
-import org.jetbrains.compose.resources.vectorResource
 import kotlin.random.Random
 
 @Preview

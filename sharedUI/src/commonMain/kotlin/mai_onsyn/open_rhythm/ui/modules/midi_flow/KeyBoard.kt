@@ -1,13 +1,9 @@
-package mai_onsyn.open_rhythm.ui.midi_flow
+package mai_onsyn.open_rhythm.ui.modules.midi_flow
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.focusable
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
@@ -19,11 +15,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.graphics.drawscope.DrawScope
-import androidx.compose.ui.input.key.Key
-import androidx.compose.ui.input.key.KeyEventType
-import androidx.compose.ui.input.key.key
-import androidx.compose.ui.input.key.onKeyEvent
-import androidx.compose.ui.input.key.type
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.input.pointer.pointerInput
@@ -35,6 +26,8 @@ import mai_onsyn.open_rhythm.bridge.AppCursors
 import mai_onsyn.open_rhythm.ui.utility.blackKeyOffset
 import mai_onsyn.open_rhythm.ui.utility.countWhiteKeys
 import mai_onsyn.open_rhythm.ui.utility.isBlackKey
+import kotlin.collections.iterator
+import kotlin.collections.mutableMapOf
 
 
 @Composable
@@ -70,8 +63,8 @@ fun MidiKeyBoard(
     val endPadding = with(density) { 4.dp.toPx() }
 
     val focusRequester = remember { FocusRequester() }
-//    val keyboardPressedKey = remember { mutableSetOf<Int>() }
     val pointerPressedKey = mutableSetOf<Int>()
+
     var currentCursor by remember { mutableStateOf(PointerIcon.Default) }
     Canvas(
         modifier = modifier

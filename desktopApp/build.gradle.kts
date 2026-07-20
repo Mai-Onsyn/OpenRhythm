@@ -30,6 +30,13 @@ compose.desktop {
                 bundleID = "mai_onsyn.open_rhythm.desktopApp"
             }
         }
+
+        jvmArgs(
+            "-XX:+UseZGC",
+            "-Xms512m",
+            "-Xmx2048m",
+//            "-Xlog:gc"
+        )
     }
 }
 kotlin {

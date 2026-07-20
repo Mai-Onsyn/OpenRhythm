@@ -72,7 +72,7 @@ class MidiPlayer(var deviceOutput: MidiOutput?) {
                 if (remainingNanos > 0) {
                     var shouldContinue = true
                     try {
-                        Time.wait(remainingNanos / 1_000_000L) { shouldContinue = false }
+                        Time.waitNanos(remainingNanos) { shouldContinue = false }
                     } catch (_: CancellationException) {}
                     if (!shouldContinue) {
                         val elapsedTickNanos = Time.nanos - startNanos + startTickNanoOffset

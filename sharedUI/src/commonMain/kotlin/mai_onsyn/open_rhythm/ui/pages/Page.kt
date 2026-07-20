@@ -59,14 +59,7 @@ fun AppNavigation(
             navController = navController,
             startDestination = Library
         ) {
-            composable<Home>(
-                enterTransition = {
-                    slideInHorizontally(animationSpec = tween(300)) { it } + fadeIn(animationSpec = tween(300))
-                },
-                exitTransition = {
-                    slideOutHorizontally(animationSpec = tween(300)) { -it } + fadeOut(animationSpec = tween(300))
-                }
-            ) {
+            composable<Home>() {
                 HomePage(
                     maxWidth > 600.dp,
                     { navController.navigate(Library) },
@@ -80,7 +73,7 @@ fun AppNavigation(
                 if (!navController.popBackStack())
                     navController.navigate(Home)
             }
-            composable<Library> {
+            composable<Library>() {
                 LibraryPage(
                     maxWidth > 600.dp,
                     onBack,

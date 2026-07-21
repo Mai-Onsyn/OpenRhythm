@@ -5,6 +5,7 @@ import com.russhwolf.settings.Settings
 import dev.atsushieno.ktmidi.MidiAccess
 import io.github.vinceglb.filekit.FileKit
 import io.github.vinceglb.filekit.PlatformFile
+import mai_onsyn.open_rhythm.core.GlobalKeyEventDispatcher
 
 expect fun getMidiAccess(): MidiAccess
 
@@ -16,3 +17,5 @@ expect object AppCursors {
 expect fun createSetting(): Settings
 
 expect suspend fun FileKit.pickDirectoryWithPermission(): PlatformFile?
+
+expect fun registerGlobalKeyEventDispatcher(keyEventDispatcher: GlobalKeyEventDispatcher)

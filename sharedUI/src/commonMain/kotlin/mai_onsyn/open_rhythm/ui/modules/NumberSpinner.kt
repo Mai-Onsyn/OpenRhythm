@@ -26,7 +26,10 @@ fun NumberSpinner(
     value: Int,
     onValueChange: (Int) -> Unit,
     range: IntRange, // 指定范围，例如 1..100
+    step: Int = 1,
     label: String,
+    onAddClick: () -> Unit = {},
+    onSubClick: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     // 内部维护一个 String 状态，允许用户在输入过程中出现临时空值
@@ -48,18 +51,19 @@ fun NumberSpinner(
     ) {
         // 1. 减号按钮
         IconButton(
-            onClick = { if (value > range.first) onValueChange(value - 1) },
+            onClick = {
+                if (value > range.first) onValueChange(value - step)
+                onSubClick()
+            },
             enabled = value > range.first,
             modifier = Modifier.size(36.dp).pointerHoverIcon(PointerIcon.Hand)
         ) {
             Icon(ic_remove, contentDescription = "decrease", modifier = Modifier.size(18.dp))
         }
 
-        // 2. 复用 A 方案的紧凑输入框
-        BasicTextField(
+        CompactOutlinedTextField(
             value = textValue,
             onValueChange = { input ->
-                // 🎯 核心防线：只允许输入纯数字，且长度不超过最大值的位数
                 if (input.isEmpty() || input.all { it.isDigit() }) {
                     textValue = input
                     // 如果能解析出合法的范围内数字，即时通知外部更新
@@ -70,43 +74,27 @@ fun NumberSpinner(
             },
             modifier = Modifier
                 .width(72.dp) // 给一个合适的数字宽度
-                .onFocusChanged { if (!it.isFocused) clampAndSettle() }, // 👈 失焦时自动强制校正边界
+                .onFocusChanged { if (!it.isFocused) clampAndSettle() },
             textStyle = MaterialTheme.typography.bodyLarge.copy(
                 color = MaterialTheme.colorScheme.onSurface,
-                textAlign = TextAlign.Center // 数字居中更好看
+                textAlign = TextAlign.Center
             ),
-            singleLine = true,
             interactionSource = interactionSource,
             keyboardOptions = KeyboardOptions(
                 keyboardType = KeyboardType.Number, // 召唤数字键盘
                 imeAction = ImeAction.Done
             ),
-            keyboardActions = KeyboardActions(onDone = { clampAndSettle() })
-        ) { innerTextField ->
-            OutlinedTextFieldDefaults.DecorationBox(
-                value = textValue,
-                innerTextField = innerTextField,
-                enabled = true,
-                singleLine = true,
-                visualTransformation = VisualTransformation.None,
-                interactionSource = interactionSource,
-                label = { Text(label) },
-                contentPadding = PaddingValues(horizontal = 4.dp, vertical = 8.dp), // 极致紧凑
-                container = {
-                    OutlinedTextFieldDefaults.Container(
-                        enabled = true,
-                        isError = false,
-                        interactionSource = interactionSource,
-                        colors = OutlinedTextFieldDefaults.colors(),
-                        shape = MaterialTheme.shapes.small
-                    )
-                }
-            )
-        }
+            keyboardActions = KeyboardActions(onDone = { clampAndSettle() }),
+            label = { Text(label) },
+            contentPadding = PaddingValues(horizontal = 4.dp, vertical = 4.dp)
+        )
 
         // 3. 加号按钮
         IconButton(
-            onClick = { if (value < range.last) onValueChange(value + 1) },
+            onClick = {
+                if (value < range.last) onValueChange(value + step)
+                onAddClick()
+            },
             enabled = value < range.last,
             modifier = Modifier.size(36.dp).pointerHoverIcon(PointerIcon.Hand)
         ) {

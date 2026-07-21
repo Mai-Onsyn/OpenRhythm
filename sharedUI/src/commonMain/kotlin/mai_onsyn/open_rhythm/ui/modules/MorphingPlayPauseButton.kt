@@ -12,6 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.unit.dp
 import androidx.graphics.shapes.CornerRounding
 import androidx.graphics.shapes.Morph
 import androidx.graphics.shapes.RoundedPolygon
@@ -22,19 +23,11 @@ import androidx.graphics.shapes.RoundedPolygon
 fun MorphingPlayPauseButton (
     isPlaying: Boolean = false,
     modifier: Modifier = Modifier,
-    onToggle: (Boolean) -> Unit,
     fill: Color = Color.White
 ) {
     val animateProgress by animateFloatAsState(if (isPlaying) 1f else 0f)
-
-    val innerPlaying by rememberUpdatedState(isPlaying)
     Box(
         modifier = modifier
-            .pointerInput(Unit) {
-                detectTapGestures(
-                    onTap = { onToggle(!innerPlaying) }
-                )
-            }
             .drawWithCache {
                 val w = size.width
                 val h = size.height
@@ -60,9 +53,9 @@ fun MorphingPlayPauseButton (
                     rounding = CornerRounding(radius / 5)
                 )
 
-                val spacerHalfWidth = 4f
-                val borderSpacerWidth = 5f
-                val borderSpacerHeight = 5f
+                val spacerHalfWidth = 3.2.dp.toPx()
+                val borderSpacerWidth = 4.dp.toPx()
+                val borderSpacerHeight = 4.dp.toPx()
                 val lSquare = RoundedPolygon(
                     vertices = floatArrayOf(
                         borderSpacerWidth, borderSpacerHeight,

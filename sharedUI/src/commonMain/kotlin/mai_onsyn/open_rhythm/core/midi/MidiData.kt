@@ -182,6 +182,34 @@ class MidiPCEvent(
     override fun toString(): String = "MidiPCEvent(tick=$tick, program=$program, channel=$channel)"
 }
 
+class NoteEvent(
+    absoluteTick: Long,
+    event: ByteArray
+): MidiEvent(absoluteTick, event) {
+    val pitch: Int get() = event[1].toInt() and 0xFF
+    val velocity: Int get() = event[2].toInt() and 0xFF
+    val on: Boolean get() = (event[0].toInt() and 0xF0) == 0x90
+
+    companion object {
+        fun noteOn(tick: Long, pitch: Int, velocity: Int, channel: Int): NoteEvent {
+            require(pitch in 0..127 && velocity in 0..127 && channel in 0..15) {
+                "parameters out of midi range"
+            }
+            val status = 0x90 or (channel and 0x0F)
+            val event = byteArrayOf(status.toByte(), pitch.toByte(), velocity.toByte())
+            return NoteEvent(tick, event)
+        }
+        fun noteOff(tick: Long, pitch: Int, velocity: Int, channel: Int): NoteEvent {
+            require(pitch in 0..127 && velocity in 0..127 && channel in 0..15) {
+                "parameters out of midi range"
+            }
+            val status = 0x80 or (channel and 0x0F)
+            val event = byteArrayOf(status.toByte(), pitch.toByte(), velocity.toByte())
+            return NoteEvent(tick, event)
+        }
+    }
+}
+
 data class TempoEvent(val tick: Long, val bpm: Double)
 data class TimeSignatureEvent(val tick: Long, val numerator: Int, val denominator: Int)
 

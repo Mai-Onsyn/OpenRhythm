@@ -2,12 +2,10 @@ package mai_onsyn.open_rhythm.bridge
 
 import android.content.Context
 import android.content.Intent
-import android.net.Uri
 import androidx.activity.ComponentActivity
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.input.pointer.PointerIcon
-import coil3.compose.rememberAsyncImagePainter
+import androidx.core.net.toUri
+import co.touchlab.kermit.Logger
 import com.russhwolf.settings.Settings
 import com.russhwolf.settings.SharedPreferencesSettings
 import dev.atsushieno.ktmidi.AndroidMidiAccess
@@ -17,8 +15,7 @@ import io.github.vinceglb.filekit.PlatformFile
 import io.github.vinceglb.filekit.dialogs.init
 import io.github.vinceglb.filekit.dialogs.openDirectoryPicker
 import io.github.vinceglb.filekit.path
-import org.jetbrains.compose.resources.DrawableResource
-import androidx.core.net.toUri
+import mai_onsyn.open_rhythm.core.GlobalKeyEventDispatcher
 
 internal lateinit var appContext: Context
 
@@ -55,4 +52,8 @@ actual suspend fun FileKit.pickDirectoryWithPermission(): PlatformFile? {
         return it
     }
     return null
+}
+
+actual fun registerGlobalKeyEventDispatcher(keyEventDispatcher: GlobalKeyEventDispatcher) {
+    Logger.w { "Global key event dispatcher not supported on Android yet" }
 }

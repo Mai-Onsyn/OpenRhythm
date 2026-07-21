@@ -4,7 +4,9 @@ import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.foundation.gestures.drag
 import androidx.compose.foundation.hoverable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsHoveredAsState
@@ -31,6 +33,7 @@ import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import co.touchlab.kermit.Logger
 
 @Composable
 fun FlatSlider(
@@ -41,35 +44,32 @@ fun FlatSlider(
     contentColor: Color = MaterialTheme.colorScheme.primary,
     conerRadius: Int = 50,
     scalePadding: Dp = 4.dp,
-    border: BorderStroke? = null
+    onChangeStart: () -> Unit = {},
+    onChangeEnd: () -> Unit = {}
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val hovered by interactionSource.collectIsHoveredAsState()
     Box(
         contentAlignment = Alignment.Center,
         modifier = modifier
-//            .background(Color.Yellow)
             .hoverable(interactionSource)
             .pointerHoverIcon(PointerIcon.Hand)
             .pointerInput(Unit) {
                 awaitPointerEventScope {
                     while (true) {
-                        val event = awaitPointerEvent(PointerEventPass.Initial)
-                        for (change in event.changes) {
-                            if (change.pressed) {
-                                onChanged(change.position.x / size.width)
-                            }
+                        val down = awaitFirstDown(requireUnconsumed = false)
+
+                        onChangeStart()
+                        onChanged(down.position.x / size.width)
+
+                        drag(down.id) { change ->
+                            onChanged(change.position.x / size.width)
+                            change.consume()
                         }
+
+                        onChangeEnd()
                     }
                 }
-                detectDragGestures(
-                    onDrag = { change, _ ->
-                        onChanged(change.position.x / size.width)
-                    },
-                    onDragStart = {
-                        onChanged(it.x / size.width)
-                    }
-                )
             }
     ) {
         val padding by animateDpAsState(targetValue = if (hovered) 0.dp else scalePadding)

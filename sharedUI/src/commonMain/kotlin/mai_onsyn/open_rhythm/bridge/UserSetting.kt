@@ -11,7 +11,6 @@ import com.russhwolf.settings.float
 import com.russhwolf.settings.int
 import com.russhwolf.settings.string
 import kotlinx.serialization.KSerializer
-import kotlinx.serialization.Serializable
 import kotlinx.serialization.builtins.ListSerializer
 import kotlinx.serialization.json.Json
 import mai_onsyn.open_rhythm.ui.pages.library.UILibraryFolder
@@ -23,7 +22,8 @@ class UserSetting(
 ) {
     var KeyboardAutoAspect by st.boolean("KeyBoardAutoAspect", true)
     var KeyboardAspectRatio by st.float("KeyBoardAspectRatio", 8f)
-    var keyboardUserInteractionDisplayColor by st.color("keyboardUserInteractionDisplayColor", Color(138, 226, 52))
+    var KeyboardUserInteractionDisplayColor by st.color("KeyboardUserInteractionDisplayColor", Color(138, 226, 52))
+    var AlwaysFocusMidiRegion by st.boolean("AlwaysFocusMidiRegion", true)
 
     val libraryFolderList by st.list("LibraryFolderList", mutableListOf(), UILibraryFolder.serializer())
 }

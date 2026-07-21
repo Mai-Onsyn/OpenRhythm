@@ -1,8 +1,16 @@
 package mai_onsyn.open_rhythm.ui.pages.play_screen
 
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.LinearOutSlowInEasing
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -12,11 +20,21 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.backhandler.BackHandler
+import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.PointerEventPass
+import androidx.compose.ui.input.pointer.PointerEventType
+import androidx.compose.ui.input.pointer.PointerType
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
+import co.touchlab.kermit.Logger
 import mai_onsyn.open_rhythm.bridge.Singleton
 import mai_onsyn.open_rhythm.core.midi.Midi
+import mai_onsyn.open_rhythm.core.midi.bpmAtTick
 import mai_onsyn.open_rhythm.ui.modules.midi_flow.MidiDownRegion
+import kotlin.math.roundToInt
 import kotlin.random.Random
 
 @OptIn(ExperimentalComposeUiApi::class)
@@ -32,32 +50,74 @@ fun PlayPage(
     val displayMidi by rememberUpdatedState(midi ?: Midi("Empty MIDI", 480, 4800))
 
     var playProgress by remember { mutableStateOf(0.0f) }
+    val focusRequester = remember { FocusRequester() }
 
-    Column {
-        StatusBar(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(72.dp),
-            isPlaying = isPlaying,
-            onBack = onBack,
-            onToggledPlay = { isPlaying = it },
-            onHide = {  },
-            onProgressChange = {
-                playProgress = it
-                Singleton.player.seek(it.toDouble())
-            },
-            visible = true,
-            progress = playProgress
-        )
-
+    var statusBarVisible by remember { mutableStateOf(true) }
+    Box(
+        modifier = Modifier
+            .pointerInput(Unit) {
+                awaitPointerEventScope {
+                    while (true) {
+                        val event = awaitPointerEvent(PointerEventPass.Initial)
+                        if (event.type == PointerEventType.Press)
+                            statusBarVisible = true
+                    }
+                }
+            }
+    ) {
         MidiDownRegion(
-            modifier = Modifier.fillMaxWidth().weight(1f),
+            modifier = Modifier
+                .fillMaxSize(),
             midi = displayMidi,
             trackColors = trackColors,
             isPlaying = isPlaying,
             keyboardRatio = if (Singleton.settings.KeyboardAutoAspect) Singleton.settings.KeyboardAspectRatio else 0f,
-            onPlayStateChange = { isPlaying = it },
+            onPlayStateChange = { isPlaying = it; Logger.d { isPlaying.toString() } },
             onProgressChange = { playProgress = it },
+            keyDispatcher = Singleton.globalKeyEventDispatcher,
+            focusRequester = focusRequester,
+            midiInputDevice = Singleton.midiInputDevices.entries.firstOrNull()?.value
+        )
+
+        var statusBarBoxHeight by remember { mutableStateOf(0) }
+        val statusBarHeight by animateDpAsState(
+            targetValue = if (statusBarVisible) 0.dp else with(LocalDensity.current) { -statusBarBoxHeight.toDp() },
+            animationSpec = tween(easing = LinearOutSlowInEasing)
+        )
+        var playSpeed by remember { mutableStateOf(100) }
+        StatusBar(
+            modifier = Modifier
+                .fillMaxWidth()
+                .onSizeChanged {
+                    statusBarBoxHeight = it.height
+                }
+                .offset(y = statusBarHeight),
+            isPlaying = isPlaying,
+            onBack = onBack,
+            onToggledPlay = { isPlaying = it },
+            onHide = { statusBarVisible = false },
+            progress = playProgress,
+            onProgressChangeStart = {
+                if (isPlaying) {
+                    Singleton.player.pause()
+                }
+            },
+            onProgressChange = {
+                playProgress = it
+                Singleton.player.seek(it.toDouble())
+            },
+            onProgressChangeEnd = {
+                if (isPlaying) {
+                    Singleton.player.play()
+                }
+            },
+            speed = playSpeed,
+            onSpeedChange = {
+                playSpeed = it
+                Singleton.player.setSpeed(it / 100f)
+            },
+            bpm = ((midi?.tempoEvents?.bpmAtTick(Singleton.player.preciseTick) ?: 120.0) * Singleton.player.getSpeed()).roundToInt(),
+            focusRequester = focusRequester
         )
     }
 }

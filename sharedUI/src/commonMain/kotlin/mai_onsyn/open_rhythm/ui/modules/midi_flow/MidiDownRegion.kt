@@ -1,5 +1,10 @@
 package mai_onsyn.open_rhythm.ui.modules.midi_flow
 
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.VectorConverter
+import androidx.compose.animation.core.animateIntAsState
+import androidx.compose.animation.core.animateValueAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -17,7 +22,10 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import co.touchlab.kermit.Logger
 import mai_onsyn.open_rhythm.bridge.Singleton
+import mai_onsyn.open_rhythm.core.GlobalKeyEventDispatcher
 import mai_onsyn.open_rhythm.core.midi.Midi
+import mai_onsyn.open_rhythm.core.midi.NoteEvent
+import mai_onsyn.open_rhythm.core.midi.device.MidiInputDevice
 
 @Composable
 fun MidiDownRegion(
@@ -28,6 +36,9 @@ fun MidiDownRegion(
     keyboardRatio: Float = 0f,
     onPlayStateChange: (Boolean) -> Unit = {},
     onProgressChange: (Float) -> Unit = {},
+    focusRequester: FocusRequester? = null,
+    keyDispatcher: GlobalKeyEventDispatcher? = null,
+    midiInputDevice: MidiInputDevice? = null
 ) {
     val density = LocalDensity.current
 
@@ -35,7 +46,7 @@ fun MidiDownRegion(
     val userActiveKeys = remember { mutableStateMapOf<Int, Color>() }
 
     var keyboardHeight by remember { mutableStateOf(100.dp) }
-    val focusRequester = remember { FocusRequester() }
+    val focusRequester = remember { focusRequester ?: FocusRequester() }
 
     val currentIsPlaying by rememberUpdatedState(isPlaying)
     Column(
@@ -62,30 +73,16 @@ fun MidiDownRegion(
             .onKeyEvent {
                 if (it.key == Key.Spacebar && it.type == KeyEventType.KeyDown) {
                     onPlayStateChange(!currentIsPlaying)
-                }
-                if (it.type != KeyEventType.KeyDown && it.type != KeyEventType.KeyUp) {
-                    return@onKeyEvent false
-                }
-
-                val userKeys = arrayOf(Key.A, Key.W, Key.S, Key.E, Key.D, Key.F, Key.T, Key.G, Key.Y, Key.H, Key.U, Key.J, Key.K, Key.O, Key.L, Key.P, Key.Semicolon, Key.Apostrophe)
-                val idx = userKeys.indexOf(it.key)
-                if (idx != -1) {
-                    val midiKey = idx + 60
-                    if (it.type == KeyEventType.KeyDown) {
-                        if (!userActiveKeys.contains(midiKey)) {
-                            userActiveKeys[midiKey] = Singleton.settings.keyboardUserInteractionDisplayColor
-                            Singleton.player.pressKey(midiKey, 100)
-                        }
-                    } else {
-                        userActiveKeys.remove(midiKey)
-                        Singleton.player.releaseKey(midiKey)
-                    }
                     return@onKeyEvent true
                 }
                 false
             }
     ) {
         var currentTick by remember { mutableStateOf(0L) }
+//        val animatedTick by animateIntAsState(
+//            targetValue = currentTick.toInt(),
+//            animationSpec = tween(easing = LinearEasing, durationMillis = 300)
+//        )
 
         val hpb by remember { mutableStateOf(120.dp) }
         var deltaYpx by remember { mutableStateOf(0f) }
@@ -122,26 +119,60 @@ fun MidiDownRegion(
         )
         LaunchedEffect(isPlaying) {
             if (isPlaying) {
-                Singleton.player.setMidi(midi)
+//                Singleton.player.setMidi(midi)
                 Singleton.player.onCompleted = { onPlayStateChange(false) }
                 Singleton.player.play()
             }
             else Singleton.player.pause()
         }
-        LaunchedEffect(isPlaying) {
+        LaunchedEffect(isPlaying, midi) {
             while (true) {
                 withFrameMillis {
                     if (deltaYpx != 0f && !isPlaying) {
                         val deltaTick = (deltaYpx * midi.ppq / with(density) { hpb.toPx() }).toLong()
-                        currentTick = Singleton.player.precisTick + deltaTick
+                        currentTick = Singleton.player.preciseTick + deltaTick
                         Singleton.player.seek(currentTick)
                     }
-                    else currentTick = Singleton.player.precisTick
+                    else currentTick = Singleton.player.preciseTick
                     onProgressChange(currentTick / midi.totalTicks.toFloat())
                     deltaYpx = 0f
+//                    if (Singleton.settings.AlwaysFocusMidiRegion) focusRequester.requestFocus()
                 }
             }
         }
+        LaunchedEffect(midi) {
+            Singleton.player.setMidi(midi)
+        }
+        LaunchedEffect(Unit) {
+            midiInputDevice?.clearEvents()
+            focusRequester.requestFocus()
+            Singleton.player.setMidi(midi)
+            while (true) {
+                midiInputDevice?.handle {
+                    Logger.v { "Midi Input: $it" }
+                    when (it) {
+                        is NoteEvent -> {
+                            if (it.on) {
+                                userActiveKeys[it.pitch] = Singleton.settings.KeyboardUserInteractionDisplayColor
+                            } else userActiveKeys.remove(it.pitch)
+                        }
+                    }
+                    Singleton.player.sendShortEvent(it.event)
+                }
+            }
+        }
+//        DisposableEffect(Unit) {
+//            val handler: (KeyEvent) -> Boolean = {
+//                if (it.key == Key.Spacebar && it.type == KeyEventType.KeyDown) {
+//                    onPlayStateChange(!currentIsPlaying)
+//                }
+//                false
+//            }
+//            keyDispatcher?.registerHandler(handler)
+//            onDispose {
+//                keyDispatcher?.unregisterHandler(handler)
+//            }
+//        }
 
         MidiKeyBoard(
             modifier = Modifier
@@ -150,7 +181,7 @@ fun MidiDownRegion(
             midiActiveKey = midiActiveKeys,
             userActiveKey = userActiveKeys,
             onPress = { key, velocity ->
-                userActiveKeys[key] = Singleton.settings.keyboardUserInteractionDisplayColor
+                userActiveKeys[key] = Singleton.settings.KeyboardUserInteractionDisplayColor
                 Singleton.player.pressKey(key, velocity)
             },
             onRelease = { key ->

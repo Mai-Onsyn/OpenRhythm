@@ -49,8 +49,8 @@ kotlin {
             implementation("org.jetbrains.androidx.navigation:navigation-compose:2.9.2")
             implementation("org.jetbrains.compose.ui:ui-backhandler:1.11.1")
 
-            implementation("io.coil-kt.coil3:coil-compose:3.5.0")
-            implementation("io.coil-kt.coil3:coil-svg:3.5.0")
+//            implementation("io.coil-kt.coil3:coil-compose:3.5.0")
+//            implementation("io.coil-kt.coil3:coil-svg:3.5.0")
         }
 
         commonTest.dependencies {

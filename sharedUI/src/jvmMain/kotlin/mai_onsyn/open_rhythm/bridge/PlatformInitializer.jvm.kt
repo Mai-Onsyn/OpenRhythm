@@ -8,7 +8,9 @@ import dev.atsushieno.ktmidi.MidiAccess
 import io.github.vinceglb.filekit.FileKit
 import io.github.vinceglb.filekit.PlatformFile
 import io.github.vinceglb.filekit.dialogs.openDirectoryPicker
+import mai_onsyn.open_rhythm.core.GlobalKeyEventDispatcher
 import java.awt.Cursor
+import java.awt.KeyEventDispatcher
 import java.io.File
 import java.util.*
 
@@ -44,4 +46,9 @@ actual fun createSetting(): Settings {
 
 actual suspend fun FileKit.pickDirectoryWithPermission(): PlatformFile? {
     return FileKit.openDirectoryPicker()
+}
+
+var keyEventDispatcher: GlobalKeyEventDispatcher? = null
+actual fun registerGlobalKeyEventDispatcher(keyEventDispatcher: GlobalKeyEventDispatcher) {
+    mai_onsyn.open_rhythm.bridge.keyEventDispatcher = keyEventDispatcher
 }

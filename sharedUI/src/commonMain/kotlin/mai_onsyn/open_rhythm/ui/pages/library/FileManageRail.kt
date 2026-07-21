@@ -17,6 +17,7 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -226,19 +227,32 @@ fun FileRailItem(
             Spacer(modifier = Modifier.height(16.dp))
 
             val isPlayingState by rememberUpdatedState(isPlaying)
+//            OpacitySurface(
+//                modifier = Modifier.pointerInput(Unit) {
+//                    detectTapGestures(
+//                        onTap = { onPlayButtonClick(!isPlayingState) }
+//                    )
+//                }
+//            ) {
+//                MorphingPlayPauseButton(
+//                    modifier = Modifier.size(24.dp),
+//                    isPlaying = isPlaying,
+//                    fill = MaterialTheme.colorScheme.primary
+//                )
+//            }
             OpacitySurface(
-                modifier = Modifier.pointerInput(Unit) {
-                    detectTapGestures(
-                        onTap = { onPlayButtonClick(!isPlayingState) }
+                contentPadding = 0.dp
+            ) {
+                IconButton(
+                    modifier = Modifier.size(40.dp),
+                    onClick = { onPlayButtonClick(!isPlayingState) }
+                ) {
+                    MorphingPlayPauseButton(
+                        modifier = Modifier.size(24.dp),
+                        isPlaying = isPlaying,
+                        fill = MaterialTheme.colorScheme.primary
                     )
                 }
-            ) {
-                MorphingPlayPauseButton(
-                    modifier = Modifier.size(24.dp),
-                    isPlaying = isPlaying,
-                    onToggle = onPlayButtonClick,
-                    fill = MaterialTheme.colorScheme.primary
-                )
             }
         }
     }

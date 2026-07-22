@@ -122,7 +122,7 @@ fun FileManageRail(
             }
             DisposableEffect(Unit) {
                 onDispose {
-                    Singleton.player.stop()
+                    if (isPlaying) Singleton.player.stop()
                 }
             }
             LazyColumn(

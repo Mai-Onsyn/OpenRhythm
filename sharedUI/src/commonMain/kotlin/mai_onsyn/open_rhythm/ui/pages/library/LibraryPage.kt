@@ -39,14 +39,80 @@ fun LibraryPage(
     BackHandler { onBack() }
 
     Box(Modifier.safeDrawingPadding()) {
-        AnimatedContent(
-            targetState = useWideLayout,
-            transitionSpec = {
-                fadeIn() togetherWith fadeOut()
+        var selectedFolderIndex by remember { mutableStateOf(0) }
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(32.dp)
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+                    .padding(start = 16.dp)
+            ) {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text(
+                        text = "MIDI Library",
+                        style = MaterialTheme.typography.headlineMedium
+                    )
+                    Text(
+                        text = "Manage your MIDI folders and files",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+                Spacer(Modifier.weight(1f))
+
+                var showNewFolderPopup by remember { mutableStateOf(false) }
+                var newFolderName by remember { mutableStateOf("") }
+                var newFolderDir by remember { mutableStateOf("") }
+                Button(
+                    onClick = {
+                        val scope = CoroutineScope(Dispatchers.Default)
+                        scope.launch {
+                            FileKit.pickDirectoryWithPermission()?.let {
+                                newFolderName = it.nameWithoutExtension
+                                newFolderDir = it.absolutePath()
+                                showNewFolderPopup = true
+                            }
+                        }
+                    },
+                    shape = MaterialTheme.shapes.small,
+                    modifier = Modifier.pointerHoverIcon(PointerIcon.Hand)
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Icon(
+                            imageVector = ic_add,
+                            contentDescription = "Add Folder",
+                            modifier = Modifier
+                                .size(24.dp)
+                        )
+                        Text(
+                            text = "Add Folder",
+                            style = MaterialTheme.typography.labelLarge
+                        )
+                    }
+                }
+                SingleLineInputDialog(
+                    visible = showNewFolderPopup,
+                    value = newFolderName,
+                    onDismiss = { showNewFolderPopup = false },
+                    title = "Name for this New Folder",
+                    onConfirm = {
+                        newFolderName = it
+                        Singleton.settings.libraryFolderList.add(UILibraryFolder(newFolderName, newFolderDir))
+                        showNewFolderPopup = false
+                    }
+                )
             }
-        ) { wide ->
-            if (wide) WideLayout(onEnterPlayMidiScreen)
-            else WideLayout(onEnterPlayMidiScreen)
+            HorizontalDivider(Modifier.padding(vertical = 24.dp))
+
+            if (useWideLayout) {
+                WideLayout(onEnterPlayMidiScreen, selectedFolderIndex) { selectedFolderIndex = it }
+            } else NarrowLayout(onEnterPlayMidiScreen, selectedFolderIndex) { selectedFolderIndex = it }
         }
 
         Box(Modifier.padding(top = 8.dp, start = 8.dp)) {
@@ -59,7 +125,7 @@ fun LibraryPage(
                 Icon(
                     imageVector = ic_arrow_back,
                     contentDescription = "Back",
-                    modifier = Modifier.size(24.dp)
+                    modifier = Modifier.size(24.dp).pointerHoverIcon(PointerIcon.Hand)
                 )
             }
         }
@@ -68,164 +134,137 @@ fun LibraryPage(
 
 @Composable
 private fun WideLayout(
-    onEnterPlayMidiScreen: (MidiPlayMethod) -> Unit
+    onEnterPlayMidiScreen: (MidiPlayMethod) -> Unit,
+    selectedFolderIndex: Int,
+    onSelect: (Int) -> Unit
 ) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(32.dp)
-    ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
+    Row {
+        FolderRail(
             modifier = Modifier
-                .padding(start = 16.dp)
-        ) {
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text(
-                    text = "MIDI Library",
-                    style = MaterialTheme.typography.headlineMedium
-                )
-                Text(
-                    text = "Manage your MIDI folders and files",
-                    style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-            Spacer(Modifier.weight(1f))
-
-            var showNewFolderPopup by remember { mutableStateOf(false) }
-            var newFolderName by remember { mutableStateOf("") }
-            var newFolderDir by remember { mutableStateOf("") }
-            Button(
-                onClick = {
-                    val scope = CoroutineScope(Dispatchers.Default)
-                    scope.launch {
-                        FileKit.pickDirectoryWithPermission()?.let {
-                            newFolderName = it.nameWithoutExtension
-                            newFolderDir = it.absolutePath()
-                            showNewFolderPopup = true
-                        }
-                    }
-                },
-                shape = MaterialTheme.shapes.small,
-                modifier = Modifier.pointerHoverIcon(PointerIcon.Hand)
-            ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    Icon(
-                        imageVector = ic_add,
-                        contentDescription = "Add Folder",
-                        modifier = Modifier
-                            .size(24.dp)
-                    )
-                    Text(
-                        text = "Add Folder",
-                        style = MaterialTheme.typography.labelLarge
-                    )
-                }
-            }
-            SingleLineInputDialog(
-                visible = showNewFolderPopup,
-                value = newFolderName,
-                onDismiss = { showNewFolderPopup = false },
-                title = "Name for this New Folder",
-                onConfirm = {
-                    newFolderName = it
-                    Singleton.settings.libraryFolderList.add(UILibraryFolder(newFolderName, newFolderDir))
-                    showNewFolderPopup = false
-                }
-            )
-        }
-        HorizontalDivider(Modifier.padding(vertical = 24.dp))
-
-        var selectedFolderIndex by remember { mutableStateOf(0) }
-        Row {
-            Column(
-                modifier = Modifier
-                    .fillMaxHeight()
-                    .weight(0.4f)
-            ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    Text(
-                        text = "Library Folders",
-                        style = MaterialTheme.typography.titleMedium
-                    )
-
-                    OpacitySurface(contentPadding = 2.dp) {
-                        Text(
-                            text = Singleton.settings.libraryFolderList.size.toString(),
-                            style = MaterialTheme.typography.bodyMedium
-                        )
-                    }
-                }
-                Spacer(Modifier.height(16.dp))
-                FolderManageRail(
-                    modifier = Modifier,
-                    items = Singleton.settings.libraryFolderList,
-                    selectedIndex = selectedFolderIndex,
-                    onSelect = { selectedFolderIndex = it },
-                    onChange = { index, newValue ->
-                        Singleton.settings.libraryFolderList[index] = newValue
-                    },
-                    onDelete = {
-                        (Singleton.settings.libraryFolderList.size - 1).let { maxIdx ->
-                            if (selectedFolderIndex > maxIdx) {
-                                selectedFolderIndex = maxIdx
-                            }
-                        }
-                        Singleton.settings.libraryFolderList.removeAt(it)
-                    }
-                )
-            }
-
-            VerticalDivider(Modifier.padding(horizontal = 24.dp))
-            Column(
-                modifier = Modifier
-                    .fillMaxHeight()
-                    .weight(0.6f)
-            ) {
-                var fileCount by remember { mutableStateOf(0) }
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    Text(
-                        text = "Midi Files",
-                        style = MaterialTheme.typography.titleMedium
-                    )
-
-                    OpacitySurface(contentPadding = 2.dp) {
-                        Text(
-                            text = fileCount.toString(),
-                            style = MaterialTheme.typography.bodyMedium
-                        )
-                    }
-                }
-                Spacer(Modifier.height(16.dp))
-                FileManageRail(
-                    modifier = Modifier.fillMaxSize(),
-                    path = Singleton.settings.libraryFolderList.let {
-                        if (it.isEmpty()) ""
-                        else it[min(selectedFolderIndex, it.size - 1)].dir
-                    },
-                    onFileCountAvailable = { fileCount = it },
-                    onConfirm = onEnterPlayMidiScreen
-                )
-            }
-        }
+                .fillMaxHeight()
+                .weight(0.4f),
+            selectedFolderIndex,
+            onSelect = onSelect
+        )
+        VerticalDivider(Modifier.padding(horizontal = 24.dp))
+        FileRail(
+            Modifier
+                .fillMaxHeight()
+                .weight(0.6f),
+            selectedFolderIndex,
+            onEnterPlayMidiScreen
+        )
     }
 }
 
 @Composable
 private fun NarrowLayout(
+    onEnterPlayMidiScreen: (MidiPlayMethod) -> Unit,
+    selectedFolderIndex: Int,
+    onSelect: (Int) -> Unit
+) {
+    Column {
+        FolderRail(
+            modifier = Modifier
+                .fillMaxWidth()
+                .weight(0.4f),
+            selectedFolderIndex,
+            onSelect = onSelect
+        )
+        HorizontalDivider(Modifier.padding(vertical = 24.dp))
+        FileRail(
+            Modifier
+                .fillMaxWidth()
+                .weight(0.6f),
+            selectedFolderIndex,
+            onEnterPlayMidiScreen
+        )
+    }
+}
+
+@Composable
+private fun FolderRail(
+    modifier: Modifier,
+    selectedFolderIndex: Int,
+    onSelect: (Int) -> Unit
+) {
+    Column(
+        modifier = modifier
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Text(
+                text = "Library Folders",
+                style = MaterialTheme.typography.titleMedium
+            )
+
+            OpacitySurface(contentPadding = 2.dp) {
+                Text(
+                    text = Singleton.settings.libraryFolderList.size.toString(),
+                    style = MaterialTheme.typography.bodyMedium
+                )
+            }
+        }
+        Spacer(Modifier.height(16.dp))
+        FolderManageRail(
+            modifier = Modifier,
+            items = Singleton.settings.libraryFolderList,
+            selectedIndex = selectedFolderIndex,
+            onSelect = onSelect,
+            onChange = { index, newValue ->
+                Singleton.settings.libraryFolderList[index] = newValue
+            },
+            onDelete = {
+                (Singleton.settings.libraryFolderList.size - 1).let { maxIdx ->
+                    if (selectedFolderIndex > maxIdx) {
+                        onSelect(maxIdx)
+                    }
+                }
+                Singleton.settings.libraryFolderList.removeAt(it)
+            }
+        )
+    }
+}
+
+@Composable
+private fun FileRail(
+    modifier: Modifier,
+    selectedFolderIndex: Int,
     onEnterPlayMidiScreen: (MidiPlayMethod) -> Unit
 ) {
+    Column(
+        modifier = modifier
+    ) {
+        var fileCount by remember { mutableStateOf(0) }
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Text(
+                text = "Midi Files",
+                style = MaterialTheme.typography.titleMedium
+            )
 
+            OpacitySurface(contentPadding = 2.dp) {
+                Text(
+                    text = fileCount.toString(),
+                    style = MaterialTheme.typography.bodyMedium
+                )
+            }
+        }
+        Spacer(Modifier.height(16.dp))
+        FileManageRail(
+            modifier = Modifier.fillMaxSize(),
+            path = Singleton.settings.libraryFolderList.let {
+                if (it.isEmpty()) ""
+                else it[min(selectedFolderIndex, it.size - 1)].dir
+            },
+            onFileCountAvailable = { fileCount = it },
+            onConfirm = onEnterPlayMidiScreen
+        )
+    }
 }
 
 @Serializable

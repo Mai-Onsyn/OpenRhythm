@@ -57,7 +57,7 @@ fun AppNavigation(
         NavHost(
             modifier = Modifier.fillMaxSize(),
             navController = navController,
-            startDestination = Library
+            startDestination = Setting
         ) {
             composable<Home>() {
                 HomePage(
@@ -73,7 +73,7 @@ fun AppNavigation(
                 if (!navController.popBackStack())
                     navController.navigate(Home)
             }
-            composable<Library>() {
+            composable<Library> {
                 LibraryPage(
                     maxWidth > 600.dp,
                     onBack,
@@ -101,6 +101,7 @@ fun AppNavigation(
 
             composable<Setting> {
                 SettingsPage(
+                    maxWidth > 600.dp,
                     onBack
                 )
             }

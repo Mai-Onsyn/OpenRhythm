@@ -1,5 +1,6 @@
 package mai_onsyn.open_rhythm.bridge
 
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -20,12 +21,49 @@ import kotlin.reflect.KProperty
 class UserSetting(
     st: Settings
 ) {
-    var KeyboardAutoAspect by st.boolean("KeyBoardAutoAspect", true)
-    var KeyboardAspectRatio by st.float("KeyBoardAspectRatio", 8f)
-    var KeyboardUserInteractionDisplayColor by st.color("KeyboardUserInteractionDisplayColor", Color(138, 226, 52))
-    var AlwaysFocusMidiRegion by st.boolean("AlwaysFocusMidiRegion", true)
+    var DarkMode by st.observable("DarkMode", 2)  // 0 = light; 1 = dark; 2 = system default
+    var KeyboardAutoAspect by st.observable("KeyBoardAutoAspect", true)
+    var KeyboardAspectRatio by st.observable("KeyBoardAspectRatio", 8f)
+    var KeyboardUserInteractionDisplayColor by st.observable("KeyboardUserInteractionDisplayColor", Color(138, 226, 52))
 
     val libraryFolderList by st.list("LibraryFolderList", mutableListOf(), UILibraryFolder.serializer())
+}
+
+inline fun <reified T> Settings.observable(
+    key: String,
+    default: T
+): MutableState<T> {
+    @Suppress("UNCHECKED_CAST")
+    val initialValue = when (default) {
+        is Int -> getInt(key, default)
+        is Long -> getLong(key, default)
+        is String -> getString(key, default)
+        is Boolean -> getBoolean(key, default)
+        is Float -> getFloat(key, default)
+        is Double -> getDouble(key, default)
+        is Color -> Color(getInt(key, default.toArgb()))
+        else -> error("Unsupported type: ${default!!::class}")
+    } as T
+
+    val state = mutableStateOf(initialValue)
+
+    return object : MutableState<T> by state {
+        override var value: T
+            get() = state.value
+            set(newValue) {
+                state.value = newValue
+                when (newValue) {
+                    is Int -> putInt(key, newValue)
+                    is Long -> putLong(key, newValue)
+                    is String -> putString(key, newValue)
+                    is Boolean -> putBoolean(key, newValue)
+                    is Float -> putFloat(key, newValue)
+                    is Double -> putDouble(key, newValue)
+                    is Color -> putInt(key, newValue.toArgb())
+                    else -> error("Unsupported type for setting: ${newValue!!::class}")
+                }
+            }
+    }
 }
 
 fun Settings.color(

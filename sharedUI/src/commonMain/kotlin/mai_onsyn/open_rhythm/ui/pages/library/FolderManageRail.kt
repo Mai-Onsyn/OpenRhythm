@@ -33,6 +33,8 @@ import mai_onsyn.open_rhythm.ui.icons.ic_folder
 import mai_onsyn.open_rhythm.ui.icons.ic_folder_eye
 import mai_onsyn.open_rhythm.ui.icons.ic_more_vert
 import mai_onsyn.open_rhythm.ui.icons.ic_unknown
+import mai_onsyn.open_rhythm.ui.modules.ContextDropDownMenuItem
+import mai_onsyn.open_rhythm.ui.modules.ContextDropdownMenu
 import mai_onsyn.open_rhythm.ui.modules.OpacitySurface
 import mai_onsyn.open_rhythm.ui.modules.dialog.ConfirmDialog
 import mai_onsyn.open_rhythm.ui.modules.dialog.SingleLineInputDialog
@@ -48,6 +50,7 @@ fun FolderManageRail(
     onDelete: (Int) -> Unit
 ) {
     val scrollState = rememberScrollState()
+    val colorScheme = MaterialTheme.colorScheme
     Column(
         modifier = modifier
             .verticalScroll(scrollState),
@@ -55,13 +58,13 @@ fun FolderManageRail(
     ) {
         items.forEachIndexed { index, item ->
             val bgColor by animateColorAsState(
-                targetValue = if (selectedIndex == index) MaterialTheme.colorScheme.primary.copy(alpha = 0.12f)
-                else MaterialTheme.colorScheme.primary.copy(alpha = 0f)
+                targetValue = if (selectedIndex == index) colorScheme.primary.copy(alpha = 0.12f)
+                else colorScheme.primary.copy(alpha = 0f)
             )
             Surface(
                 onClick = { onSelect(index) },
                 color = bgColor,
-                contentColor = MaterialTheme.colorScheme.onSurface,
+                contentColor = colorScheme.onSurface,
                 shape = MaterialTheme.shapes.medium,
                 modifier = Modifier
                     .pointerHoverIcon(PointerIcon.Hand)
@@ -96,7 +99,7 @@ fun FolderManageRail(
                         Text(
                             text = item.dir,
                             style = MaterialTheme.typography.labelMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            color = colorScheme.onSurfaceVariant,
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis
                         )
@@ -105,7 +108,7 @@ fun FolderManageRail(
                     Text(
                         text = "$fileCount files",
                         style = MaterialTheme.typography.labelMedium,
-                        color = MaterialTheme.colorScheme.primary,
+                        color = colorScheme.primary,
                         fontWeight = FontWeight.Bold
                     )
                     suspend fun loadFileCount() = withContext(Dispatchers.IO) {
@@ -121,9 +124,34 @@ fun FolderManageRail(
                         loadFileCount()
                     }
 
-                    Box {
-                        var expanded by remember { mutableStateOf(false) }
-                        var iconRegionWidth by remember { mutableStateOf(0) }
+
+                    var showRenameDialog by remember { mutableStateOf(false) }
+                    var showPathInfoDialog by remember { mutableStateOf(false) }
+                    var showDeleteConfirmDialog by remember { mutableStateOf(false) }
+
+                    val contextMenuItems = remember {
+                        listOf(
+                            ContextDropDownMenuItem("Rename", ic_edit_square),
+                            ContextDropDownMenuItem("Show Path", ic_folder_eye),
+                            ContextDropDownMenuItem("Delete", ic_delete, contentColor = colorScheme.error)
+                        )
+                    }
+                    var selectedIndex by remember { mutableStateOf(selectedIndex) }
+                    var expanded by remember { mutableStateOf(false) }
+                    ContextDropdownMenu(
+                        expanded = expanded,
+                        onDismissRequest = { expanded = false },
+                        selectedIndex = selectedIndex,
+                        onSelect = {
+                            selectedIndex = it
+                            when (it) {
+                                0 -> showRenameDialog = true
+                                1 -> showPathInfoDialog = true
+                                2 -> showDeleteConfirmDialog = true
+                            }
+                        },
+                        items = contextMenuItems
+                    ) {
                         IconButton(
                             onClick = { expanded = true },
                             shape = MaterialTheme.shapes.small,
@@ -132,110 +160,46 @@ fun FolderManageRail(
                             Icon(
                                 imageVector = ic_more_vert,
                                 contentDescription = "Operations for ${item.name}",
-                                tint = MaterialTheme.colorScheme.onSurfaceVariant
+                                tint = colorScheme.onSurfaceVariant
                             )
                         }
-
-                        var showRenameDialog by remember { mutableStateOf(false) }
-                        var showDeleteConfirmDialog by remember { mutableStateOf(false) }
-                        var showPathInfoDialog by remember { mutableStateOf(false) }
-
-                        DropdownMenu(
-                            expanded = expanded,
-                            onDismissRequest = { expanded = false },
-                            modifier = Modifier.onSizeChanged { iconRegionWidth = it.width },
-                            offset = DpOffset(with(LocalDensity.current) { (-iconRegionWidth).toDp() + 24.dp }, 0.dp),
-                        ) {
-                            DropDownContextItem(
-                                text = "Rename",
-                                onClick = {
-                                    expanded = false
-                                    showRenameDialog = true
-                                },
-                                icon = ic_edit_square
-                            )
-                            DropDownContextItem(
-                                text = "Show Path",
-                                onClick = {
-                                    expanded = false
-                                    showPathInfoDialog = true
-                                },
-                                icon = ic_folder_eye
-                            )
-                            DropDownContextItem(
-                                text = "Delete",
-                                onClick = {
-                                    expanded = false
-                                    showDeleteConfirmDialog = true
-                                },
-                                icon = ic_delete,
-                                color = MaterialTheme.colorScheme.error
-                            )
-                        }
-
-                        SingleLineInputDialog(
-                            visible = showRenameDialog,
-                            title = "Rename",
-                            value = item.name,
-                            icon = ic_edit_square,
-                            placeholderText = "Input a new name",
-                            errorHolderText = "Name can't be empty",
-                            onDismiss = { showRenameDialog = false },
-                            onConfirm = {
-                                showRenameDialog = false
-                                onChange(index, item.copy(name = it))
-                            }
-                        )
-
-                        ConfirmDialog(
-                            visible = showPathInfoDialog,
-                            onDismiss = { showPathInfoDialog = false },
-                            onConfirm = { showPathInfoDialog = false },
-                            title = "Path of ${item.name}",
-                            message = item.dir
-                        )
-
-                        ConfirmDialog(
-                            visible = showDeleteConfirmDialog,
-                            onDismiss = { showDeleteConfirmDialog = false },
-                            onConfirm = {
-                                showDeleteConfirmDialog = false
-                                onDelete(index)
-                            },
-                            title = "Delete ${item.name}?",
-                            isDangerous = true,
-                            message = "Are you sure you want to delete this folder? \n(This won't delete the file on your device.)",
-                        )
                     }
+
+                    SingleLineInputDialog(
+                        visible = showRenameDialog,
+                        title = "Rename",
+                        value = item.name,
+                        icon = ic_edit_square,
+                        placeholderText = "Input a new name",
+                        errorHolderText = "Name can't be empty",
+                        onDismiss = { showRenameDialog = false },
+                        onConfirm = {
+                            showRenameDialog = false
+                            onChange(index, item.copy(name = it))
+                        }
+                    )
+
+                    ConfirmDialog(
+                        visible = showPathInfoDialog,
+                        onDismiss = { showPathInfoDialog = false },
+                        onConfirm = { showPathInfoDialog = false },
+                        title = "Path of ${item.name}",
+                        message = item.dir
+                    )
+
+                    ConfirmDialog(
+                        visible = showDeleteConfirmDialog,
+                        onDismiss = { showDeleteConfirmDialog = false },
+                        onConfirm = {
+                            showDeleteConfirmDialog = false
+                            onDelete(index)
+                        },
+                        title = "Delete ${item.name}?",
+                        isDangerous = true,
+                        message = "Are you sure you want to delete this folder? \n(This won't delete the file on your device.)",
+                    )
                 }
             }
         }
     }
-}
-
-@OptIn(ExperimentalMaterial3ExpressiveApi::class)
-@Composable
-private fun DropDownContextItem(
-    text: String,
-    onClick: () -> Unit,
-    icon: ImageVector,
-    color: Color = MaterialTheme.colorScheme.onSurface
-) {
-    DropdownMenuItem(
-        modifier = Modifier.pointerHoverIcon(PointerIcon.Hand),
-        text = {
-            Text(
-                text = text,
-                style = MaterialTheme.typography.labelMedium)
-        },
-        onClick = onClick,
-        shape = MaterialTheme.shapes.small,
-        leadingIcon = {
-            Icon(icon, contentDescription = null, modifier = Modifier.size(18.dp))
-        },
-        colors = MenuDefaults.itemColors(
-            textColor = color,
-            leadingIconColor = color
-        )
-    )
 }

@@ -11,8 +11,9 @@ import mai_onsyn.open_rhythm.core.midi.device.KeyboardVirtualMidiInputDevice
 import mai_onsyn.open_rhythm.core.midi.device.MidiInputDevice
 
 object Singleton {
-    val player: MidiPlayer = createMidiPlayer(getMidiAccess())
     val settings: UserSetting = UserSetting(createSetting())
+    val midiAccess = getMidiAccess()
+    val player: MidiPlayer = createMidiPlayer(midiAccess)
     val globalKeyEventDispatcher: GlobalKeyEventDispatcher = GlobalKeyEventDispatcher()
 
     val midiInputDevices: MutableMap<String, MidiInputDevice> = mutableMapOf()
@@ -32,11 +33,13 @@ private fun createMidiPlayer(access: MidiAccess): MidiPlayer {
 
     outputs.firstOrNull { it.name?.contains("Microsoft") ?: false }?.let {
         Logger.i { "Use Midi device ${it.name}" }
+        Singleton.settings.SelectedOutputDeviceName = it.name ?: "Unknown Device"
         return MidiPlayer(runBlocking { access.openOutput(it.id) })
     }
 
     outputs.firstOrNull()?.let {
         Logger.i { "Use Midi device ${it.name}" }
+        Singleton.settings.SelectedOutputDeviceName = it.name ?: "Unknown Device"
         return MidiPlayer(runBlocking { access.openOutput(it.id) })
     }
 

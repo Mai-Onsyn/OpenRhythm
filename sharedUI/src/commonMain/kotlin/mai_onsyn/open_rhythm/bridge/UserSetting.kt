@@ -28,6 +28,20 @@ class UserSetting(
     var DoubleClickToPlayPause by st.observable("DoubleClickToPlayPause", false)
     var DoubleFingerTapToPlayPause by st.observable("DoubleFingerTapToPlayPause", true)
 
+    // =====MIDI Input=====
+    var SelectedInputDeviceName by st.observable("SelectedInputDeviceName", "")
+    var EnableInputMidiNoteEvent by st.observable("EnableInputMidiNoteEvent", true)
+    var EnableInputMidiCCEvent by st.observable("EnableInputMidiCCEvent", true)
+    var EnableInputMidiPCEvent by st.observable("EnableInputMidiPCEvent", true)
+    var EnableInputMidiPBEvent by st.observable("EnableInputMidiPCBEvent", true)
+
+    // =====MIDI Output=====
+    var SelectedOutputDeviceName by st.observable("SelectedOutputDeviceName", "")
+    var EnableOutputMidiNoteEvent by st.observable("EnableOutputMidiNoteEvent", true)
+    var EnableOutputMidiCCEvent by st.observable("EnableOutputMidiCCEvent", true)
+    var EnableOutputMidiPCEvent by st.observable("EnableOutputMidiPCBEvent", true)
+    var EnableOutputMidiPBEvent by st.observable("EnableOutputMidiPCBEvent", true)
+
     // =====Keyboard Appearance=====
     var KeyboardAutoAspect by st.observable("KeyBoardAutoAspect", true)
     var KeyboardAspectRatio by st.observable("KeyBoardAspectRatio", 8f)

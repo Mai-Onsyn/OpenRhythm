@@ -7,8 +7,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import com.russhwolf.settings.Settings
-import com.russhwolf.settings.boolean
-import com.russhwolf.settings.float
 import com.russhwolf.settings.int
 import com.russhwolf.settings.string
 import kotlinx.serialization.KSerializer
@@ -21,11 +19,21 @@ import kotlin.reflect.KProperty
 class UserSetting(
     st: Settings
 ) {
+    // =====General Appearance=====
     var DarkMode by st.observable("DarkMode", 2)  // 0 = light; 1 = dark; 2 = system default
+    var PrimarySeedColor by st.observable("PrimarySeedColor", Color(0xFF485F84))
+    var UserSpecifiedPrimarySeedColor by st.observable("UserSpecifiedPrimarySeedColor", Color(0xFFCD20ED))
+
+    // =====General Interaction=====
+    var DoubleClickToPlayPause by st.observable("DoubleClickToPlayPause", false)
+    var DoubleFingerTapToPlayPause by st.observable("DoubleFingerTapToPlayPause", true)
+
+    // =====Keyboard Appearance=====
     var KeyboardAutoAspect by st.observable("KeyBoardAutoAspect", true)
     var KeyboardAspectRatio by st.observable("KeyBoardAspectRatio", 8f)
     var KeyboardUserInteractionDisplayColor by st.observable("KeyboardUserInteractionDisplayColor", Color(138, 226, 52))
 
+    // =====User Data=====
     val libraryFolderList by st.list("LibraryFolderList", mutableListOf(), UILibraryFolder.serializer())
 }
 

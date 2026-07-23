@@ -48,6 +48,8 @@ kotlin {
 
             implementation("org.jetbrains.androidx.navigation:navigation-compose:2.9.2")
             implementation("org.jetbrains.compose.ui:ui-backhandler:1.11.1")
+
+            implementation("com.materialkolor:material-kolor:4.1.1")
         }
 
         commonTest.dependencies {

@@ -6,6 +6,7 @@ import androidx.compose.animation.core.animateIntAsState
 import androidx.compose.animation.core.animateValueAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.focusable
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -98,18 +99,30 @@ fun MidiDownRegion(
                             for (change in event.changes) {
                                 if (change.pressed) {
                                     focusRequester.requestFocus()
-//                                    Logger.d { "Waterfall request focus" }
                                     break
                                 }
                             }
 
-                            if (event.changes.size == 2 && event.changes.first().pressed && event.changes.last().pressed) {
-                                Logger.i { "Double Click Toggle to ${!currentIsPlaying}" }
-                                onPlayStateChange(!currentIsPlaying)
+                            if (Singleton.settings.DoubleFingerTapToPlayPause) {
+                                if (event.changes.size == 2 && event.changes.first().pressed && event.changes.last().pressed) {
+                                    Logger.i { "Double Click Toggle to ${!currentIsPlaying}" }
+                                    onPlayStateChange(!currentIsPlaying)
+                                }
                             }
                         }
                     }
-                },
+                }
+                .then(
+                    if (Singleton.settings.DoubleClickToPlayPause)
+                        Modifier.pointerInput(Unit) {
+                            detectTapGestures(
+                                onDoubleTap = {
+                                    onPlayStateChange(!currentIsPlaying)
+                                }
+                            )
+                        }
+                    else Modifier
+                ),
             trackColors = trackColors,
             currTick = currentTick,
             midi = midi,

@@ -67,7 +67,7 @@ fun ChoiceColumn(
     ) {
         choices.forEachIndexed { index, (name, icon) ->
             val selectedContentColor by animateColorAsState(
-                targetValue = if (selectedIndex == index) colorScheme.primary else colorScheme.onSurface,
+                targetValue = if (selectedIndex == index) colorScheme.onPrimaryContainer else colorScheme.onSurface,
                 animationSpec = tween(easing = LinearOutSlowInEasing)
             )
             Surface(

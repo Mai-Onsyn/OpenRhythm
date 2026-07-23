@@ -1,31 +1,61 @@
 package mai_onsyn.open_rhythm.ui.pages.setting
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.input.pointer.PointerIcon
+import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 
-class SettingsCardScope(private val isFirstItem: MutableState<Boolean>) {
+data class SettingItem(
+    val name: String,
+    val description: String?,
+    val content: @Composable () -> Unit
+)
+
+class SettingsCardScope {
+    private val items = mutableListOf<SettingItem>()
+
     @Composable
     fun item(
         name: String,
         description: String? = null,
         content: @Composable () -> Unit
     ) {
-        if (!isFirstItem.value) {
-            HorizontalDivider()
-        }
-        isFirstItem.value = false
-
-        SettingItemRow(name, description, content)
+        items.add(SettingItem(name, description, content))
     }
+
+    @Composable
+    fun itemWithSwitch(
+        name: String,
+        description: String? = null,
+        initial: Boolean = false,
+        onToggled: (Boolean) -> Unit
+    ) {
+        item(name, description) {
+            var checked by remember { mutableStateOf(initial) }
+            Switch(
+                checked = checked,
+                onCheckedChange = {
+                    checked = it
+                    onToggled(it)
+                },
+                modifier = Modifier.pointerHoverIcon(PointerIcon.Hand)
+            )
+        }
+    }
+
+    internal fun clear() = items.clear()
+    internal fun getItems(): List<SettingItem> = items.toList()
 }
 
 @Composable
@@ -64,9 +94,17 @@ fun SettingsCard(
                 contentColor = MaterialTheme.colorScheme.onSurface
             )
         ) {
-            val isFirstItem = remember { mutableStateOf(true) }
-            val scope = remember { SettingsCardScope(isFirstItem) }
+            val scope = remember { SettingsCardScope() }
+            scope.clear()
             scope.content()
+            val items = scope.getItems()
+
+            items.forEachIndexed { index, item ->
+                if (index > 0) {
+                    HorizontalDivider()
+                }
+                SettingItemRow(item.name, item.description, item.content)
+            }
         }
     }
 }

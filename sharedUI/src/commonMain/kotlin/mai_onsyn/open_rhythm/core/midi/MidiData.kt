@@ -146,6 +146,18 @@ open class MidiEvent(
     }
 
     override fun toString(): String = "MidiEvent(tick=$tick, event=${event.contentToString()}, channel=$channel)"
+
+    companion object {
+        fun parse(tick: Long, event: ByteArray): MidiEvent {
+            return when (event[0].toInt() and 0xF0) {
+                0x80, 0x90 -> NoteEvent(tick, event)
+                0xB0       -> MidiCCEvent(tick, event)
+                0xC0       -> MidiPCEvent(tick, event)
+                0xE0       -> MidiPBEvent(tick, event)
+                else       -> MidiEvent(tick, event)
+            }
+        }
+    }
 }
 
 class MidiCCEvent(

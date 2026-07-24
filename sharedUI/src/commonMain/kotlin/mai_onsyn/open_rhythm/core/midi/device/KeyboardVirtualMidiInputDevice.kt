@@ -1,6 +1,7 @@
 package mai_onsyn.open_rhythm.core.midi.device
 
 import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEvent
 import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.type
@@ -12,26 +13,25 @@ import mai_onsyn.open_rhythm.core.midi.MidiEvent
 import mai_onsyn.open_rhythm.core.midi.NoteEvent
 
 class KeyboardVirtualMidiInputDevice(
-    keyInput: GlobalKeyEventDispatcher
+    private val keyInput: GlobalKeyEventDispatcher
 ) : MidiInputDevice {
     private val eventChannel = Channel<MidiEvent>(128, BufferOverflow.DROP_OLDEST)
     private val userKeys = arrayOf(Key.A, Key.W, Key.S, Key.E, Key.D, Key.F, Key.T, Key.G, Key.Y, Key.H, Key.U, Key.J, Key.K, Key.O, Key.L, Key.P, Key.Semicolon, Key.Apostrophe)
-    init {
-        keyInput.registerHandler { keyEvent ->
-//            Logger.d { "KeyboardMidiInputDevice: received keyEvent $keyEvent" }
-            val idx = userKeys.indexOf(keyEvent.key)
-            if (idx != -1) {
-                val midiKey = idx + 60
-                if (keyEvent.type == KeyEventType.KeyDown) {
-                    eventChannel.send(NoteEvent.noteOn(0, midiKey, 100, 0))
-                } else {
-                    eventChannel.send(NoteEvent.noteOff(0, midiKey, 0, 0))
-                }
-                return@registerHandler true
-            }
 
-            false
-        }
+    private val handler: suspend (KeyEvent) -> Boolean = { keyEvent ->
+        val idx = userKeys.indexOf(keyEvent.key)
+        if (idx != -1) {
+            val midiKey = idx + 60
+            if (keyEvent.type == KeyEventType.KeyDown) {
+                eventChannel.send(NoteEvent.noteOn(0, midiKey, 100, 0))
+            } else {
+                eventChannel.send(NoteEvent.noteOff(0, midiKey, 0, 0))
+            }
+            true
+        } else false
+    }
+    init {
+        keyInput.registerHandler(handler)
     }
 
     override suspend fun clearEvents() {
@@ -39,6 +39,11 @@ class KeyboardVirtualMidiInputDevice(
             val result = eventChannel.tryReceive()
             if (result.isClosed || result.isFailure) break
         }
+    }
+
+    override suspend fun close() {
+        keyInput.unregisterHandler(handler)
+        eventChannel.close()
     }
 
     override suspend fun handle(handler: (MidiEvent) -> Unit) {

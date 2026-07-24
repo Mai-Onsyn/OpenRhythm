@@ -12,7 +12,14 @@ import androidx.compose.ui.input.pointer.pointerHoverIcon
 @Composable
 fun PrimaryOperationButton(
     title: String,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+) = PrimaryOperationButton(Modifier, title, onClick)
+
+@Composable
+fun PrimaryOperationButton(
+    modifier: Modifier = Modifier,
+    title: String,
+    onClick: () -> Unit,
 ) {
     Button(
         onClick = onClick,
@@ -21,7 +28,7 @@ fun PrimaryOperationButton(
             containerColor = MaterialTheme.colorScheme.primary,
             contentColor = MaterialTheme.colorScheme.onPrimary
         ),
-        modifier = Modifier.pointerHoverIcon(PointerIcon.Hand)
+        modifier = modifier.pointerHoverIcon(PointerIcon.Hand)
     ) {
         Text(
             text = title,

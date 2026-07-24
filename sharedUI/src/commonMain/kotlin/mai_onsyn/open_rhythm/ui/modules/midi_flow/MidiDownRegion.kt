@@ -25,6 +25,9 @@ import co.touchlab.kermit.Logger
 import mai_onsyn.open_rhythm.bridge.Singleton
 import mai_onsyn.open_rhythm.core.GlobalKeyEventDispatcher
 import mai_onsyn.open_rhythm.core.midi.Midi
+import mai_onsyn.open_rhythm.core.midi.MidiCCEvent
+import mai_onsyn.open_rhythm.core.midi.MidiPBEvent
+import mai_onsyn.open_rhythm.core.midi.MidiPCEvent
 import mai_onsyn.open_rhythm.core.midi.NoteEvent
 import mai_onsyn.open_rhythm.core.midi.device.MidiInputDevice
 
@@ -39,7 +42,7 @@ fun MidiDownRegion(
     onProgressChange: (Float) -> Unit = {},
     focusRequester: FocusRequester? = null,
     keyDispatcher: GlobalKeyEventDispatcher? = null,
-    midiInputDevice: MidiInputDevice? = null
+//    midiInputDevice: MidiInputDevice? = null
 ) {
     val density = LocalDensity.current
 
@@ -157,20 +160,40 @@ fun MidiDownRegion(
             Singleton.player.setMidi(midi)
         }
         LaunchedEffect(Unit) {
-            midiInputDevice?.clearEvents()
+//            midiInputDevice?.clearEvents()
+            Singleton.midiInputDevices.values.forEach { it.clearEvents() }
             focusRequester.requestFocus()
             Singleton.player.setMidi(midi)
-            while (true) {
-                midiInputDevice?.handle {
-                    Logger.v { "Midi Input: $it" }
-                    when (it) {
-                        is NoteEvent -> {
-                            if (it.on) {
-                                userActiveKeys[it.pitch] = Singleton.settings.KeyboardUserInteractionDisplayColor
-                            } else userActiveKeys.remove(it.pitch)
+        }
+        for (device in Singleton.midiInputDevices.values) {
+            LaunchedEffect(Unit) {
+                while (true) {
+                    device.handle {
+                        when (it) {
+                            is NoteEvent -> {
+                                if (Singleton.settings.EnableInputMidiNoteEvent) {
+                                    if (it.on) {
+                                        userActiveKeys[it.pitch] = Singleton.settings.KeyboardUserInteractionDisplayColor
+                                    } else userActiveKeys.remove(it.pitch)
+                                    Singleton.player.sendShortEvent(it.event)
+                                    Logger.v { "Note input: $it" }
+                                }
+                            }
+                            is MidiCCEvent -> if (Singleton.settings.EnableInputMidiCCEvent) {
+                                Singleton.player.sendShortEvent(it.event)
+                                Logger.v { "CC input: $it" }
+                            }
+                            is MidiPCEvent -> if (Singleton.settings.EnableInputMidiPCEvent) {
+                                Singleton.player.sendShortEvent(it.event)
+                                Logger.v { "PC input: $it" }
+                            }
+                            is MidiPBEvent -> if (Singleton.settings.EnableInputMidiPBEvent) {
+                                Singleton.player.sendShortEvent(it.event)
+                                Logger.v { "PB input: $it" }
+                            }
+                            else -> Logger.v { "Unknown input: $it" }
                         }
                     }
-                    Singleton.player.sendShortEvent(it.event)
                 }
             }
         }

@@ -11,6 +11,7 @@ import com.russhwolf.settings.int
 import com.russhwolf.settings.string
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.builtins.ListSerializer
+import kotlinx.serialization.builtins.serializer
 import kotlinx.serialization.json.Json
 import mai_onsyn.open_rhythm.ui.pages.library.UILibraryFolder
 import kotlin.properties.ReadWriteProperty
@@ -29,11 +30,12 @@ class UserSetting(
     var DoubleFingerTapToPlayPause by st.observable("DoubleFingerTapToPlayPause", true)
 
     // =====MIDI Input=====
-    var SelectedInputDeviceName by st.observable("SelectedInputDeviceName", "")
+    val enabledMidiInputDeviceList by st.list("EnabledMidiInputDeviceList", mutableListOf("Virtual Keyboard"), String.serializer())
     var EnableInputMidiNoteEvent by st.observable("EnableInputMidiNoteEvent", true)
     var EnableInputMidiCCEvent by st.observable("EnableInputMidiCCEvent", true)
     var EnableInputMidiPCEvent by st.observable("EnableInputMidiPCEvent", true)
     var EnableInputMidiPBEvent by st.observable("EnableInputMidiPCBEvent", true)
+    var EnableInputOtherMidiEvent by st.observable("EnableInputOtherMidiEvent", true)
 
     // =====MIDI Output=====
     var SelectedOutputDeviceName by st.observable("SelectedOutputDeviceName", "")
@@ -41,6 +43,7 @@ class UserSetting(
     var EnableOutputMidiCCEvent by st.observable("EnableOutputMidiCCEvent", true)
     var EnableOutputMidiPCEvent by st.observable("EnableOutputMidiPCBEvent", true)
     var EnableOutputMidiPBEvent by st.observable("EnableOutputMidiPCBEvent", true)
+    var EnableOutputOtherMidiEvent by st.observable("EnableOutputOtherMidiEvent", true)
 
     // =====Keyboard Appearance=====
     var KeyboardAutoAspect by st.observable("KeyBoardAutoAspect", true)

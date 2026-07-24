@@ -76,7 +76,7 @@ fun PlayPage(
             onProgressChange = { playProgress = it },
             keyDispatcher = Singleton.globalKeyEventDispatcher,
             focusRequester = focusRequester,
-            midiInputDevice = Singleton.midiInputDevices.entries.firstOrNull()?.value
+//            midiInputDevice = Singleton.midiInputDevices.entries.firstOrNull()?.value
         )
 
         var statusBarBoxHeight by remember { mutableStateOf(0) }

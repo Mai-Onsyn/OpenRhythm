@@ -6,4 +6,6 @@ interface MidiInputDevice {
     suspend fun handle(handler: (MidiEvent) -> Unit)
 
     suspend fun clearEvents()
+
+    suspend fun close()
 }

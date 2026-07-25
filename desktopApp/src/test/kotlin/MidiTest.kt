@@ -12,6 +12,7 @@ import mai_onsyn.open_rhythm.core.midi.Midi
 import mai_onsyn.open_rhythm.core.midi.Note
 import mai_onsyn.open_rhythm.core.midi.bpmAtTick
 import mai_onsyn.open_rhythm.core.midi.msAtTick
+import mai_onsyn.open_rhythm.core.midi.parseMidi
 import java.util.Arrays
 import java.util.concurrent.CountDownLatch
 import kotlin.test.Test
@@ -21,7 +22,8 @@ class MidiTest {
     @Test
     fun testLoadAndPlay() {
         val file = FileUtils.fromString("D:\\Users\\Desktop\\Files\\voice\\MIDI\\蓬莱伝説 v1.11.mid", false)
-//        val file = FileUtils.fromString("D:\\Users\\Desktop\\天球の奇蹟.mid", false)
+//        val file = FileUtils.fromString("D:\\Users\\Desktop\\Files\\voice\\MIDI\\sh02_10.mid", false)
+//        val file = FileUtils.fromString("D:\\Users\\Desktop\\SummerPockets.mid", false)
         if (file == null) {
             Logger.e { "Cant find test.mid" }
             return
@@ -32,8 +34,8 @@ class MidiTest {
             return
         }
 
-        val midi = Midi.fromFile(file.nameWithoutExtension, byteArray.toList())
-
+//        val midi = Midi.fromFile(file.nameWithoutExtension, byteArray.toList())
+        val midi = parseMidi(file.nameWithoutExtension, byteArray.toList())
         playMidi(midi)?.join()
     }
 
@@ -51,7 +53,7 @@ class MidiTest {
             println("没有找到可用的 MIDI 输出设备。")
             return null
         }
-        val portDetails = outputs[3]
+        val portDetails = outputs.firstOrNull { it.name?.contains("Microsoft") ?: false } ?: outputs.first()
         val midiOutput = runBlocking { midiAccess.openOutput(portDetails.id) }
 
         val events = mutableListOf<ScheduledEvent>()

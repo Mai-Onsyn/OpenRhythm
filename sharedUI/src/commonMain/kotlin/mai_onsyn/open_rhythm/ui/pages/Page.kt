@@ -57,7 +57,7 @@ fun AppNavigation(
         NavHost(
             modifier = Modifier.fillMaxSize(),
             navController = navController,
-            startDestination = Setting
+            startDestination = Library
         ) {
             composable<Home>() {
                 HomePage(

@@ -4,6 +4,7 @@ import co.touchlab.kermit.Logger
 import io.github.vinceglb.filekit.*
 import mai_onsyn.open_rhythm.core.midi.Midi
 import mai_onsyn.open_rhythm.core.midi.msAtTick
+import mai_onsyn.open_rhythm.core.midi.parseMidi
 
 data class UIMidiData(
     val fileName: String,
@@ -71,7 +72,8 @@ suspend fun loadMidiFile(file: PlatformFile): Midi {
     if (cachedMidiFiles.containsKey(file.path)) {
         return cachedMidiFiles[file.path]!!
     }
-    val midi = Midi.fromFile(file.nameWithoutExtension, file.readBytes().toList())
+//    val midi = Midi.fromFile(file.nameWithoutExtension, file.readBytes().toList())
+    val midi = parseMidi(file.nameWithoutExtension, file.readBytes().toList())
 
     var noteCount = 0
     for (track in midi.tracks) {

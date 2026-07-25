@@ -14,7 +14,6 @@ class Midi(
     val timeSignatureEvents: MutableList<TimeSignatureEvent> = mutableListOf()
 ) {
     var hasNoteTracks: Int = 0
-        private set
 
     companion object {
         private const val META_TRACK_NAME = 0x03
@@ -141,48 +140,27 @@ class Midi(
                 name, ppq,
                 midiFile.getTotalTicks(),
                 tracks, tempoEvents, timeSignatureEvents
-            ).apply { divideMultiChannelTrack(this) }
-        }
+            ).apply {
+                var idx = 0
+                while (idx < this.tracks.size) {
+                    val splitTracks = this.tracks[idx].splitTrackByPC()
+                    if (splitTracks.isEmpty()) {
+                        this.tracks.removeAt(idx)
+                        continue
+                    }
+                    this.tracks[idx] = splitTracks[0]
+                    for (j in 1 until splitTracks.size) {
+                        this.tracks.add(splitTracks[j])
+                        Logger.d { "Added track ${this.tracks.size - 1} from track ${splitTracks[j].name}" }
+                    }
+                    idx++
+                }
 
-        private fun divideMultiChannelTrack(midi: Midi) {
-            var idx = 0
-            while (idx < midi.tracks.size) {
-                val splitTracks = midi.tracks[idx].splitTrackByPC()
-                if (splitTracks.isEmpty()) {
-                    midi.tracks.removeAt(idx)
-                    continue
-                }
-                midi.tracks[idx] = splitTracks[0]
-                for (j in 1 until splitTracks.size) {
-                    midi.tracks.add(splitTracks[j])
-                    Logger.d { "Added track ${midi.tracks.size - 1} from track ${splitTracks[j].name}" }
-                }
-                idx++
+                val (nonEmpty, empty) = this.tracks.partition { it.notes.isNotEmpty() }
+                this.tracks.clear()
+                this.tracks.addAll(nonEmpty + empty)
+                this.hasNoteTracks = nonEmpty.size
             }
-//            for (i in 0 until midi.tracks.size) {
-//                val splitTracks = midi.tracks[i].splitTrackByPC()
-//                if (splitTracks.isEmpty()) {
-//                    midi.tracks.removeAt(i)
-//                    continue
-//                }
-//                midi.tracks[i] = splitTracks[0]
-//                for (j in 1 until splitTracks.size) {
-//                    midi.tracks.add(splitTracks[j])
-//                    Logger.d { "Added track ${midi.tracks.size - 1} from track ${splitTracks[j].name}" }
-//                }
-//            }
-
-            val (nonEmpty, empty) = midi.tracks.partition { it.notes.isNotEmpty() }
-            midi.tracks.clear()
-            midi.tracks.addAll(nonEmpty + empty)
-            midi.hasNoteTracks = nonEmpty.size
-//            for (track in midi.tracks) {
-//                track.controllerEvents.forEach {
-//                    if (it is MidiPCEvent) {
-//                        Logger.d { "${track.name} has PC event: channel ${it.channel} at tick ${it.tick} change to ${it.program}" }
-//                    }
-//                }
-//            }
         }
     }
 }

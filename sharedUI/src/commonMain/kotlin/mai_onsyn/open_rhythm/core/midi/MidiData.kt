@@ -23,7 +23,10 @@ data class Note(
 class MidiTrack(
     var name: String = "Unnumbered Track",
     val notes: MutableList<Note> = mutableListOf(),
-    val controllerEvents: MutableList<MidiEvent> = mutableListOf()
+    val controllerEvents: MutableList<MidiEvent> = mutableListOf(),
+    val startTick: Int = 0,
+    val endTick: Int = 0,
+    val trackInst: Int = 0
 ) {
     val instrumentEvent: MidiPCEvent get() {
         return try {
@@ -167,6 +170,12 @@ class MidiCCEvent(
     val controller: Int get() = event[1].toInt()
     val value: Int get() = event[2].toInt()
 
+    companion object {
+        fun of(tick: Long, channel: Int, controller: Int, value: Int): MidiCCEvent {
+            return MidiCCEvent(tick, byteArrayOf((0xB0 + channel).toByte(), controller.toByte(), value.toByte()))
+        }
+    }
+
     override fun toString(): String = "MidiCCEvent(tick=$tick, controller=$controller, value=$value, channel=$channel)"
 }
 
@@ -175,6 +184,12 @@ class MidiPBEvent(
     event: ByteArray
 ): MidiEvent(absoluteTick, event) {
     val value: Int get() = event[1].toInt() + (event[2].toInt() shl 7)
+
+    companion object {
+        fun of(tick: Long, channel: Int, value: Int): MidiPBEvent {
+            return MidiPBEvent(tick, byteArrayOf((0xE0 + channel).toByte(), (value and 0x7F).toByte(), (value shr 7 and 0x7F).toByte()))
+        }
+    }
 
     override fun toString(): String = "MidiPBEvent(tick=$tick, value=$value, channel=$channel)"
 }

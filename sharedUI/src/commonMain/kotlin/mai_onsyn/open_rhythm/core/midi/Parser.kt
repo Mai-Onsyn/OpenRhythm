@@ -5,7 +5,7 @@ import dev.atsushieno.ktmidi.Midi1Music
 import dev.atsushieno.ktmidi.read
 
 class CCTimeline(
-    private val eventList: MutableList<SimpleCCEvent> = mutableListOf()
+    val eventList: MutableList<SimpleCCEvent> = mutableListOf()
 ) {
     data class SimpleCCEvent(
         val tick: Int,
@@ -15,8 +15,9 @@ class CCTimeline(
 
     fun pushEvent(event: SimpleCCEvent) = eventList.add(event)
 
+    private val controllerStates = IntArray(128) { -1 }
     fun getInterval(range: IntRange): List<SimpleCCEvent> {
-        val controllerStates = IntArray(128) { -1 }
+        controllerStates.fill(-1)
 
         var searchIndex = 0
         for ((i, event) in eventList.withIndex()) {
@@ -193,6 +194,9 @@ fun parseMidi(name: String, bytes: List<Byte>): Midi {
             }
         }
     }
+    ccTimeline.forEach { it.eventList.sortBy { event -> event.tick } }
+    pbTimeline.forEach { it.eventList.sortBy { event -> event.tick } }
+    pcTimeline.forEach { it.eventList.sortBy { event -> event.tick } }
 
     // 被<原始轨道-轨道上的多通道>拆分出来的音符组表
     val validTrackGroups = mutableListOf<NoteGroup>()
@@ -242,28 +246,42 @@ fun parseMidi(name: String, bytes: List<Byte>): Midi {
         val cccLine = ccTimeline[group.channel]
         val notes = mergeToNoteList(group)
 
+        fun detectInstTrack(inst: Int, range: IntRange) {
+            val ccEvents = cccLine.getInterval(range)
+            val pbEvents = cpbLine.getInterval(range)
+
+            resultTrackList.add(
+                MidiTrack(
+                    notes = notes.takeRange(range),
+                    controllerEvents = ccEvents.mergeWith(
+                        pbEvents,
+                        { it.tick },
+                        { it.tick },
+                        { MidiCCEvent.of(it.tick.toLong(), group.channel, it.controller, it.value) },
+                        { MidiPBEvent.of(it.tick.toLong(), group.channel, it.value) }
+                    ).apply {
+                        this.add(0, MidiPCEvent.of(range.first.toLong(), group.channel, inst))
+                    },
+                    tickRange = range,
+                    trackInst = inst
+                )
+            )
+        }
+
         // 单通道独占乐器 简化操作
         if (cpcLine.eventList.size < 2) {
-            val ccEvents = cccLine.getInterval(chunkStartTick..chunkEndTick)
-            val pbEvents = cpbLine.getInterval(chunkStartTick..chunkEndTick)
-
-            val inst = cpcLine.eventList.firstOrNull()?.value ?: 0
-            resultTrackList.add(MidiTrack(
-                notes = notes,
-                controllerEvents = ccEvents.mergeWith(
-                    pbEvents,
-                    { it.tick },
-                    { it.tick },
-                    { MidiCCEvent.of(it.tick.toLong(), group.channel, it.controller, it.value) },
-                    { MidiPBEvent.of(it.tick.toLong(), group.channel, it.value) }
-                ).apply {
-                    this.add(0, MidiPCEvent.of(chunkStartTick.toLong(), group.channel, inst))
-                },
-                startTick = chunkStartTick,
-                endTick = chunkEndTick,
-                trackInst = inst
-            ))
-            continue
+            detectInstTrack(cpcLine.eventList.firstOrNull()?.value ?: 0, chunkStartTick..chunkEndTick)
+        } else {    // 单通道多乐器 先获取音符区间的pc事件 再按pc事件在同一通道上拆分逻辑轨道
+            val pcEvents = cpcLine.getInterval(chunkStartTick..chunkEndTick)
+            if (pcEvents.size < 2) {
+                // 通道有多个乐器但该通道的音符覆盖的区域只有单一乐器
+                detectInstTrack(pcEvents.firstOrNull()?.value ?: cpcLine.eventList.firstOrNull()?.value ?: 0, chunkStartTick..chunkEndTick)
+            } else {
+                pcEvents.forEachIndexed { index, pc ->
+                    val instRange = pc.tick..(pcEvents.getOrNull(index + 1)?.tick ?: chunkEndTick)
+                    detectInstTrack(pc.value, instRange)
+                }
+            }
         }
     }
 
@@ -273,7 +291,12 @@ fun parseMidi(name: String, bytes: List<Byte>): Midi {
         totalTicks = midiFile.getTotalTicks(),
         tracks = resultTrackList,
         tempoEvents = tempoEvents,
-        timeSignatureEvents = timeSignatureEvents
+        timeSignatureEvents = timeSignatureEvents,
+        startTick = firstTick,
+        endTick = lastTick,
+        ccChangeTimeline = ccTimeline,
+        pcChangeTimeline = pcTimeline,
+        pbChangeTimeline = pbTimeline
     ).apply {
         this.hasNoteTracks = this.tracks.size
     }
@@ -339,3 +362,18 @@ fun <A, B, C, K : Comparable<K>> Iterable<A>.mergeWith(
     while (a != null) { yield(transformA(a)); a = itA.nextOrNull() }
     while (b != null) { yield(transformB(b)); b = itB.nextOrNull() }
 }.toMutableList()
+
+fun MutableList<Note>.takeRange(range: IntRange): MutableList<Note> {
+    if (this.isEmpty()) return this
+    if (this.first().tick in range && this.last().tick in range) {
+        return this
+    }
+
+    val result = mutableListOf<Note>()
+    for (i in this) {
+        if (i.tick > range.last) break  // 提前退出
+        if (i.tick < range.first) continue
+        result.add(i)
+    }
+    return result
+}

@@ -136,7 +136,7 @@ fun MidiDownRegion(
         LaunchedEffect(isPlaying) {
             if (isPlaying) {
 //                Singleton.player.setMidi(midi)
-                Singleton.player.onCompleted = { onPlayStateChange(false) }
+                Singleton.player.onCompletion = { onPlayStateChange(false) }
                 Singleton.player.play()
             }
             else Singleton.player.pause()
@@ -218,11 +218,11 @@ fun MidiDownRegion(
             userActiveKey = userActiveKeys,
             onPress = { key, velocity ->
                 userActiveKeys[key] = Singleton.settings.KeyboardUserInteractionDisplayColor
-                Singleton.player.pressKey(key, velocity)
+                Singleton.player.noteOn(key, velocity)
             },
             onRelease = { key ->
                 userActiveKeys.remove(key)
-                Singleton.player.releaseKey(key)
+                Singleton.player.noteOff(key)
             },
             onVerticalDragged = {
                 keyboardHeight = with(density) { keyboardHeight - it.toDp() }

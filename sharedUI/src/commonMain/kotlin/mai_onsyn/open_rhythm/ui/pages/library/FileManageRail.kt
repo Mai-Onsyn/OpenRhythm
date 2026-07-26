@@ -114,7 +114,7 @@ fun FileManageRail(
                         Singleton.player.stop()
                         Singleton.player.setMidi(it)
                         Singleton.player.play()
-                        Singleton.player.onCompleted = { isPlaying = false }
+                        Singleton.player.onCompletion = { isPlaying = false }
                     }
                 } else {
                     Singleton.player.stop()

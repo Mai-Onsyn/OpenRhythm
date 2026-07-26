@@ -5,6 +5,7 @@ import dev.atsushieno.ktmidi.MidiAccess
 import kotlinx.coroutines.runBlocking
 import mai_onsyn.open_rhythm.core.GlobalKeyEventDispatcher
 import mai_onsyn.open_rhythm.core.midi.MidiPlayer
+import mai_onsyn.open_rhythm.core.midi.MidiPlayer2
 import mai_onsyn.open_rhythm.core.midi.device.KeyboardVirtualMidiInputDevice
 import mai_onsyn.open_rhythm.core.midi.device.KtMidiInputDevice
 import mai_onsyn.open_rhythm.core.midi.device.MidiInputDevice
@@ -13,7 +14,7 @@ import kotlin.sequences.firstOrNull
 object Singleton {
     val settings: UserSetting = UserSetting(createSetting())
     var midiAccess = getMidiAccess()
-    val player: MidiPlayer = createMidiPlayer(midiAccess)
+    val player: MidiPlayer2 = createMidiPlayer(midiAccess)
     val globalKeyEventDispatcher: GlobalKeyEventDispatcher = GlobalKeyEventDispatcher()
 
     val midiInputDevices: MutableMap<String, MidiInputDevice> = mutableMapOf()
@@ -46,11 +47,11 @@ object Singleton {
     }
 }
 
-private fun createMidiPlayer(access: MidiAccess): MidiPlayer {
+private fun createMidiPlayer(access: MidiAccess): MidiPlayer2 {
     val outputs = access.outputs.toList()
     if (outputs.isEmpty()) {
         println("没有找到可用的 MIDI 输出设备。")
-        return MidiPlayer(null)
+        return MidiPlayer2(null)
     }
 
     val candidates = mutableListOf<String>()
@@ -68,7 +69,7 @@ private fun createMidiPlayer(access: MidiAccess): MidiPlayer {
 
 
     Singleton.settings.SelectedOutputDeviceName = selected.name ?: "Unknown Device"
-    return MidiPlayer(runBlocking {
+    return MidiPlayer2(runBlocking {
         try {
             access.openOutput(selected.id)
         } catch (e: Exception) {

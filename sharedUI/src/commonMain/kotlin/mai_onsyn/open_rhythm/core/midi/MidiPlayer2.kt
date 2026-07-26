@@ -1,0 +1,253 @@
+package mai_onsyn.open_rhythm.core.midi
+
+import co.touchlab.kermit.Logger
+import dev.atsushieno.ktmidi.MidiOutput
+import kotlinx.coroutines.*
+import kotlinx.coroutines.channels.Channel
+import mai_onsyn.open_rhythm.core.util.Time
+
+class MidiPlayer2(
+    var midiOutput: MidiOutput? = null
+) {
+    enum class State { PLAYING, STOPPED, PAUSED }
+
+    private val scope = CoroutineScope(Dispatchers.IO)
+    private var senderThread: Job? = null
+    private var playbackThread: Job? = null
+    private val eventChannel = Channel<ByteArray>(Channel.UNLIMITED)
+
+    private var midi: Midi? = null
+    private var state: State = State.STOPPED
+    private val eventList = mutableListOf<MidiEvent>()
+    private var playingIndex = 0
+    private var offsetTick = 0L
+    private var offsetNanos = 0L
+    private var speed = 1.0f
+
+    var onCompletion: (() -> Unit)? = null
+
+    init { launchGuardThread() }
+
+    fun setOutput(output: MidiOutput?) {
+        stopPlayback()
+        senderThread?.cancel()
+        this.midiOutput = output
+        launchGuardThread()
+    }
+
+    fun setMidi(midi: Midi?) {
+        this.midi = midi
+        buildEventSequence(midi)
+    }
+
+    val preciseTick: Long
+        get() = when (state) {
+            State.PLAYING -> lerpTick()
+            State.STOPPED, State.PAUSED -> offsetTick
+        }
+
+    fun play() {
+        val pMidi = midi ?: return
+        playbackThread?.cancel()
+        launchPlaybackThread(pMidi)
+    }
+
+    fun pause() {
+        stopPlayback()
+        if (state == State.PLAYING) {
+            offsetTick = preciseTick
+        }
+        releaseAllNotes()
+        state = State.PAUSED
+    }
+
+    fun stop() {
+        stopPlayback()
+        reset()
+        state = State.STOPPED
+    }
+
+    fun seek(percent: Double) {
+        val totalTicks = midi?.totalTicks ?: return
+        seek((totalTicks * percent.coerceIn(0.0, 1.0)).toLong())
+    }
+
+    fun seek(tick: Long) {
+        if (midi == null) return
+
+        var shouldReplay = false
+        if (state == State.PLAYING) {
+            shouldReplay = true
+            pause()
+        }
+        this.offsetTick = tick
+        if (shouldReplay) play()
+    }
+
+    fun setSpeed(speed: Float) {
+        var shouldReplay = false
+        if (state == State.PLAYING) {
+            pause()
+            shouldReplay = true
+        }
+        this.speed = speed
+        if (shouldReplay) {
+            play()
+        }
+    }
+
+    fun getSpeed(): Float = speed
+
+    fun noteOn(key: Int, velocity: Int, channel: Int = 0) =
+        eventChannel.trySend(createMidiMessage(0x90, channel, key, velocity))
+
+    fun noteOff(key: Int, channel: Int = 0) =
+        eventChannel.trySend(createMidiMessage(0x80, channel, key))
+
+    fun cc(controller: Int, value: Int, channel: Int = 0) =
+        eventChannel.trySend(createMidiMessage(0xB0, channel, controller, value))
+
+    fun pc(value: Int, channel: Int = 0) =
+        eventChannel.trySend(createMidiMessage(0xC0, channel, value))
+
+    fun sendShortEvent(bytes: ByteArray) {
+        eventChannel.trySend(bytes)
+    }
+
+    private fun lerpTick(): Long {
+        if (midi == null) return 0L
+
+        // 在offsetTick时 从tick0开始已经过的播放器内纳秒为
+        val baseNano = midi!!.nanoAtTick(offsetTick)
+        // 从记录时刻到当前时刻 现实时间差为
+        val realDelta = Time.nanos - offsetNanos
+        // speed为时间倍率 意味着播放器内时间流逝速度是现实的speed倍 因此这段时间内播放器内增加的纳秒为
+        val gameDelta = (speed * realDelta).toLong()
+        // 当前时刻 从tick0起总共经过的播放器内纳秒为
+        val totalNano = baseNano + gameDelta
+        // 用nanoAtTick的反函数tickAtNanoOffset即可得到当前tick
+        val currentTick = midi!!.tickAtNanoOffset(totalNano)
+
+        return currentTick
+    }
+
+    private fun buildEventSequence(midi: Midi?) {
+        if (midi == null) {
+            eventList.clear()
+            return
+        }
+        eventList.clear()
+
+        for (track in midi.tracks) {
+            for (note in track.notes) {
+                eventList.add(NoteEvent.noteOn(note.tick, note.pitch, note.velocity, note.channel))
+                eventList.add(NoteEvent.noteOff(note.tick + note.duration, note.pitch, note.velocity, note.channel))
+            }
+            for (event in track.controllerEvents) {
+                eventList.add(event)
+            }
+        }
+        eventList.sortWith(compareBy({ it.tick }, { it.order }))
+    }
+
+    private fun launchGuardThread() {
+        senderThread = scope.launch {
+            for (msg in eventChannel) {
+                try {
+                    midiOutput?.send(msg, 0, msg.size, 0)
+                    Logger.v { "Send event: ${msg.contentToString()}" }
+                } catch (e: Exception) {
+                    Logger.e { "Error while sending message: ${e.message}" }
+                }
+            }
+        }
+    }
+
+    private fun launchPlaybackThread(midi: Midi) {
+        playbackThread = scope.launch {
+            sendPreplayStatus(midi, offsetTick)
+            state = State.PLAYING
+            offsetNanos = Time.nanos
+            playingIndex = eventList.indexOfFirst { it.tick >= offsetTick }.coerceAtLeast(0)
+
+            while (isActive && state == State.PLAYING) {
+                ensureActive()
+                if (playingIndex >= eventList.size) {
+                    state = State.STOPPED
+                    onCompletion?.invoke()
+                    break
+                }
+
+                val event = eventList[playingIndex++]
+                val remandingNanos = getDurationNanos(midi, offsetTick, event.tick) / speed
+
+                if (remandingNanos > 0 && !wait(remandingNanos.toLong())) {
+//                    offsetTick = lerpTick()
+                    break
+                }
+
+                eventChannel.send(event.event)
+                offsetTick = event.tick
+                offsetNanos = Time.nanos
+            }
+        }
+    }
+
+    private fun getDurationNanos(midi: Midi, current: Long, target: Long): Long {
+        return midi.nanoAtTick(target) - midi.nanoAtTick(current)
+    }
+
+    private suspend fun wait(nanos: Long): Boolean {
+        var shouldContinue = true
+        Time.waitNanos(nanos) { shouldContinue = false }
+        return shouldContinue
+    }
+
+    private fun stopPlayback() {
+        playbackThread?.cancel()
+        playbackThread = null
+    }
+
+    private fun createMidiMessage(status: Int, channel: Int, data1: Int, data2: Int? = null): ByteArray {
+        val byte1 = (status or channel).toByte()
+        val byte2 = data1.toByte()
+        return if (data2 != null) byteArrayOf(byte1, byte2, data2.toByte()) else byteArrayOf(byte1, byte2)
+    }
+
+    /**
+     * 释放所有音符并松开踏板
+     */
+    private fun releaseAllNotes() {
+        for (i in 0..15) {
+            cc(123, 0, i)
+            cc(64, 0, i)
+        }
+    }
+
+    /**
+     * 释放所有音符并松开踏板
+     * 同时重置所有通道的乐器为钢琴
+     */
+    private fun reset() {
+        releaseAllNotes()
+        for (i in 0..15) {
+            pc(0, i)
+        }
+    }
+
+    private fun sendPreplayStatus(midi: Midi, tick: Long) {
+        val range = tick.toInt()..tick.toInt()
+        for (i in 0..15) {
+            pc(0, i)
+            midi.ccChangeTimeline[i].getInterval(range).forEach {
+                cc(it.controller, it.value, i)
+            }
+            midi.pcChangeTimeline[i].getInterval(range).forEach {
+                pc(it.value, i)
+            }
+            midi.pbChangeTimeline[i].getInterval(range).forEach {
+                eventChannel.trySend(createMidiMessage(0xE0, i, (it.value and 0x7F), (it.value shr 7 and 0x7F)))
+            }
+        }
+    }
+}

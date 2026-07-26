@@ -277,7 +277,7 @@ private fun MidiOutputSettings() {
                     onSelect = {
                         coroutineScope.launch {
                             try {
-                                Singleton.player.deviceOutput = Singleton.midiAccess.openOutput(devices[it].id)
+                                Singleton.player.setOutput(Singleton.midiAccess.openOutput(devices[it].id))
                                 selectedDeviceIndex = it
                                 Singleton.settings.SelectedOutputDeviceName = deviceNames.getOrElse(selectedDeviceIndex) { UNKNOWN_DEVICE }
                                 Logger.i { "Switched midi port to ${devices[it].id}" }

@@ -24,8 +24,7 @@ class MidiTrack(
     var name: String = "Unnumbered Track",
     val notes: MutableList<Note> = mutableListOf(),
     val controllerEvents: MutableList<MidiEvent> = mutableListOf(),
-    val startTick: Int = 0,
-    val endTick: Int = 0,
+    val tickRange: IntRange = IntRange.EMPTY,
     val trackInst: Int = 0
 ) {
     val instrumentEvent: MidiPCEvent get() {
@@ -130,6 +129,8 @@ open class MidiEvent(
 ) {
     val channel: Int get() = (event[0].toInt() and 0x0F)
 
+    open val order = -100
+
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other == null || this::class != other::class) return false
@@ -170,6 +171,8 @@ class MidiCCEvent(
     val controller: Int get() = event[1].toInt()
     val value: Int get() = event[2].toInt()
 
+    override val order = -10
+
     companion object {
         fun of(tick: Long, channel: Int, controller: Int, value: Int): MidiCCEvent {
             return MidiCCEvent(tick, byteArrayOf((0xB0 + channel).toByte(), controller.toByte(), value.toByte()))
@@ -185,6 +188,8 @@ class MidiPBEvent(
 ): MidiEvent(absoluteTick, event) {
     val value: Int get() = event[1].toInt() + (event[2].toInt() shl 7)
 
+    override val order = -5
+
     companion object {
         fun of(tick: Long, channel: Int, value: Int): MidiPBEvent {
             return MidiPBEvent(tick, byteArrayOf((0xE0 + channel).toByte(), (value and 0x7F).toByte(), (value shr 7 and 0x7F).toByte()))
@@ -199,6 +204,8 @@ class MidiPCEvent(
     event: ByteArray
 ): MidiEvent(absoluteTick, event) {
     val program: Int get() = event[1].toInt()
+
+    override val order = -50
 
     companion object {
         fun of(tick: Long, channel: Int, value: Int): MidiPCEvent {
@@ -216,6 +223,8 @@ class NoteEvent(
     val pitch: Int get() = event[1].toInt() and 0xFF
     val velocity: Int get() = event[2].toInt() and 0xFF
     val on: Boolean get() = (event[0].toInt() and 0xF0) == 0x90
+
+    override val order = if (on) 101 else 100
 
     companion object {
         fun noteOn(tick: Long, pitch: Int, velocity: Int, channel: Int): NoteEvent {

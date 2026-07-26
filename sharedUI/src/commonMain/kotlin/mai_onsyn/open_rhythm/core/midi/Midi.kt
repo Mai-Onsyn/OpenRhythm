@@ -11,7 +11,12 @@ class Midi(
     val totalTicks: Int,
     val tracks: MutableList<MidiTrack> = mutableListOf(),
     val tempoEvents: MutableList<TempoEvent> = mutableListOf(),
-    val timeSignatureEvents: MutableList<TimeSignatureEvent> = mutableListOf()
+    val timeSignatureEvents: MutableList<TimeSignatureEvent> = mutableListOf(),
+    val startTick: Int = 0,
+    val endTick: Int = totalTicks,
+    val ccChangeTimeline: Array<CCTimeline> = arrayOf(),
+    val pcChangeTimeline: Array<SingleChangeTimeline> = arrayOf(),
+    val pbChangeTimeline: Array<SingleChangeTimeline> = arrayOf(),
 ) {
     var hasNoteTracks: Int = 0
 

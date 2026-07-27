@@ -32,6 +32,7 @@ compose.desktop {
         }
 
         jvmArgs(
+            "-Dfile.encoding=UTF-8",
             "-XX:+UseZGC",
             "-Xms512m",
             "-Xmx2048m",

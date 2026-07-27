@@ -1,6 +1,7 @@
 package mai_onsyn.open_rhythm.ui.modules.midi_flow
 
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.background
 import androidx.compose.foundation.focusable
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.*
@@ -68,6 +69,7 @@ fun MidiKeyBoard(
     var currentCursor by remember { mutableStateOf(PointerIcon.Default) }
     Canvas(
         modifier = modifier
+            .background(darkPart)
             .focusRequester(focusRequester)
             .focusable()
             .onSizeChanged { size ->
@@ -206,13 +208,13 @@ fun MidiKeyBoard(
                     ry = whiteKeyWidth * 0.15f,
                     color = if (isActive) activeKey[pitch]!! else Color.White
                 )
-                if (pitch != maxPitch) {
-                    drawRect(   // 分割线
-                        color = darkPart,
-                        topLeft = Offset(x + whiteKeyWidth, offsetStartY),
-                        size = Size(spacing.toPx(), size.height - offsetStartY)
-                    )
-                }
+//                if (pitch != maxPitch) {
+//                    drawRect(   // 分割线
+//                        color = darkPart,
+//                        topLeft = Offset(x + whiteKeyWidth, offsetStartY),
+//                        size = Size(spacing.toPx(), size.height - offsetStartY)
+//                    )
+//                }
             }
         }
         // 黑键

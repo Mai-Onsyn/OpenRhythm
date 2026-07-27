@@ -14,9 +14,9 @@ class Midi(
     val timeSignatureEvents: MutableList<TimeSignatureEvent> = mutableListOf(),
     val startTick: Int = 0,
     val endTick: Int = totalTicks,
-    val ccChangeTimeline: Array<CCTimeline> = arrayOf(),
-    val pcChangeTimeline: Array<SingleChangeTimeline> = arrayOf(),
-    val pbChangeTimeline: Array<SingleChangeTimeline> = arrayOf(),
+    val ccChangeTimeline: Array<CCTimeline> = Array(16) { CCTimeline() },
+    val pcChangeTimeline: Array<SingleChangeTimeline> = Array(16) { SingleChangeTimeline() },
+    val pbChangeTimeline: Array<SingleChangeTimeline> = Array(16) { SingleChangeTimeline() }
 ) {
     var hasNoteTracks: Int = 0
 
@@ -146,25 +146,26 @@ class Midi(
                 midiFile.getTotalTicks(),
                 tracks, tempoEvents, timeSignatureEvents
             ).apply {
-                var idx = 0
-                while (idx < this.tracks.size) {
-                    val splitTracks = this.tracks[idx].splitTrackByPC()
-                    if (splitTracks.isEmpty()) {
-                        this.tracks.removeAt(idx)
-                        continue
-                    }
-                    this.tracks[idx] = splitTracks[0]
-                    for (j in 1 until splitTracks.size) {
-                        this.tracks.add(splitTracks[j])
-                        Logger.d { "Added track ${this.tracks.size - 1} from track ${splitTracks[j].name}" }
-                    }
-                    idx++
-                }
-
-                val (nonEmpty, empty) = this.tracks.partition { it.notes.isNotEmpty() }
-                this.tracks.clear()
-                this.tracks.addAll(nonEmpty + empty)
-                this.hasNoteTracks = nonEmpty.size
+                this.hasNoteTracks = tracks.size
+//                var idx = 0
+//                while (idx < this.tracks.size) {
+//                    val splitTracks = this.tracks[idx].splitTrackByPC()
+//                    if (splitTracks.isEmpty()) {
+//                        this.tracks.removeAt(idx)
+//                        continue
+//                    }
+//                    this.tracks[idx] = splitTracks[0]
+//                    for (j in 1 until splitTracks.size) {
+//                        this.tracks.add(splitTracks[j])
+//                        Logger.d { "Added track ${this.tracks.size - 1} from track ${splitTracks[j].name}" }
+//                    }
+//                    idx++
+//                }
+//
+//                val (nonEmpty, empty) = this.tracks.partition { it.notes.isNotEmpty() }
+//                this.tracks.clear()
+//                this.tracks.addAll(nonEmpty + empty)
+//                this.hasNoteTracks = nonEmpty.size
             }
         }
     }

@@ -81,6 +81,7 @@ internal fun AppTheme(
     onThemeChanged: @Composable (isDark: Boolean) -> Unit,
     content: @Composable () -> Unit
 ) {
+    val st = Singleton.settings
     val systemIsDark = isSystemInDarkTheme()
     val isDark = remember(Singleton.settings.DarkMode, systemIsDark) {
         Logger.d { "Change darkmode to ${Singleton.settings.DarkMode}, system isDark: $systemIsDark" }

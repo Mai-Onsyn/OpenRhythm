@@ -5,6 +5,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.isSpecified
+import androidx.compose.ui.graphics.isUnspecified
 import androidx.compose.ui.graphics.toArgb
 import com.russhwolf.settings.Settings
 import com.russhwolf.settings.int
@@ -45,6 +47,12 @@ class UserSetting(
     var EnableOutputMidiPBEvent by st.observable("EnableOutputMidiPCBEvent", true)
     var EnableOutputOtherMidiEvent by st.observable("EnableOutputOtherMidiEvent", true)
 
+    // =====MIDI File=====
+    var UseParserV1 by st.observable("UseParserV1", false)
+
+    // =====Waterfall Appearance=====
+    var WaterfallBackgroundColor by st.observable("WaterfallBackgroundColor", Color.Unspecified)
+
     // =====Keyboard Appearance=====
     var KeyboardAutoAspect by st.observable("KeyBoardAutoAspect", true)
     var KeyboardAspectRatio by st.observable("KeyBoardAspectRatio", 8f)
@@ -66,7 +74,7 @@ inline fun <reified T> Settings.observable(
         is Boolean -> getBoolean(key, default)
         is Float -> getFloat(key, default)
         is Double -> getDouble(key, default)
-        is Color -> Color(getInt(key, default.toArgb()))
+        is Color -> unpackColor(getLong(key, packColor(default)))
         else -> error("Unsupported type: ${default!!::class}")
     } as T
 
@@ -84,27 +92,26 @@ inline fun <reified T> Settings.observable(
                     is Boolean -> putBoolean(key, newValue)
                     is Float -> putFloat(key, newValue)
                     is Double -> putDouble(key, newValue)
-                    is Color -> putInt(key, newValue.toArgb())
+                    is Color -> putLong(key, packColor(newValue))
                     else -> error("Unsupported type for setting: ${newValue!!::class}")
                 }
             }
     }
 }
 
-fun Settings.color(
-    key: String? = null,
-    defaultValue: Color
-): ReadWriteProperty<Any?, Color> {
-    val intDelegate = this.int(key, defaultValue.toArgb())
+fun packColor(color: Color): Long {
+    return if (color.isUnspecified) {
+        1L shl 32
+    } else {
+        color.toArgb().toLong() and 0xFFFFFFFFL
+    }
+}
 
-    return object : ReadWriteProperty<Any?, Color> {
-        override fun getValue(thisRef: Any?, property: KProperty<*>): Color {
-            return Color(intDelegate.getValue(thisRef, property))
-        }
-
-        override fun setValue(thisRef: Any?, property: KProperty<*>, value: Color) {
-            intDelegate.setValue(thisRef, property, value.toArgb())
-        }
+fun unpackColor(packed: Long): Color {
+    return if (packed shr 32 != 0L) {
+        Color.Unspecified
+    } else {
+        Color(packed.toInt())
     }
 }
 

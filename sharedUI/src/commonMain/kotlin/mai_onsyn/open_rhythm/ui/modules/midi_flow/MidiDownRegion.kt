@@ -5,16 +5,19 @@ import androidx.compose.animation.core.VectorConverter
 import androidx.compose.animation.core.animateIntAsState
 import androidx.compose.animation.core.animateValueAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.background
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.isUnspecified
 import androidx.compose.ui.input.key.*
 import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.pointerInput
@@ -22,6 +25,7 @@ import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import co.touchlab.kermit.Logger
+import kotlinx.coroutines.ensureActive
 import mai_onsyn.open_rhythm.bridge.Singleton
 import mai_onsyn.open_rhythm.core.GlobalKeyEventDispatcher
 import mai_onsyn.open_rhythm.core.midi.Midi
@@ -30,6 +34,7 @@ import mai_onsyn.open_rhythm.core.midi.MidiPBEvent
 import mai_onsyn.open_rhythm.core.midi.MidiPCEvent
 import mai_onsyn.open_rhythm.core.midi.NoteEvent
 import mai_onsyn.open_rhythm.core.midi.device.MidiInputDevice
+import mai_onsyn.open_rhythm.ui.utility.BindInputDeviceEvents
 
 @Composable
 fun MidiDownRegion(
@@ -81,6 +86,7 @@ fun MidiDownRegion(
                 }
                 false
             }
+            .background(Singleton.settings.WaterfallBackgroundColor.let { if (it.isUnspecified) MaterialTheme.colorScheme.surface else it })
     ) {
         var currentTick by remember { mutableStateOf(0L) }
 //        val animatedTick by animateIntAsState(
@@ -161,43 +167,11 @@ fun MidiDownRegion(
         }
         LaunchedEffect(Unit) {
 //            midiInputDevice?.clearEvents()
-            Singleton.midiInputDevices.values.forEach { it.clearEvents() }
             focusRequester.requestFocus()
             Singleton.player.setMidi(midi)
             Singleton.player.seek(midi.startTick.toLong())
         }
-        for (device in Singleton.midiInputDevices.values) {
-            LaunchedEffect(Unit) {
-                while (true) {
-                    device.handle {
-                        when (it) {
-                            is NoteEvent -> {
-                                if (Singleton.settings.EnableInputMidiNoteEvent) {
-                                    if (it.on) {
-                                        userActiveKeys[it.pitch] = Singleton.settings.KeyboardUserInteractionDisplayColor
-                                    } else userActiveKeys.remove(it.pitch)
-                                    Singleton.player.sendShortEvent(it.event)
-                                    Logger.v { "Note input: $it" }
-                                }
-                            }
-                            is MidiCCEvent -> if (Singleton.settings.EnableInputMidiCCEvent) {
-                                Singleton.player.sendShortEvent(it.event)
-                                Logger.v { "CC input: $it" }
-                            }
-                            is MidiPCEvent -> if (Singleton.settings.EnableInputMidiPCEvent) {
-                                Singleton.player.sendShortEvent(it.event)
-                                Logger.v { "PC input: $it" }
-                            }
-                            is MidiPBEvent -> if (Singleton.settings.EnableInputMidiPBEvent) {
-                                Singleton.player.sendShortEvent(it.event)
-                                Logger.v { "PB input: $it" }
-                            }
-                            else -> Logger.v { "Unknown input: $it" }
-                        }
-                    }
-                }
-            }
-        }
+        BindInputDeviceEvents(userActiveKeys)
 //        DisposableEffect(Unit) {
 //            val handler: (KeyEvent) -> Boolean = {
 //                if (it.key == Key.Spacebar && it.type == KeyEventType.KeyDown) {

@@ -220,7 +220,7 @@ private fun SettingItemRow(
             .padding(16.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Column(modifier = Modifier.weight(1f)) {
+        Column(modifier = Modifier.weight(1f).padding(end = 8.dp)) {
             Text(
                 text = name,
                 style = MaterialTheme.typography.bodyLarge,

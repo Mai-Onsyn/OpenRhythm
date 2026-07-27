@@ -37,6 +37,7 @@ class MidiPlayer2(
 
     fun setMidi(midi: Midi?) {
         this.midi = midi
+        reset()
         buildEventSequence(midi)
     }
 
@@ -50,6 +51,7 @@ class MidiPlayer2(
         val pMidi = midi ?: return
         playbackThread?.cancel()
         launchPlaybackThread(pMidi)
+        Logger.i { "Player Playing" }
     }
 
     fun pause() {
@@ -59,12 +61,14 @@ class MidiPlayer2(
         }
         releaseAllNotes()
         state = State.PAUSED
+        Logger.i { "Player Paused" }
     }
 
     fun stop() {
         stopPlayback()
         reset()
         state = State.STOPPED
+        Logger.i { "Player Stopped" }
     }
 
     fun seek(percent: Double) {
@@ -85,15 +89,15 @@ class MidiPlayer2(
     }
 
     fun setSpeed(speed: Float) {
-        var shouldReplay = false
+        if (speed <= 0f || this.speed == speed) return
         if (state == State.PLAYING) {
-            pause()
-            shouldReplay = true
+            offsetTick = lerpTick()
+            offsetNanos = Time.nanos
+            // 随后重启播放线程（重新以新的 offsetTick 和新的 speed 建立内部锚点）
+            stopPlayback()
+            midi?.let { launchPlaybackThread(it, false) }
         }
         this.speed = speed
-        if (shouldReplay) {
-            play()
-        }
     }
 
     fun getSpeed(): Float = speed
@@ -109,6 +113,9 @@ class MidiPlayer2(
 
     fun pc(value: Int, channel: Int = 0) =
         eventChannel.trySend(createMidiMessage(0xC0, channel, value))
+
+    fun pb(value: Int, channel: Int = 0) =
+        eventChannel.trySend(createMidiMessage(0xE0, channel, (value and 0x7F), (value shr 7 and 0x7F)))
 
     fun sendShortEvent(bytes: ByteArray) {
         eventChannel.trySend(bytes)
@@ -155,7 +162,10 @@ class MidiPlayer2(
             for (msg in eventChannel) {
                 try {
                     midiOutput?.send(msg, 0, msg.size, 0)
-                    Logger.v { "Send event: ${msg.contentToString()}" }
+//                    Logger.v { "Send event: ${msg.contentToString()}" }
+//                    if (msg[0].toInt() and 0xF0 == 0xE0) {
+//                        Logger.w { "Send PB to channel ${msg[0].toInt() and 0x0F}, value ${msg[1].toInt() + (msg[2].toInt() shl 7)}" }
+//                    }
                 } catch (e: Exception) {
                     Logger.e { "Error while sending message: ${e.message}" }
                 }
@@ -163,26 +173,33 @@ class MidiPlayer2(
         }
     }
 
-    private fun launchPlaybackThread(midi: Midi) {
+    private fun launchPlaybackThread(midi: Midi, doClearTask: Boolean = true) {
         playbackThread = scope.launch {
-            sendPreplayStatus(midi, offsetTick)
+            if (doClearTask) sendPreplayStatus(midi, offsetTick)
             state = State.PLAYING
-            offsetNanos = Time.nanos
+
+            val startNanos = Time.nanos
+            val startMidiNanos = midi.nanoAtTick(offsetTick)
+
+            offsetNanos = startNanos
             playingIndex = eventList.indexOfFirst { it.tick >= offsetTick }.coerceAtLeast(0)
 
             while (isActive && state == State.PLAYING) {
                 ensureActive()
                 if (playingIndex >= eventList.size) {
-                    state = State.STOPPED
+                    state = State.PAUSED
                     onCompletion?.invoke()
                     break
                 }
 
                 val event = eventList[playingIndex++]
-                val remandingNanos = getDurationNanos(midi, offsetTick, event.tick) / speed
+                val targetMidiDelta = midi.nanoAtTick(event.tick) - startMidiNanos
+                val targetRealDelta = (targetMidiDelta / speed).toLong()
 
-                if (remandingNanos > 0 && !wait(remandingNanos.toLong())) {
-//                    offsetTick = lerpTick()
+                // 2. 算【绝对剩余等待纳秒】（自动吸收协程唤醒和调度误差）
+                val remainingNanos = targetRealDelta - (Time.nanos - startNanos)
+
+                if (remainingNanos > 0 && !wait(remainingNanos)) {
                     break
                 }
 
@@ -225,20 +242,22 @@ class MidiPlayer2(
     }
 
     /**
-     * 释放所有音符并松开踏板
-     * 同时重置所有通道的乐器为钢琴
+     * 释放所有音符
+     * 同时重置所有通道的乐器为钢琴 重置PB 重置CC
      */
     private fun reset() {
-        releaseAllNotes()
         for (i in 0..15) {
             pc(0, i)
+            pb(8192, i)
+            cc(123, 0, i)
+            cc(121, 0, i)
         }
     }
 
     private fun sendPreplayStatus(midi: Midi, tick: Long) {
         val range = tick.toInt()..tick.toInt()
+        reset()
         for (i in 0..15) {
-            pc(0, i)
             midi.ccChangeTimeline[i].getInterval(range).forEach {
                 cc(it.controller, it.value, i)
             }
@@ -246,7 +265,7 @@ class MidiPlayer2(
                 pc(it.value, i)
             }
             midi.pbChangeTimeline[i].getInterval(range).forEach {
-                eventChannel.trySend(createMidiMessage(0xE0, i, (it.value and 0x7F), (it.value shr 7 and 0x7F)))
+                pb(it.value, i)
             }
         }
     }

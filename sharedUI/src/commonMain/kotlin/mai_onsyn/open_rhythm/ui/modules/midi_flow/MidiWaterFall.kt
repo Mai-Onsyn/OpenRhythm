@@ -18,6 +18,7 @@ import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import co.touchlab.kermit.Logger
 import mai_onsyn.open_rhythm.core.midi.Midi
 import mai_onsyn.open_rhythm.core.midi.Note
 import mai_onsyn.open_rhythm.core.midi.TimeSignatureEvent
@@ -51,7 +52,9 @@ fun MidiWaterFall(
     val maxNoteDurationList = remember(midi) {
         val result = mutableListOf<Long>()
         for (midiTrack in midi.tracks) {
-            result.add(midiTrack.notes.maxOfOrNull { it.duration } ?: 0)
+            if (midiTrack.visible && midiTrack.enable)
+                result.add(midiTrack.notes.maxOfOrNull { it.duration } ?: 0)
+            else result.add(0L)
         }
         result
     }
@@ -99,6 +102,7 @@ fun MidiWaterFall(
 
         val toDrawNotes = mutableListOf<DrawableNote>()
         for (i in 0 until midi.hasNoteTracks) {
+            if (!midi.tracks[i].visible || !midi.tracks[i].enable) continue
             findVisibleNotes(
                 currTick,
                 currTick + visibleTickCount,
@@ -123,6 +127,7 @@ fun MidiWaterFall(
                 size = Size(w, durationPx),
                 cornerRadius = CornerRadius(w * 0.1f)
             )
+//            if (durationPx < 10) Logger.v { "Too short note: $pack" }
             if (pack.note.tick <= currTick && pack.note.tick + pack.note.duration >= currTick) {
                 activeNoteOutput[pack.note.pitch] = pack.color
             }

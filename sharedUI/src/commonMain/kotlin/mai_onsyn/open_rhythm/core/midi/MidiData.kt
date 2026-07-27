@@ -25,7 +25,9 @@ class MidiTrack(
     val notes: MutableList<Note> = mutableListOf(),
     val controllerEvents: MutableList<MidiEvent> = mutableListOf(),
     val tickRange: IntRange = IntRange.EMPTY,
-    val trackInst: Int = 0
+    val trackInst: Int = 0,
+    var enable: Boolean = true,
+    var visible: Boolean = true
 ) {
     val instrumentEvent: MidiPCEvent get() {
         return try {

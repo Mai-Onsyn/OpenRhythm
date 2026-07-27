@@ -1,5 +1,6 @@
 package mai_onsyn.open_rhythm.core.midi
 
+import co.touchlab.kermit.Logger
 import dev.atsushieno.ktmidi.Midi1CompoundMessage
 import dev.atsushieno.ktmidi.Midi1Music
 import dev.atsushieno.ktmidi.read
@@ -80,7 +81,7 @@ class SingleChangeTimeline(
 
         val end = eventList.lastLessThanOrEqual(range.last) { it.tick } ?: return emptyList()
         val start = eventList.lastLessThanOrEqual(range.first) { it.tick } ?: return mutableListOf<SimpleChangeEvent>().apply {
-            add(SimpleChangeEvent(range.first, 8192))
+//            add(SimpleChangeEvent(range.first, 8192))
             addAll(eventList.take(end + 1))
         }
 
@@ -207,7 +208,8 @@ fun parseMidi(name: String, bytes: List<Byte>): Midi {
         val originalNoteGroups = Array(16) { NoteGroup(it) }
         track.events.forEach { event ->
             val msg = event.message
-            val opcode = msg.statusByte.toInt() and 0xF0
+            val statusByteInt = msg.statusByte.toInt() and 0xFF
+            val opcode = statusByteInt and 0xF0
             val channel = msg.channel.toInt()
 
             currentTick += event.deltaTime
@@ -215,7 +217,7 @@ fun parseMidi(name: String, bytes: List<Byte>): Midi {
                 0x80, 0x90 -> {   // Note OFF/ON
                     val pitch = msg.msb.toInt() and 0xFF
                     val velocity = msg.lsb.toInt() and 0xFF
-                    val on = opcode == 0x90
+                    val on = opcode == 0x90 && velocity > 0
                     originalNoteGroups[channel].noteEvents.add(SimpleNoteEvent(on, currentTick, pitch, velocity))
                 }
             }
@@ -233,7 +235,7 @@ fun parseMidi(name: String, bytes: List<Byte>): Midi {
     }
 
     val resultTrackList = mutableListOf<MidiTrack>()
-    var firstTick = 0
+    var firstTick = Int.MAX_VALUE
     var lastTick = 0
     for (group in validTrackGroups) {
         val chunkStartTick = group.noteEvents.first().tick
@@ -244,6 +246,7 @@ fun parseMidi(name: String, bytes: List<Byte>): Midi {
         val cpcLine = pcTimeline[group.channel]
         val cpbLine = pbTimeline[group.channel]
         val cccLine = ccTimeline[group.channel]
+        group.noteEvents.sortWith(compareBy({ it.tick }, { it.on }))
         val notes = mergeToNoteList(group)
 
         fun detectInstTrack(inst: Int, range: IntRange) {
@@ -263,10 +266,13 @@ fun parseMidi(name: String, bytes: List<Byte>): Midi {
                         this.add(0, MidiPCEvent.of(range.first.toLong(), group.channel, inst))
                     },
                     tickRange = range,
-                    trackInst = inst
+                    trackInst = inst,
+                    enable = true,
+                    visible = group.channel != 9
                 )
             )
         }
+        if (firstTick == Int.MAX_VALUE) firstTick = 0
 
         // 单通道独占乐器 简化操作
         if (cpcLine.eventList.size < 2) {
@@ -304,22 +310,39 @@ fun parseMidi(name: String, bytes: List<Byte>): Midi {
 
 private fun mergeToNoteList(group: NoteGroup): MutableList<Note> {
     val noteList = mutableListOf<Note>()
-    val noteActive = mutableMapOf<Int, SimpleNoteEvent>()   // pitch -> <tick, velocity>
+
+    // 为 128 个 MIDI 音高分别建立 FIFO 队列 (0..127)
+    val noteActive = Array(128) { ArrayDeque<SimpleNoteEvent>() }
+
     group.noteEvents.forEach { event ->
-        if (event.on && event.velocity > 0) {
-            noteActive[event.pitch] = event
+        val pitch = event.pitch
+        if (pitch !in 0..127) return@forEach
+
+        if (event.on) {
+            // Note ON：直接压入队列尾部，不强行闭合前音
+            noteActive[pitch].addLast(event)
         } else {
-            noteActive.remove(event.pitch)?.let { pressEvent ->
-                noteList.add(Note(
-                    pressEvent.pitch,
-                    pressEvent.tick.toLong(),
-                    (event.tick - pressEvent.tick).toLong(),
-                    pressEvent.velocity,
-                    group.channel
-                ))
+            // Note OFF：弹出队列头部最早的 Note ON (FIFO)
+            val pressEvent = noteActive[pitch].removeFirstOrNull()
+            if (pressEvent != null) {
+                val duration = (event.tick - pressEvent.tick).toLong()
+                if (duration > 0) {
+                    noteList.add(
+                        Note(
+                            pitch,
+                            pressEvent.tick.toLong(),
+                            duration,
+                            pressEvent.velocity,
+                            group.channel
+                        )
+                    )
+                }
             }
         }
     }
+
+    // 重新按按下时间排序，保证输出顺序正确
+    noteList.sortBy { it.tick }
     return noteList
 }
 

@@ -164,6 +164,7 @@ fun MidiDownRegion(
             Singleton.midiInputDevices.values.forEach { it.clearEvents() }
             focusRequester.requestFocus()
             Singleton.player.setMidi(midi)
+            Singleton.player.seek(midi.startTick.toLong())
         }
         for (device in Singleton.midiInputDevices.values) {
             LaunchedEffect(Unit) {

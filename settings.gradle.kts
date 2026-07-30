@@ -1,3 +1,5 @@
+import java.util.Properties
+
 rootProject.name = "OpenRhythm"
 
 pluginManagement {
@@ -29,6 +31,14 @@ dependencyResolutionManagement {
     }
 }
 include(":sharedUI")
-include(":androidApp")
 include(":desktopApp")
 
+val localProperties = Properties().apply {
+    file("local.properties").takeIf { it.exists() }?.inputStream()?.use { fis ->
+        this.load(fis)
+    }
+}
+
+val disableAndroid = localProperties.getProperty("disable.android", "false").toBoolean()
+
+if (!disableAndroid) include(":androidApp")

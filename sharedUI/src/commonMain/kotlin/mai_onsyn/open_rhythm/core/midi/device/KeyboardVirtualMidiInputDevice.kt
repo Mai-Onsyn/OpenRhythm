@@ -11,17 +11,21 @@ import kotlinx.coroutines.channels.Channel
 import mai_onsyn.open_rhythm.core.GlobalKeyEventDispatcher
 import mai_onsyn.open_rhythm.core.midi.MidiEvent
 import mai_onsyn.open_rhythm.core.midi.NoteEvent
+import mai_onsyn.open_rhythm.ui.pages.setting.categories.key_map.KeyMidiMapping
+import mai_onsyn.open_rhythm.ui.pages.setting.categories.key_map.toMappingMap
 
 class KeyboardVirtualMidiInputDevice(
     private val keyInput: GlobalKeyEventDispatcher
 ) : MidiInputDevice {
     private val eventChannel = Channel<MidiEvent>(128, BufferOverflow.DROP_OLDEST)
-    private val userKeys = arrayOf(Key.A, Key.W, Key.S, Key.E, Key.D, Key.F, Key.T, Key.G, Key.Y, Key.H, Key.U, Key.J, Key.K, Key.O, Key.L, Key.P, Key.Semicolon, Key.Apostrophe)
+//    private val userKeys = arrayOf(Key.A, Key.W, Key.S, Key.E, Key.D, Key.F, Key.T, Key.G, Key.Y, Key.H, Key.U, Key.J, Key.K, Key.O, Key.L, Key.P, Key.Semicolon, Key.Apostrophe)
+
+    private var mappings = KeyMidiMapping.default().toMappingMap()
 
     private val handler: suspend (KeyEvent) -> Boolean = { keyEvent ->
-        val idx = userKeys.indexOf(keyEvent.key)
-        if (idx != -1) {
-            val midiKey = idx + 60
+//        val idx = userKeys.indexOf(keyEvent.key)
+        if (mappings.containsKey(keyEvent.key.keyCode)) {
+            val midiKey = mappings[keyEvent.key.keyCode]!!
             if (keyEvent.type == KeyEventType.KeyDown) {
                 eventChannel.send(NoteEvent.noteOn(0, midiKey, 100, 0))
             } else {
@@ -32,6 +36,10 @@ class KeyboardVirtualMidiInputDevice(
     }
     init {
         keyInput.registerHandler(handler)
+    }
+
+    fun updateMappings(newMappings: Map<Long, Int>) {
+        this.mappings = newMappings
     }
 
     override suspend fun clearEvents() {

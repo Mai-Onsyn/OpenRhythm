@@ -15,12 +15,13 @@ import mai_onsyn.open_rhythm.ui.pages.setting.categories.key_map.KeyMidiMapping
 import mai_onsyn.open_rhythm.ui.pages.setting.categories.key_map.toMappingMap
 
 class KeyboardVirtualMidiInputDevice(
-    private val keyInput: GlobalKeyEventDispatcher
+    private val keyInput: GlobalKeyEventDispatcher,
+    private var mappings: Map<Long, Int>
 ) : MidiInputDevice {
     private val eventChannel = Channel<MidiEvent>(128, BufferOverflow.DROP_OLDEST)
 //    private val userKeys = arrayOf(Key.A, Key.W, Key.S, Key.E, Key.D, Key.F, Key.T, Key.G, Key.Y, Key.H, Key.U, Key.J, Key.K, Key.O, Key.L, Key.P, Key.Semicolon, Key.Apostrophe)
 
-    private var mappings = KeyMidiMapping.default().toMappingMap()
+//    private var mappings = KeyMidiMapping.default().toMappingMap()
 
     private val handler: suspend (KeyEvent) -> Boolean = { keyEvent ->
 //        val idx = userKeys.indexOf(keyEvent.key)
@@ -31,7 +32,7 @@ class KeyboardVirtualMidiInputDevice(
             } else {
                 eventChannel.send(NoteEvent.noteOff(0, midiKey, 0, 0))
             }
-            true
+            false
         } else false
     }
     init {

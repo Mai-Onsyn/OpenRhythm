@@ -23,12 +23,13 @@ import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import mai_onsyn.open_rhythm.bridge.AppCursors
 import mai_onsyn.open_rhythm.ui.utility.blackKeyOffset
 import mai_onsyn.open_rhythm.ui.utility.countWhiteKeys
+import mai_onsyn.open_rhythm.ui.utility.drawTextCentered
 import mai_onsyn.open_rhythm.ui.utility.isBlackKey
-import kotlin.collections.iterator
-import kotlin.collections.mutableMapOf
+import mai_onsyn.open_rhythm.ui.utility.rememberTextLayoutResult
 
 
 @Composable
@@ -41,6 +42,8 @@ fun MidiKeyBoard(
     blackVerticalPercentage: Float = 0.64f,     // 黑键底部y在整个键盘高度的比例
     blackHorizontalPercentage: Float = 0.75f,   // 单个黑键宽度相对于白键宽度的比例
     spacing: Dp = 1.dp,
+    appendTexts: Map<Int, String> = emptyMap(),
+    centerAppendLayer: Boolean = false,
     darkPart: Color = Color.Black,
     onPress: (Int, Int) -> Unit = { pitch, velocity -> },
     onRelease: (Int) -> Unit = {},
@@ -65,6 +68,15 @@ fun MidiKeyBoard(
 
     val focusRequester = remember { FocusRequester() }
     val pointerPressedKey = mutableSetOf<Int>()
+
+    var whiteKeyWidth by remember { mutableStateOf(0f) }
+    val textRenderingItems = appendTexts.mapValues { (pitch, text) ->
+        rememberTextLayoutResult(
+            text,
+            (whiteKeyWidth * 0.3f).sp,
+            if (isBlackKey(pitch)) Color.White else Color.Black
+        )
+    }
 
     var currentCursor by remember { mutableStateOf(PointerIcon.Default) }
     Canvas(
@@ -173,15 +185,12 @@ fun MidiKeyBoard(
             }
             .onFocusChanged {
                 if (!it.isFocused) {
-//                    keyboardPressedKey.forEach { key -> onRelease(key) }
-//                    keyboardPressedKey.clear()
-
                     pointerPressedKey.forEach { key -> onRelease(key) }
                     pointerPressedKey.clear()
                 }
             }
     ) {
-        val whiteKeyWidth = (size.width - (whiteKeyCount - 1) * spacing.toPx()) / whiteKeyCount
+        whiteKeyWidth = (size.width - (whiteKeyCount - 1) * spacing.toPx()) / whiteKeyCount
 
         drawRect(
             color = colorScheme.surfaceContainer,
@@ -193,12 +202,9 @@ fun MidiKeyBoard(
             size = Size(size.width, 4.dp.toPx())
         )
 
-        val offsetStartY = 12.dp.toPx()
-
         // 白键
         for (pitch in minPitch..maxPitch) {
             if (!isBlackKey(pitch)) {
-                val x = (countWhiteKeys(minPitch, pitch) - 1) * (whiteKeyWidth + spacing.toPx())
                 val rect = keyRegions.value.second[keyRegions.value.second.binarySearchBy(pitch) { it.second }].first
                 val isActive = activeKey.containsKey(pitch)
                 drawRoundedBottomShape(
@@ -208,13 +214,6 @@ fun MidiKeyBoard(
                     ry = whiteKeyWidth * 0.15f,
                     color = if (isActive) activeKey[pitch]!! else Color.White
                 )
-//                if (pitch != maxPitch) {
-//                    drawRect(   // 分割线
-//                        color = darkPart,
-//                        topLeft = Offset(x + whiteKeyWidth, offsetStartY),
-//                        size = Size(spacing.toPx(), size.height - offsetStartY)
-//                    )
-//                }
             }
         }
         // 黑键
@@ -241,6 +240,19 @@ fun MidiKeyBoard(
                     ry = radiusUnit * 2
                 )
             }
+        }
+
+        textRenderingItems.entries.forEach { (pitch, obj) ->
+            val pos = if (isBlackKey(pitch)) {
+                val rect = keyRegions.value.first[keyRegions.value.first.binarySearchBy(pitch) { it.second }].first
+                if (centerAppendLayer) rect.center
+                else rect.bottomCenter.let { it.copy(y = it.y - whiteKeyWidth * 0.5f) }
+            } else {
+                val rect = keyRegions.value.second[keyRegions.value.second.binarySearchBy(pitch) { it.second }].first
+                if (centerAppendLayer) Offset(rect.center.x, rect.topLeft.y + rect.size.height * (blackVerticalPercentage * 0.5f + 0.5f))
+                else rect.bottomCenter.let { it.copy(y = it.y - whiteKeyWidth * 0.5f) }
+            }
+            drawTextCentered(obj, pos)
         }
     }
 }

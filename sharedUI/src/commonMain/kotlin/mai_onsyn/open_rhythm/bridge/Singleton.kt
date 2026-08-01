@@ -9,6 +9,7 @@ import mai_onsyn.open_rhythm.core.midi.MidiPlayer2
 import mai_onsyn.open_rhythm.core.midi.device.KeyboardVirtualMidiInputDevice
 import mai_onsyn.open_rhythm.core.midi.device.KtMidiInputDevice
 import mai_onsyn.open_rhythm.core.midi.device.MidiInputDevice
+import mai_onsyn.open_rhythm.ui.pages.setting.categories.key_map.toMappingMap
 import kotlin.sequences.firstOrNull
 
 object Singleton {
@@ -27,7 +28,10 @@ object Singleton {
             settings.enabledMidiInputDeviceList.addAll(it)
         }
         settings.enabledMidiInputDeviceList.forEach { name ->
-            if (name == "Virtual Keyboard") midiInputDevices["Virtual Keyboard"] = KeyboardVirtualMidiInputDevice(globalKeyEventDispatcher)
+            if (name == "Virtual Keyboard") midiInputDevices["Virtual Keyboard"] = KeyboardVirtualMidiInputDevice(
+                globalKeyEventDispatcher,
+                settings.userKeyMappings.toMappingMap()
+            )
             else try {
                 portList.find { it.name == name }?.let {
                     midiInputDevices[it.id] = KtMidiInputDevice(it, midiAccess)

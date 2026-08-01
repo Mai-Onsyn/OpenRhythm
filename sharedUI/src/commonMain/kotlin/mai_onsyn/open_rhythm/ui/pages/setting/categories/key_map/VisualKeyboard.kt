@@ -1,7 +1,7 @@
 package mai_onsyn.open_rhythm.ui.pages.setting.categories.key_map
 
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
@@ -11,8 +11,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.contentColorFor
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -21,13 +21,19 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEvent
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.type
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.min
 import androidx.compose.ui.unit.times
+import co.touchlab.kermit.Logger
 import mai_onsyn.open_rhythm.core.GlobalKeyEventDispatcher
 import mai_onsyn.open_rhythm.ui.modules.ProportionalPane
 import mai_onsyn.open_rhythm.ui.modules.ProportionalPaneScope
@@ -37,11 +43,27 @@ fun VisualKeyboard(
     modifier: Modifier = Modifier,
     eventDispatcher: GlobalKeyEventDispatcher,
     activeKeys: MutableMap<Long, Color>,
-    onKeyStateChange: (Long, Boolean) -> Unit,
+    onSelectChanged: (Long) -> Unit,
     selectedKey: Long? = null,
     drawControl: Boolean = true,
     drawNumpad: Boolean = true
 ) {
+    DisposableEffect(Unit) {
+        val handler: suspend (KeyEvent) -> Boolean = { event ->
+//            Logger.d { "KeyName ${event.key}, code ${event.key.keyCode}, dot is ${Key.NumPadDot.keyCode}" }
+
+            if (event.type == KeyEventType.KeyDown) {
+                activeKeys[event.key.keyCode] = Color.Red
+            } else {
+                activeKeys.remove(event.key.keyCode)
+            }
+            false
+        }
+        eventDispatcher.registerHandler(handler)
+        onDispose {
+            eventDispatcher.unregisterHandler(handler)
+        }
+    }
     val uw =
         if (drawControl && drawNumpad) 22.5f
         else if (drawControl && !drawNumpad) 18.25f
@@ -62,52 +84,30 @@ fun VisualKeyboard(
             widthUnitCount = uw,
             heightUnitCount = uh
         ) {
-            FunctionRow(activeKeys, onKeyStateChange, selectedKey)
-            NumberRow(activeKeys, onKeyStateChange, selectedKey)
+            var offset = 0f     // 0 = main; 15.25 = ctrl; 18.5 = numpad
+            val keySequence = sequence {
+                yieldAll(mainArea)
+                if (drawControl) {
+                    offset = 15.25f
+                    yieldAll(controlArea)
+                }
+                if (drawNumpad) {
+                    offset = if (drawControl) 18.5f else 15.25f
+                    yieldAll(numpadArea)
+                }
+            }
+            for (key in keySequence) {
+                KeyButton(
+                    Modifier.keyUnit(key.offsetX + offset, key.offsetY, key.width, key.height),
+                    key.firstName,
+                    selectedKey == key.code,
+                    activeKeys[key.code],
+                    { onSelectChanged(key.code) },
+                    key.lastName
+                )
+            }
         }
     }
-}
-@Composable
-private fun KeyboardUnitScope.FunctionRow(
-    activeKeys: MutableMap<Long, Color>,
-    onKeyStateChange: (Long, Boolean) -> Unit,
-    selectedKey: Long? = null
-) {
-    KeyButton(
-        Modifier.keyUnit(0f, 0f, 1f, 1f),
-        "ESC",
-        selectedKey == Key.Escape.keyCode,
-        activeKeys[Key.Escape.keyCode],
-        { onKeyStateChange(Key.Escape.keyCode, activeKeys.containsKey(Key.Escape.keyCode)) }
-    )
-    var offset = 2f
-    for (i in 1..12) {
-        val code = Key.F1.keyCode + i
-        KeyButton(
-            Modifier.keyUnit(offset, 0f, 1f, 1f),
-            "F${i}",
-            selectedKey == code,
-            activeKeys[code],
-            { onKeyStateChange(code, activeKeys.containsKey(code)) }
-        )
-        offset += if (i % 4 == 0) 1.5f else 1f
-    }
-}
-
-@Composable
-private fun KeyboardUnitScope.NumberRow(
-    activeKeys: MutableMap<Long, Color>,
-    onKeyStateChange: (Long, Boolean) -> Unit,
-    selectedKey: Long? = null
-) {
-    KeyButton(
-        Modifier.keyUnit(0f, 1.25f, 1f, 1f),
-        "/",
-        selectedKey == Key.Grave.keyCode,
-        activeKeys[Key.Grave.keyCode],
-        { onKeyStateChange(Key.Grave.keyCode, activeKeys.containsKey(Key.Grave.keyCode)) },
-        "?"
-    )
 }
 
 @Composable
@@ -120,15 +120,24 @@ private fun KeyButton(
     secondText: String? = null,
 ) {
     val density = LocalDensity.current
-    val color = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceContainerHigh
+    val color by animateColorAsState(
+        if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceContainerHigh
+    )
+    val contentColor by animateColorAsState(
+        if (selected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface
+    )
+    val variantColor by animateColorAsState(
+        if (selected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant
+    )
     var size by remember { mutableStateOf(DpSize.Zero) }
+    val sizeFactor = min(size.width, size.height)
     Surface(
         onClick = onClick,
-        modifier = modifier,
+        modifier = modifier.padding(sizeFactor * 0.04f),
         color = color,
         shape = MaterialTheme.shapes.extraSmall,
         shadowElevation = 2.dp,
-        border = BorderStroke(0.8.dp, activeColor ?: MaterialTheme.colorScheme.surfaceVariant)
+        border = BorderStroke(sizeFactor * if (activeColor == null) 0.02f else 0.03f, activeColor ?: MaterialTheme.colorScheme.surfaceVariant)
     ) {
         Box(
             modifier = Modifier
@@ -142,8 +151,8 @@ private fun KeyButton(
         ) {
             Text(
                 text = firstText,
-                fontSize = with(density) { (size.height * 0.4f).toSp() },
-                color = contentColorFor(color),
+                fontSize = with(density) { (sizeFactor * 0.3f).toSp() },
+                color = contentColor,
                 maxLines = 1,
                 overflow = TextOverflow.Visible,
                 textAlign = TextAlign.Center,
@@ -156,8 +165,8 @@ private fun KeyButton(
             secondText?.let {
                 Text(
                     text = secondText,
-                    fontSize = with(density) { (size.height * 0.4f).toSp() },
-                    color = contentColorFor(color),
+                    fontSize = with(density) { (sizeFactor * 0.2f).toSp() },
+                    color = variantColor,
                     maxLines = 1,
                     overflow = TextOverflow.Visible,
                     textAlign = TextAlign.Center,
@@ -165,56 +174,6 @@ private fun KeyButton(
                 )
             }
         }
-//        ProportionalPane(Modifier.fillMaxSize().onSizeChanged { height = with(density) { (it.height * 0.4f).toDp() } }) {
-//            Text(
-//                text = firstText,
-//                fontSize = with(density) { height.toSp() },
-//                color = contentColorFor(color),
-//                maxLines = 1,
-//                overflow = TextOverflow.Visible,
-//                textAlign = TextAlign.Center,
-//                modifier = Modifier
-//                    .then(
-//                        if (secondText == null) Modifier.layoutRatio(0.2f, 0.2f, 0.6f, 0.6f)
-//                        else Modifier.layoutRatio(0.35f, 0.35f, 0.6f, 0.6f)
-//                    ).background(Color.Red)
-//            )
-//            Box(
-//                contentAlignment = Alignment.Center,
-//                modifier = Modifier
-//                    .then(
-//                        if (secondText == null) Modifier.layoutRatio(0.2f, 0.2f, 0.6f, 0.6f)
-//                        else Modifier.layoutRatio(0.35f, 0.35f, 0.6f, 0.6f)
-//                    )
-//            ) {
-//                Text(
-//                    text = firstText,
-//                    fontSize = with(density) { width.toSp() },
-//                    style = TextStyle(
-//                        color = contentColorFor(color),
-//                    ),
-//                    maxLines = 1,
-//                    overflow = TextOverflow.Visible
-//                )
-//            }
-//            if (secondText != null) {
-//                Box(
-//                    contentAlignment = Alignment.Center,
-//                    modifier = Modifier
-//                        .layoutRatio(0f, 0f, 0.6f, 0.6f)
-//                ) {
-//                    Text(
-//                        text = secondText,
-//                        fontSize = with(density) { width.toSp() },
-//                        style = TextStyle(
-//                            color = contentColorFor(MaterialTheme.colorScheme.surfaceVariant),
-//                        ),
-//                        maxLines = 1,
-//                        overflow = TextOverflow.Visible
-//                    )
-//                }
-//            }
-//        }
     }
 }
 

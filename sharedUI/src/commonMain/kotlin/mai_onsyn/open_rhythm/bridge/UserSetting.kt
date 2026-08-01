@@ -17,6 +17,7 @@ import kotlinx.serialization.builtins.serializer
 import kotlinx.serialization.json.Json
 import mai_onsyn.open_rhythm.ui.pages.library.UILibraryFolder
 import mai_onsyn.open_rhythm.ui.pages.setting.categories.key_map.KeyMidiMapping
+import mai_onsyn.open_rhythm.ui.pages.setting.categories.key_map.toMappingMap
 import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KProperty
 
@@ -52,7 +53,7 @@ class UserSetting(
     var UseParserV1 by st.observable("UseParserV1", false)
 
     // =====Key Mapping=====
-    val userKeyMappings by st.list("UserKeyMappings", mutableListOf(), KeyMidiMapping.serializer())
+    val userKeyMappings by st.list("UserKeyMappings", KeyMidiMapping.default(), KeyMidiMapping.serializer())
 
     // =====Waterfall Appearance=====
     var WaterfallBackgroundColor by st.observable("WaterfallBackgroundColor", Color.Unspecified)
@@ -61,6 +62,7 @@ class UserSetting(
     var KeyboardAutoAspect by st.observable("KeyBoardAutoAspect", true)
     var KeyboardAspectRatio by st.observable("KeyBoardAspectRatio", 8f)
     var KeyboardUserInteractionDisplayColor by st.observable("KeyboardUserInteractionDisplayColor", Color(138, 226, 52))
+    var CenterKeyboardOverlayLayers by st.observable("CenterKeyboardOverlayLayers", false)
 
     // =====User Data=====
     val libraryFolderList by st.list("LibraryFolderList", mutableListOf(), UILibraryFolder.serializer())

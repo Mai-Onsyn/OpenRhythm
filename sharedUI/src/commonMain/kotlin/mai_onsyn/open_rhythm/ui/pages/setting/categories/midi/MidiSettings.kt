@@ -45,6 +45,7 @@ import mai_onsyn.open_rhythm.ui.modules.dialog.DialogPopup
 import mai_onsyn.open_rhythm.ui.modules.midi_flow.MidiKeyBoard
 import mai_onsyn.open_rhythm.ui.pages.library.cachedMidiFiles
 import mai_onsyn.open_rhythm.ui.pages.setting.SettingsCard
+import mai_onsyn.open_rhythm.ui.pages.setting.categories.key_map.toMappingMap
 import mai_onsyn.open_rhythm.ui.utility.BindInputDeviceEvents
 
 private const val UNKNOWN_DEVICE = "Unknown Device"
@@ -122,7 +123,8 @@ private fun MidiInputSettings() {
                             onChecked = {
                                 if (it) {
                                     Singleton.midiInputDevices[virtualKeyboard] = KeyboardVirtualMidiInputDevice(
-                                        Singleton.globalKeyEventDispatcher
+                                        Singleton.globalKeyEventDispatcher,
+                                        Singleton.settings.userKeyMappings.toMappingMap()
                                     )
                                     Singleton.settings.enabledMidiInputDeviceList.add(virtualKeyboard)
                                 } else {
@@ -421,9 +423,7 @@ private fun TestKeyboard() {
         modifier = Modifier
             .fillMaxWidth()
             .aspectRatio(Singleton.settings.KeyboardAspectRatio)
-//            .clip(MaterialTheme.shapes.small)
     ) {
-        Color.Unspecified
         val userActiveKeys = remember { mutableStateMapOf<Int, Color>() }
         MidiKeyBoard(
             modifier = Modifier

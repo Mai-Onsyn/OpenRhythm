@@ -25,11 +25,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import mai_onsyn.open_rhythm.bridge.AppCursors
-import mai_onsyn.open_rhythm.ui.utility.blackKeyOffset
-import mai_onsyn.open_rhythm.ui.utility.countWhiteKeys
-import mai_onsyn.open_rhythm.ui.utility.drawTextCentered
-import mai_onsyn.open_rhythm.ui.utility.isBlackKey
-import mai_onsyn.open_rhythm.ui.utility.rememberTextLayoutResult
+import mai_onsyn.open_rhythm.ui.utility.*
 
 
 @Composable

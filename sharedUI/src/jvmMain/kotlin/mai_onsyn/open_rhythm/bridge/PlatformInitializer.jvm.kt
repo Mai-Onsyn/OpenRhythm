@@ -4,6 +4,8 @@ import androidx.compose.ui.input.pointer.PointerIcon
 import com.russhwolf.settings.PropertiesSettings
 import com.russhwolf.settings.Settings
 import dev.atsushieno.ktmidi.JvmMidiAccess
+import dev.atsushieno.ktmidi.LibreMidiAccess
+import dev.atsushieno.ktmidi.LibreMidiAccess.API
 import dev.atsushieno.ktmidi.MidiAccess
 import io.github.vinceglb.filekit.FileKit
 import io.github.vinceglb.filekit.PlatformFile
@@ -15,7 +17,8 @@ import java.io.File
 import java.util.*
 
 actual fun getMidiAccess(): MidiAccess {
-    return JvmMidiAccess()//LibreMidiAccess(0)
+//    return LibreMidiAccess(API.Unspecified)
+    return JvmMidiAccess()
 }
 
 actual object AppCursors {

@@ -267,6 +267,7 @@ class MidiPlayer2(
             midi.pbChangeTimeline[i].getInterval(range).forEach {
                 pb(it.value, i)
             }
+//            cc(7, 127, i)
         }
     }
 }

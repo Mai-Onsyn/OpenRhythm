@@ -11,7 +11,6 @@ import mai_onsyn.open_rhythm.core.midi.MidiCCEvent
 import mai_onsyn.open_rhythm.core.midi.MidiPBEvent
 import mai_onsyn.open_rhythm.core.midi.MidiPCEvent
 import mai_onsyn.open_rhythm.core.midi.NoteEvent
-import kotlin.collections.set
 
 
 @Composable

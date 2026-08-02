@@ -1,10 +1,5 @@
 package mai_onsyn.open_rhythm.ui.modules.midi_flow
 
-import androidx.compose.animation.core.LinearEasing
-import androidx.compose.animation.core.VectorConverter
-import androidx.compose.animation.core.animateIntAsState
-import androidx.compose.animation.core.animateValueAsState
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -24,16 +19,10 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.max
 import co.touchlab.kermit.Logger
-import kotlinx.coroutines.ensureActive
 import mai_onsyn.open_rhythm.bridge.Singleton
-import mai_onsyn.open_rhythm.core.GlobalKeyEventDispatcher
 import mai_onsyn.open_rhythm.core.midi.Midi
-import mai_onsyn.open_rhythm.core.midi.MidiCCEvent
-import mai_onsyn.open_rhythm.core.midi.MidiPBEvent
-import mai_onsyn.open_rhythm.core.midi.MidiPCEvent
-import mai_onsyn.open_rhythm.core.midi.NoteEvent
-import mai_onsyn.open_rhythm.core.midi.device.MidiInputDevice
 import mai_onsyn.open_rhythm.ui.utility.BindInputDeviceEvents
 
 @Composable
@@ -46,8 +35,7 @@ fun MidiDownRegion(
     onPlayStateChange: (Boolean) -> Unit = {},
     onProgressChange: (Float) -> Unit = {},
     focusRequester: FocusRequester? = null,
-    keyDispatcher: GlobalKeyEventDispatcher? = null,
-//    midiInputDevice: MidiInputDevice? = null
+    //    midiInputDevice: MidiInputDevice? = null
 ) {
     val density = LocalDensity.current
 
@@ -200,7 +188,7 @@ fun MidiDownRegion(
                 Singleton.player.noteOff(key)
             },
             onVerticalDragged = {
-                keyboardHeight = with(density) { keyboardHeight - it.toDp() }
+                keyboardHeight = max(64.dp, with(density) { keyboardHeight - it.toDp() })
             }
         )
     }

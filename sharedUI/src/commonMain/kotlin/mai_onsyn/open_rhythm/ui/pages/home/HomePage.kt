@@ -13,14 +13,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.unit.dp
-import mai_onsyn.open_rhythm.ui.icons.ic_exit_to_app
-import mai_onsyn.open_rhythm.ui.icons.ic_library_music
-import mai_onsyn.open_rhythm.ui.icons.ic_piano
-import mai_onsyn.open_rhythm.ui.icons.ic_settings
-import mai_onsyn.open_rhythm.ui.icons.ic_unknown
-import openrhythm.sharedui.generated.resources.*
-import org.jetbrains.compose.resources.DrawableResource
-import org.jetbrains.compose.resources.vectorResource
+import mai_onsyn.open_rhythm.ui.icons.*
 
 @Composable
 fun HomePage(

@@ -1,6 +1,5 @@
 package mai_onsyn.open_rhythm.core.midi
 
-import co.touchlab.kermit.Logger
 import dev.atsushieno.ktmidi.Midi1CompoundMessage
 import dev.atsushieno.ktmidi.Midi1Music
 import dev.atsushieno.ktmidi.read

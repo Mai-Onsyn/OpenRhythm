@@ -2,15 +2,14 @@ package mai_onsyn.open_rhythm.bridge
 
 import co.touchlab.kermit.Logger
 import dev.atsushieno.ktmidi.MidiAccess
+import dev.atsushieno.ktmidi.PortCreatorContext
 import kotlinx.coroutines.runBlocking
 import mai_onsyn.open_rhythm.core.GlobalKeyEventDispatcher
-import mai_onsyn.open_rhythm.core.midi.MidiPlayer
 import mai_onsyn.open_rhythm.core.midi.MidiPlayer2
 import mai_onsyn.open_rhythm.core.midi.device.KeyboardVirtualMidiInputDevice
 import mai_onsyn.open_rhythm.core.midi.device.KtMidiInputDevice
 import mai_onsyn.open_rhythm.core.midi.device.MidiInputDevice
 import mai_onsyn.open_rhythm.ui.pages.setting.categories.key_map.toMappingMap
-import kotlin.sequences.firstOrNull
 
 object Singleton {
     val settings: UserSetting = UserSetting(createSetting())
@@ -58,8 +57,8 @@ private fun createMidiPlayer(access: MidiAccess): MidiPlayer2 {
         return MidiPlayer2(null)
     }
 
-    val candidates = mutableListOf<String>()
     val userSpecified = Singleton.settings.SelectedOutputDeviceName
+    val candidates = mutableListOf<String>()
     if (userSpecified.isNotEmpty()) {
         candidates.add(userSpecified)
     }

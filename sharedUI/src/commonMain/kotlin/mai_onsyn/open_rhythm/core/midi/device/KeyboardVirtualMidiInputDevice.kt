@@ -1,18 +1,14 @@
 package mai_onsyn.open_rhythm.core.midi.device
 
-import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyEvent
 import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.type
-import co.touchlab.kermit.Logger
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.channels.Channel
 import mai_onsyn.open_rhythm.core.GlobalKeyEventDispatcher
 import mai_onsyn.open_rhythm.core.midi.MidiEvent
 import mai_onsyn.open_rhythm.core.midi.NoteEvent
-import mai_onsyn.open_rhythm.ui.pages.setting.categories.key_map.KeyMidiMapping
-import mai_onsyn.open_rhythm.ui.pages.setting.categories.key_map.toMappingMap
 
 class KeyboardVirtualMidiInputDevice(
     private val keyInput: GlobalKeyEventDispatcher,

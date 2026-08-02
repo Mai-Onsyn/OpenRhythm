@@ -2,35 +2,25 @@ package mai_onsyn.open_rhythm.ui.pages.setting.categories.midi
 
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.isUnspecified
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import co.touchlab.kermit.Logger
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import mai_onsyn.open_rhythm.bridge.Singleton
-import mai_onsyn.open_rhythm.core.midi.MidiCCEvent
-import mai_onsyn.open_rhythm.core.midi.MidiPBEvent
-import mai_onsyn.open_rhythm.core.midi.MidiPCEvent
-import mai_onsyn.open_rhythm.core.midi.NoteEvent
 import mai_onsyn.open_rhythm.core.midi.device.KeyboardVirtualMidiInputDevice
 import mai_onsyn.open_rhythm.core.midi.device.KtMidiInputDevice
 import mai_onsyn.open_rhythm.ui.icons.ic_audio_file
@@ -255,6 +245,7 @@ private fun DeviceRow(
     }
 }
 
+const val VIRTUAL_DEVICE_NAME = "OpenRhythm Virtual Device"
 @Composable
 private fun MidiOutputSettings() {
     val colorScheme = MaterialTheme.colorScheme
@@ -295,6 +286,7 @@ private fun MidiOutputSettings() {
                     onSelect = {
                         coroutineScope.launch {
                             try {
+                                Singleton.player.midiOutput?.close()
                                 Singleton.player.setOutput(Singleton.midiAccess.openOutput(devices[it].id))
                                 selectedDeviceIndex = it
                                 Singleton.settings.SelectedOutputDeviceName = deviceNames.getOrElse(selectedDeviceIndex) { UNKNOWN_DEVICE }

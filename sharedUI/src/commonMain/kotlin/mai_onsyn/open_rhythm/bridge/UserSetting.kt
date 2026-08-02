@@ -5,11 +5,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.isSpecified
 import androidx.compose.ui.graphics.isUnspecified
 import androidx.compose.ui.graphics.toArgb
 import com.russhwolf.settings.Settings
-import com.russhwolf.settings.int
 import com.russhwolf.settings.string
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.builtins.ListSerializer
@@ -17,7 +15,6 @@ import kotlinx.serialization.builtins.serializer
 import kotlinx.serialization.json.Json
 import mai_onsyn.open_rhythm.ui.pages.library.UILibraryFolder
 import mai_onsyn.open_rhythm.ui.pages.setting.categories.key_map.KeyMidiMapping
-import mai_onsyn.open_rhythm.ui.pages.setting.categories.key_map.toMappingMap
 import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KProperty
 

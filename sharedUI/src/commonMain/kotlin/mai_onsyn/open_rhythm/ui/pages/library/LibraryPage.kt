@@ -1,12 +1,9 @@
 package mai_onsyn.open_rhythm.ui.pages.library
 
-import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
@@ -39,7 +36,7 @@ fun LibraryPage(
     BackHandler { onBack() }
 
     Box(Modifier.safeDrawingPadding()) {
-        var selectedFolderIndex by remember { mutableStateOf(0) }
+        var selectedFolderIndex by rememberSaveable { mutableStateOf(0) }
         Column(
             modifier = Modifier
                 .fillMaxSize()

@@ -18,7 +18,6 @@ import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import co.touchlab.kermit.Logger
 import mai_onsyn.open_rhythm.core.midi.Midi
 import mai_onsyn.open_rhythm.core.midi.Note
 import mai_onsyn.open_rhythm.core.midi.TimeSignatureEvent
@@ -42,7 +41,7 @@ fun MidiWaterFall(
     drawPitchLine: Boolean = true,
     onVerticalDragged: (Float) -> Unit = {}
 ) {
-    require(trackColors.size >= midi.hasNoteTracks) { "Not enough colors for tracks" }
+//    require(trackColors.size >= midi.hasNoteTracks) { "Not enough colors for tracks" }
     val density = LocalDensity.current
 
     val whiteKeyCount = countWhiteKeys(minPitch, maxPitch)
@@ -109,7 +108,7 @@ fun MidiWaterFall(
                 maxNoteDurationList[i],
                 midi.tracks[i].notes
             ).forEach {
-                toDrawNotes.add(DrawableNote(it, trackColors[i], i))
+                toDrawNotes.add(DrawableNote(it, trackColors[i % trackColors.size], i))
             }
         }
         toDrawNotes.sortWith(compareBy({ it.note.tick }, { it.trackNum }))

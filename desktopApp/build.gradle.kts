@@ -36,6 +36,7 @@ compose.desktop {
             "-XX:+UseZGC",
             "-Xms512m",
             "-Xmx2048m",
+            "--enable-native-access=ALL-UNNAMED",
 //            "-Xlog:gc"
         )
     }

@@ -14,7 +14,11 @@ import mai_onsyn.open_rhythm.core.midi.NoteEvent
 
 
 @Composable
-fun BindInputDeviceEvents(userActiveKeys: SnapshotStateMap<Int, Color>) {
+fun BindInputDeviceEvents(
+    userActiveKeys: SnapshotStateMap<Int, Color>,
+    noteOn: (Int, Int) -> Unit = { _, _ ->  },
+    noteOff: (Int) -> Unit = {}
+) {
     LaunchedEffect(Unit) {
         Singleton.midiInputDevices.values.forEach { it.clearEvents() }
     }
@@ -28,7 +32,11 @@ fun BindInputDeviceEvents(userActiveKeys: SnapshotStateMap<Int, Color>) {
                             if (Singleton.settings.EnableInputMidiNoteEvent) {
                                 if (it.on) {
                                     userActiveKeys[it.pitch] = Singleton.settings.KeyboardUserInteractionDisplayColor
-                                } else userActiveKeys.remove(it.pitch)
+                                    noteOn(it.pitch, it.velocity)
+                                } else {
+                                    userActiveKeys.remove(it.pitch)
+                                    noteOff(it.pitch)
+                                }
                                 Singleton.player.sendShortEvent(it.event)
                                 Logger.v { "Note input: $it" }
                             }

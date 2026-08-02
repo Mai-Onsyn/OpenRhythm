@@ -52,7 +52,6 @@ fun MidiDownRegion(
             .focusRequester(focusRequester)
             .onSizeChanged {
                 if (keyboardRatio == 0f) return@onSizeChanged
-
                 keyboardHeight = with(density) { (it.width / keyboardRatio).toDp() }
             }
             .pointerInput(Unit) {

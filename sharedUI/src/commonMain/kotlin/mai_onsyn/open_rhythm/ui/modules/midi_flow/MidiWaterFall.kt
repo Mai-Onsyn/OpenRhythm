@@ -17,13 +17,17 @@ import androidx.compose.ui.input.pointer.positionChanged
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import mai_onsyn.open_rhythm.core.midi.Midi
 import mai_onsyn.open_rhythm.core.midi.Note
 import mai_onsyn.open_rhythm.core.midi.TimeSignatureEvent
 import mai_onsyn.open_rhythm.ui.utility.blackKeyOffset
 import mai_onsyn.open_rhythm.ui.utility.countWhiteKeys
+import mai_onsyn.open_rhythm.ui.utility.drawPitchLines
+import mai_onsyn.open_rhythm.ui.utility.drawSectionLines
 import mai_onsyn.open_rhythm.ui.utility.isBlackKey
+import mai_onsyn.open_rhythm.ui.utility.reMeasure
 
 @Composable
 fun MidiWaterFall(
@@ -44,7 +48,6 @@ fun MidiWaterFall(
 //    require(trackColors.size >= midi.hasNoteTracks) { "Not enough colors for tracks" }
     val density = LocalDensity.current
 
-    val whiteKeyCount = countWhiteKeys(minPitch, maxPitch)
     val spacingPx = with(density) { spacing.toPx() }
 
     val gridPos = remember { mutableMapOf<Int, Pair<Float, Float>>() }  // Map<key, Pair<x, width>>
@@ -62,23 +65,7 @@ fun MidiWaterFall(
         modifier = modifier
             .clip(RectangleShape)
             .onSizeChanged { size ->
-                gridPos.clear()
-                val whiteKeyWidth = (size.width - (whiteKeyCount - 1) * spacingPx) / whiteKeyCount
-
-                for (pitch in minPitch..maxPitch) {
-                    if (isBlackKey(pitch)) {
-                        val offsetPercent = blackKeyOffset(pitch)
-                        val centerX = (countWhiteKeys(minPitch, pitch)) * (whiteKeyWidth + spacingPx) - spacingPx / 2
-                        val keyWidth = whiteKeyWidth * blackHorizontalPercentage
-                        val left = centerX - keyWidth / 2 + keyWidth * offsetPercent
-                        gridPos[pitch] = Pair(left, keyWidth)
-                    } else {
-                        gridPos[pitch] = Pair(
-                            (countWhiteKeys(minPitch, pitch) - 1) * (whiteKeyWidth + spacingPx),
-                            whiteKeyWidth
-                        )
-                    }
-                }
+                reMeasure(gridPos, size, spacingPx, minPitch, maxPitch, blackHorizontalPercentage)
             }
             .pointerInput(Unit) {
                 awaitPointerEventScope {
@@ -138,58 +125,6 @@ fun MidiWaterFall(
         for (pack in toDrawNotes) {
             if (isBlackKey(pack.note.pitch)) drawNote(pack)
         }
-    }
-}
-
-private fun DrawScope.drawPitchLines(
-    minPitch: Int,          // A0 default
-    maxPitch: Int,          // C8 default
-    gridPos: Map<Int, Pair<Float, Float>>,
-    color: Color = Color.LightGray,
-    thickness: Dp = 0.7.dp
-) {
-    val thicknessPx = thickness.toPx()
-    for (pitch in minPitch..maxPitch) {
-        if (pitch % 12 == 0) {
-            val x = gridPos[pitch]!!.first - thicknessPx / 2
-            drawLine(
-                color = color,
-                start = Offset(x, 0f),
-                end = Offset(x, size.height),
-                strokeWidth = thicknessPx
-            )
-        }
-        else if (pitch % 12 == 5) {
-            val x = gridPos[pitch]!!.first - thicknessPx / 2
-            drawLine(
-                color = color,
-                start = Offset(x, 0f),
-                end = Offset(x, size.height),
-                strokeWidth = thicknessPx * 0.4f
-            )
-        }
-    }
-}
-
-private fun DrawScope.drawSectionLines(
-    midi: Midi,
-    loTick: Long,
-    hiTick: Long,
-    pxPerTick: Float,
-    color: Color = Color.LightGray,
-    thickness: Dp = 0.7.dp
-) {
-    val thicknessPx = thickness.toPx()
-    val sectionTicks = findBarLines(midi.timeSignatureEvents, loTick, hiTick, midi.ppq)
-
-    for (tick in sectionTicks) {
-        val y = size.height - ((tick - loTick) * pxPerTick - thicknessPx * 0.5f)
-        drawLine(
-            color = color,
-            start = Offset(0f, y),
-            end = Offset(size.width, y),
-            strokeWidth = thicknessPx * 0.4f
-        )
     }
 }
 

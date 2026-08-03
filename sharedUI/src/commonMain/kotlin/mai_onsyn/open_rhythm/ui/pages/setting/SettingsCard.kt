@@ -19,22 +19,26 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import mai_onsyn.open_rhythm.ui.icons.ic_arrow_drop_down
 
-sealed class SettingEntry {
-    data class Single(
-        val name: String,
-        val description: String?,
-        val content: @Composable () -> Unit
-    ) : SettingEntry()
+//sealed class SettingEntry {
+//    data class Single(
+//        val name: String,
+//        val description: String?,
+//        val content: @Composable () -> Unit
+//    ) : SettingEntry()
+//
+//    data class Fold(
+//        val title: String,
+//        val items: List<SettingEntry>
+//    ) : SettingEntry()
+//    // 状态由渲染层管理，不在数据类中保存
+//}
 
-    data class Fold(
-        val title: String,
-        val items: List<SettingEntry>
-    ) : SettingEntry()
-    // 状态由渲染层管理，不在数据类中保存
-}
+class SettingsCardScope(
+    private val showDivider: Boolean = true
+) {
 
-class SettingsCardScope {
-    private val entries = mutableListOf<SettingEntry>()
+    private var firstItem = true
+
 
     @Composable
     fun item(
@@ -42,8 +46,37 @@ class SettingsCardScope {
         description: String? = null,
         content: @Composable () -> Unit
     ) {
-        entries.add(SettingEntry.Single(name, description, content))
+        if (!firstItem && showDivider) {
+            HorizontalDivider()
+        }
+
+        firstItem = false
+
+        SettingItemRow(
+            name = name,
+            description = description,
+            content = content
+        )
     }
+
+
+    @Composable
+    fun fold(
+        title: String,
+        content: @Composable SettingsCardScope.() -> Unit
+    ) {
+        if (!firstItem && showDivider) {
+            HorizontalDivider()
+        }
+
+        firstItem = false
+
+        FoldItem(
+            title = title,
+            content = content
+        )
+    }
+
 
     @Composable
     fun itemWithSwitch(
@@ -53,7 +86,11 @@ class SettingsCardScope {
         onToggled: (Boolean) -> Unit
     ) {
         item(name, description) {
-            var checked by remember { mutableStateOf(initial) }
+
+            var checked by remember(initial) {
+                mutableStateOf(initial)
+            }
+
             Switch(
                 checked = checked,
                 onCheckedChange = {
@@ -64,19 +101,6 @@ class SettingsCardScope {
             )
         }
     }
-
-    @Composable
-    fun fold(
-        title: String,
-        content: @Composable SettingsCardScope.() -> Unit
-    ) {
-        val subScope = SettingsCardScope()
-        subScope.content()
-        entries.add(SettingEntry.Fold(title, subScope.entries.toList()))
-    }
-
-    internal fun clear() = entries.clear()
-    internal fun getEntries() = entries.toList()
 }
 
 @Composable
@@ -115,42 +139,7 @@ fun SettingsCard(
                 contentColor = MaterialTheme.colorScheme.onSurface
             )
         ) {
-            val scope = remember { SettingsCardScope() }
-            scope.clear()
-            scope.content()
-            val entries = scope.getEntries()
-
-            RenderEntries(entries = entries, startWithDivider = false)
-        }
-    }
-}
-
-@Composable
-private fun RenderEntries(
-    entries: List<SettingEntry>,
-    startWithDivider: Boolean
-) {
-    Column {
-        entries.forEachIndexed { index, entry ->
-            val showDividerAbove = when {
-                index == 0 && !startWithDivider -> false
-                else -> true
-            }
-            if (showDividerAbove) {
-                HorizontalDivider()
-            }
-
-            when (entry) {
-                is SettingEntry.Single -> {
-                    SettingItemRow(entry.name, entry.description, entry.content)
-                }
-                is SettingEntry.Fold -> {
-                    FoldItem(
-                        title = entry.title,
-                        items = entry.items
-                    )
-                }
-            }
+            SettingsCardScope().content()
         }
     }
 }
@@ -158,15 +147,18 @@ private fun RenderEntries(
 @Composable
 private fun FoldItem(
     title: String,
-    items: List<SettingEntry>
+    content: @Composable SettingsCardScope.() -> Unit
 ) {
-    var expanded by rememberSaveable { mutableStateOf(false) }  // 默认折叠
+    var expanded by rememberSaveable { mutableStateOf(false) }
 
     Column {
+
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .clickable { expanded = !expanded }
+                .clickable {
+                    expanded = !expanded
+                }
                 .pointerHoverIcon(PointerIcon.Hand)
                 .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
@@ -178,24 +170,27 @@ private fun FoldItem(
                 color = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.weight(1f)
             )
+
             val iconRotation by animateFloatAsState(
-                targetValue = if (expanded) -180f else 0f,
-                animationSpec = tween(easing = LinearOutSlowInEasing)
+                targetValue = if (expanded) -180f else 0f
             )
+
             Icon(
                 imageVector = ic_arrow_drop_down,
                 contentDescription = null,
                 modifier = Modifier
                     .size(32.dp)
-                    .rotate(iconRotation),
+                    .rotate(iconRotation)
             )
         }
 
+
         AnimatedVisibility(visible = expanded) {
-            RenderEntries(
-                entries = items,
-                startWithDivider = true
-            )
+            Column {
+                HorizontalDivider()
+
+                SettingsCardScope().content()
+            }
         }
     }
 }

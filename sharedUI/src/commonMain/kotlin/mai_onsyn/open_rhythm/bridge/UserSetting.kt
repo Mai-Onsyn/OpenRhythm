@@ -45,6 +45,7 @@ class UserSetting(
     var EnableOutputMidiPCEvent by st.observable("EnableOutputMidiPCBEvent", true)
     var EnableOutputMidiPBEvent by st.observable("EnableOutputMidiPCBEvent", true)
     var EnableOutputOtherMidiEvent by st.observable("EnableOutputOtherMidiEvent", true)
+    var GervillSF2Path by st.observable("GervillSF2Path", "")
 
     // =====MIDI File=====
     var UseParserV1 by st.observable("UseParserV1", false)

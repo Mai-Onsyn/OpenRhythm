@@ -5,6 +5,7 @@ import co.touchlab.kermit.Logger
 import com.russhwolf.settings.NSUserDefaultsSettings
 import com.russhwolf.settings.Settings
 import dev.atsushieno.ktmidi.MidiAccess
+import dev.atsushieno.ktmidi.MidiOutput
 import dev.atsushieno.ktmidi.TraditionalCoreMidiAccess
 import io.github.vinceglb.filekit.FileKit
 import io.github.vinceglb.filekit.PlatformFile
@@ -36,3 +37,5 @@ actual suspend fun FileKit.pickDirectoryWithPermission(): PlatformFile? {
 actual fun registerGlobalKeyEventDispatcher(keyEventDispatcher: GlobalKeyEventDispatcher) {
     Logger.w { "ios platform cannot register a global keyEvent handler" }
 }
+
+actual fun setupMidiOutput(output: MidiOutput, name: String, context: Any) {}

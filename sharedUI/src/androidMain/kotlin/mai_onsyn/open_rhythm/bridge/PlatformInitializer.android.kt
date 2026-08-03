@@ -10,6 +10,7 @@ import com.russhwolf.settings.Settings
 import com.russhwolf.settings.SharedPreferencesSettings
 import dev.atsushieno.ktmidi.AndroidMidiAccess
 import dev.atsushieno.ktmidi.MidiAccess
+import dev.atsushieno.ktmidi.MidiOutput
 import io.github.vinceglb.filekit.FileKit
 import io.github.vinceglb.filekit.PlatformFile
 import io.github.vinceglb.filekit.dialogs.init
@@ -57,3 +58,5 @@ actual suspend fun FileKit.pickDirectoryWithPermission(): PlatformFile? {
 actual fun registerGlobalKeyEventDispatcher(keyEventDispatcher: GlobalKeyEventDispatcher) {
     Logger.w { "Global key event dispatcher not supported on Android yet" }
 }
+
+actual fun setupMidiOutput(output: MidiOutput, name: String, context: Any) {}

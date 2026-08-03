@@ -7,14 +7,17 @@ import dev.atsushieno.ktmidi.JvmMidiAccess
 import dev.atsushieno.ktmidi.LibreMidiAccess
 import dev.atsushieno.ktmidi.LibreMidiAccess.API
 import dev.atsushieno.ktmidi.MidiAccess
+import dev.atsushieno.ktmidi.MidiOutput
 import io.github.vinceglb.filekit.FileKit
 import io.github.vinceglb.filekit.PlatformFile
 import io.github.vinceglb.filekit.dialogs.openDirectoryPicker
+import kotlinx.coroutines.runBlocking
 import mai_onsyn.open_rhythm.core.GlobalKeyEventDispatcher
 import java.awt.Cursor
 import java.awt.KeyEventDispatcher
 import java.io.File
 import java.util.*
+import javax.sound.midi.Synthesizer
 
 actual fun getMidiAccess(): MidiAccess {
 //    return LibreMidiAccess(API.Unspecified)
@@ -54,4 +57,13 @@ actual suspend fun FileKit.pickDirectoryWithPermission(): PlatformFile? {
 var keyEventDispatcher: GlobalKeyEventDispatcher? = null
 actual fun registerGlobalKeyEventDispatcher(keyEventDispatcher: GlobalKeyEventDispatcher) {
     mai_onsyn.open_rhythm.bridge.keyEventDispatcher = keyEventDispatcher
+}
+
+actual fun setupMidiOutput(output: MidiOutput, name: String, context: Any) {
+    if (context is String && name == "Gervill") {
+        val file = File(context)
+        if (file.exists()) {
+            loadSoundbankToKtmidiOutput(output, file)
+        }
+    }
 }

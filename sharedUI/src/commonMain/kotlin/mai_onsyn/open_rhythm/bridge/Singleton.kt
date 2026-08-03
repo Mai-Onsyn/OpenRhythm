@@ -74,7 +74,11 @@ private fun createMidiPlayer(access: MidiAccess): MidiPlayer2 {
     Singleton.settings.SelectedOutputDeviceName = selected.name ?: "Unknown Device"
     return MidiPlayer2(runBlocking {
         try {
-            access.openOutput(selected.id)
+            val output = access.openOutput(selected.id)
+            if (selected.name == "Gervill") {
+                setupMidiOutput(output, "Gervill", Singleton.settings.GervillSF2Path)
+            }
+            output
         } catch (e: Exception) {
             Logger.e(e) { "Cannot Open Output: ${selected.id}" }
             null

@@ -11,8 +11,10 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.backhandler.BackHandler
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.pointerInput
@@ -31,9 +33,10 @@ import kotlin.random.Random
 @Composable
 fun PlayPage(
     midi: Midi?,
-    onBack: () -> Unit
+    onBack: () -> Unit,
+    drawStatusBar: Boolean = true,
 ) {
-    BackHandler { onBack() }
+    if (drawStatusBar) BackHandler { onBack() }
     val trackColors = remember { _testOnly_GenerateTrackColors() }
 
     var isPlaying by remember { mutableStateOf(false) }
@@ -45,6 +48,7 @@ fun PlayPage(
     var statusBarVisible by remember { mutableStateOf(true) }
     Box(
         modifier = Modifier
+            .clip(RectangleShape)
             .pointerInput(Unit) {
                 awaitPointerEventScope {
                     while (true) {
@@ -68,46 +72,48 @@ fun PlayPage(
 //            midiInputDevice = Singleton.midiInputDevices.entries.firstOrNull()?.value
         )
 
-        var statusBarBoxHeight by remember { mutableStateOf(0) }
-        val statusBarHeight by animateDpAsState(
-            targetValue = if (statusBarVisible) 0.dp else with(LocalDensity.current) { -statusBarBoxHeight.toDp() },
-            animationSpec = tween(easing = LinearOutSlowInEasing)
-        )
-        var playSpeed by remember { mutableStateOf(100) }
-        StatusBar(
-            modifier = Modifier
-                .fillMaxWidth()
-                .onSizeChanged {
-                    statusBarBoxHeight = it.height
-                }
-                .offset(y = statusBarHeight),
-            isPlaying = isPlaying,
-            onBack = onBack,
-            onToggledPlay = { isPlaying = it },
-            onHide = { statusBarVisible = false },
-            progress = playProgress,
-            onProgressChangeStart = {
-                if (isPlaying) {
-                    Singleton.player.pause()
-                }
-            },
-            onProgressChange = {
-                playProgress = it
-                Singleton.player.seek(it.toDouble())
-            },
-            onProgressChangeEnd = {
-                if (isPlaying) {
-                    Singleton.player.play()
-                }
-            },
-            speed = playSpeed,
-            onSpeedChange = {
-                playSpeed = it
-                Singleton.player.setSpeed(it / 100f)
-            },
-            bpm = ((midi?.tempoEvents?.bpmAtTick(Singleton.player.preciseTick) ?: 120.0) * Singleton.player.getSpeed()).roundToInt(),
-            focusRequester = focusRequester
-        )
+        if (drawStatusBar) {
+            var statusBarBoxHeight by remember { mutableStateOf(0) }
+            val statusBarHeight by animateDpAsState(
+                targetValue = if (statusBarVisible) 0.dp else with(LocalDensity.current) { -statusBarBoxHeight.toDp() },
+                animationSpec = tween(easing = LinearOutSlowInEasing)
+            )
+            var playSpeed by remember { mutableStateOf(100) }
+            StatusBar(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .onSizeChanged {
+                        statusBarBoxHeight = it.height
+                    }
+                    .offset(y = statusBarHeight),
+                isPlaying = isPlaying,
+                onBack = onBack,
+                onToggledPlay = { isPlaying = it },
+                onHide = { statusBarVisible = false },
+                progress = playProgress,
+                onProgressChangeStart = {
+                    if (isPlaying) {
+                        Singleton.player.pause()
+                    }
+                },
+                onProgressChange = {
+                    playProgress = it
+                    Singleton.player.seek(it.toDouble())
+                },
+                onProgressChangeEnd = {
+                    if (isPlaying) {
+                        Singleton.player.play()
+                    }
+                },
+                speed = playSpeed,
+                onSpeedChange = {
+                    playSpeed = it
+                    Singleton.player.setSpeed(it / 100f)
+                },
+                bpm = ((midi?.tempoEvents?.bpmAtTick(Singleton.player.preciseTick) ?: 120.0) * Singleton.player.getSpeed()).roundToInt(),
+                focusRequester = focusRequester
+            )
+        }
     }
 }
 

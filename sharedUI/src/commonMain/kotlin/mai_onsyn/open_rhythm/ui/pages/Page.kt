@@ -46,7 +46,7 @@ fun AppNavigation(
         NavHost(
             modifier = Modifier.fillMaxSize(),
             navController = navController,
-            startDestination = FreePlayScreen
+            startDestination = Setting
         ) {
             composable<Home>() {
                 HomePage(

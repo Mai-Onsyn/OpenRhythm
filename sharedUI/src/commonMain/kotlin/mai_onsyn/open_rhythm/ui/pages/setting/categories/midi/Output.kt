@@ -116,7 +116,8 @@ fun MidiOutputSettings() {
             )
         }
 
-        if (gervillSelected) item(
+        animatedItem(
+            visible = gervillSelected,
             name = "SF2 path",
             description = "Set the SF2 file to replace the default Gervill soundfont"
         ) {

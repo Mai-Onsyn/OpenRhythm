@@ -1,24 +1,17 @@
 package mai_onsyn.open_rhythm.ui.pages.setting.categories.waterfall
 
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.size
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.isSpecified
-import androidx.compose.ui.graphics.isUnspecified
 import androidx.compose.ui.unit.dp
 import mai_onsyn.open_rhythm.bridge.Singleton
-import mai_onsyn.open_rhythm.ui.icons.ic_brightness_auto
-import mai_onsyn.open_rhythm.ui.icons.ic_dark_mode
-import mai_onsyn.open_rhythm.ui.icons.ic_light_mode
 import mai_onsyn.open_rhythm.ui.icons.ic_palette
+import mai_onsyn.open_rhythm.ui.modules.ColorSelector
 import mai_onsyn.open_rhythm.ui.pages.setting.ChoiceRow
 import mai_onsyn.open_rhythm.ui.pages.setting.SettingsCard
 
@@ -56,8 +49,16 @@ fun WaterfallBackground() {
             )
         }
 
-        if (showCustomColorSetting) item("Custom Background Color") {
-
+        animatedItem(showCustomColorSetting, "Custom Color") {
+            ColorSelector(
+                modifier = Modifier
+                    .size(100.dp, 40.dp),
+                initialColor = Singleton.settings.CustomWaterfallBackgroundColor,
+                onColorSelected = {
+                    Singleton.settings.CustomWaterfallBackgroundColor = it
+                    Singleton.settings.WaterfallBackgroundColor = it
+                }
+            )
         }
     }
 }

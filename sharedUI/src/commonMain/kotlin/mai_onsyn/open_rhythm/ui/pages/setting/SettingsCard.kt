@@ -4,6 +4,10 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
@@ -18,20 +22,6 @@ import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import mai_onsyn.open_rhythm.ui.icons.ic_arrow_drop_down
-
-//sealed class SettingEntry {
-//    data class Single(
-//        val name: String,
-//        val description: String?,
-//        val content: @Composable () -> Unit
-//    ) : SettingEntry()
-//
-//    data class Fold(
-//        val title: String,
-//        val items: List<SettingEntry>
-//    ) : SettingEntry()
-//    // 状态由渲染层管理，不在数据类中保存
-//}
 
 class SettingsCardScope(
     private val showDivider: Boolean = true
@@ -57,6 +47,26 @@ class SettingsCardScope(
             description = description,
             content = content
         )
+    }
+
+    @Composable
+    fun animatedItem(
+        visible: Boolean,
+        name: String,
+        description: String? = null,
+        content: @Composable () -> Unit
+    ) {
+        AnimatedVisibility(
+            visible = visible,
+            enter = expandVertically() + fadeIn(),
+            exit = shrinkVertically() + fadeOut()
+        ) {
+            item(
+                name = name,
+                description = description,
+                content = content
+            )
+        }
     }
 
 

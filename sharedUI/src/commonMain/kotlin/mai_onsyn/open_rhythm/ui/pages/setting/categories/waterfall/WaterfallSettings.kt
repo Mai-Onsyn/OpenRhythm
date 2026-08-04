@@ -16,6 +16,9 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.produceState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -26,7 +29,14 @@ import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import co.touchlab.kermit.Logger
+import mai_onsyn.open_rhythm.bridge.Singleton
+import mai_onsyn.open_rhythm.core.midi.Midi
+import mai_onsyn.open_rhythm.core.midi.parseMidi
 import mai_onsyn.open_rhythm.ui.pages.play_screen.PlayPage
+import openrhythm.sharedui.generated.resources.Res
+import org.jetbrains.compose.resources.InternalResourceApi
+import org.jetbrains.compose.resources.readResourceBytes
 
 @Composable
 fun WaterfallSettings() {
@@ -70,12 +80,23 @@ private fun SettingsRail(modifier: Modifier) {
     }
 }
 
+@OptIn(InternalResourceApi::class)
 @Composable
 private fun PreviewRail(modifier: Modifier) {
     Surface(
         modifier = modifier.innerShadow(),
     ) {
-        PlayPage(null, {}, false)
+        val midi by produceState<Midi?>(null) {
+            value = parseMidi("故郷の星が映る海", Res.readBytes("files/The sea reflecting my hometown star.mid").toList())
+        }
+        PlayPage(midi, {}, false)
+
+        DisposableEffect(Unit) {
+            onDispose {
+                Singleton.player.stop()
+                Singleton.player.seek((midi?.startTick ?: 0).toLong())
+            }
+        }
     }
 }
 

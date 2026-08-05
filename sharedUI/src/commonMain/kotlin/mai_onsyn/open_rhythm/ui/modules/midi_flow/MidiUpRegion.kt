@@ -1,7 +1,9 @@
 package mai_onsyn.open_rhythm.ui.modules.midi_flow
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.material3.MaterialTheme
@@ -10,15 +12,30 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.blur
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.isUnspecified
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.max
+import coil3.compose.AsyncImage
+import coil3.compose.LocalPlatformContext
+import coil3.request.ImageRequest
+import coil3.size.Size
+import io.github.vinceglb.filekit.PlatformFile
+import io.github.vinceglb.filekit.exists
+import io.github.vinceglb.filekit.isRegularFile
+import io.github.vinceglb.filekit.readBytes
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.IO
+import kotlinx.coroutines.withContext
 import mai_onsyn.open_rhythm.bridge.Singleton
 import mai_onsyn.open_rhythm.core.util.Time
 import mai_onsyn.open_rhythm.ui.utility.BindInputDeviceEvents
@@ -41,14 +58,40 @@ fun MidiUpRegion(
         val activeKeys = remember { mutableStateMapOf<Int, Color>() }
         val notes = remember { mutableStateListOf<LiveNote>() }
 
-        MidiUpFlow(
-            modifier = Modifier
+        Box(
+            Modifier
+                .weight(1f)
                 .background(Singleton.settings.WaterfallBackgroundColor.let { if (it.isUnspecified) MaterialTheme.colorScheme.surface else it })
-                .fillMaxWidth()
-                .weight(1f),
-            notes = notes,
-            color = Singleton.settings.KeyboardUserInteractionDisplayColor
-        )
+        ) {
+            val bgImageBytes by produceState<ByteArray?>(null, Singleton.settings.BackgroundImageDir) {
+                val file = PlatformFile(Singleton.settings.BackgroundImageDir)
+                withContext(Dispatchers.IO) {
+                    value = if (file.exists() && file.isRegularFile()) {
+                        file.readBytes()
+                    } else null
+                }
+            }
+            bgImageBytes?.let {
+                AsyncImage(
+                    model = ImageRequest.Builder(LocalPlatformContext.current)
+                        .data(it)
+                        .size(Size.ORIGINAL)
+                        .build(),
+                    contentDescription = "background image",
+                    modifier = Modifier
+                        .alpha(Singleton.settings.BackgroundImageOpacity)
+                        .blur(Singleton.settings.BackgroundImageBlurDp.dp)
+                        .matchParentSize(),
+                    contentScale = ContentScale.Crop,
+                )
+            }
+            MidiUpFlow(
+                modifier = Modifier
+                    .fillMaxSize(),
+                notes = notes,
+                color = Singleton.settings.KeyboardUserInteractionDisplayColor
+            )
+        }
 
         MidiKeyBoard(
             modifier = Modifier

@@ -15,6 +15,7 @@ import io.github.vinceglb.filekit.FileKit
 import io.github.vinceglb.filekit.PlatformFile
 import io.github.vinceglb.filekit.dialogs.init
 import io.github.vinceglb.filekit.dialogs.openDirectoryPicker
+import io.github.vinceglb.filekit.dialogs.openFilePicker
 import io.github.vinceglb.filekit.path
 import mai_onsyn.open_rhythm.core.GlobalKeyEventDispatcher
 
@@ -53,6 +54,20 @@ actual suspend fun FileKit.pickDirectoryWithPermission(): PlatformFile? {
         return it
     }
     return null
+}
+
+actual suspend fun FileKit.pickFileWithPermission(): PlatformFile? {
+    val platformFile = FileKit.openFilePicker() ?: return null
+
+    val uri = platformFile.path.toUri()
+    val takeFlags = Intent.FLAG_GRANT_READ_URI_PERMISSION
+    try {
+        appContext.contentResolver.takePersistableUriPermission(uri, takeFlags)
+    } catch (e: Exception) {
+        e.printStackTrace()
+    }
+
+    return platformFile
 }
 
 actual fun registerGlobalKeyEventDispatcher(keyEventDispatcher: GlobalKeyEventDispatcher) {

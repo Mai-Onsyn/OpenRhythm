@@ -10,6 +10,7 @@ import dev.atsushieno.ktmidi.TraditionalCoreMidiAccess
 import io.github.vinceglb.filekit.FileKit
 import io.github.vinceglb.filekit.PlatformFile
 import io.github.vinceglb.filekit.dialogs.openDirectoryPicker
+import io.github.vinceglb.filekit.dialogs.openFilePicker
 import mai_onsyn.open_rhythm.core.GlobalKeyEventDispatcher
 import platform.Foundation.NSUserDefaults
 
@@ -32,6 +33,10 @@ actual fun createSetting(): Settings {
 
 actual suspend fun FileKit.pickDirectoryWithPermission(): PlatformFile? {
     return FileKit.openDirectoryPicker()
+}
+
+actual suspend fun FileKit.pickFileWithPermission(): PlatformFile? {
+    return FileKit.openFilePicker()
 }
 
 actual fun registerGlobalKeyEventDispatcher(keyEventDispatcher: GlobalKeyEventDispatcher) {

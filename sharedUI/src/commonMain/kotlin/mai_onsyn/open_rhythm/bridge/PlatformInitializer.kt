@@ -19,6 +19,8 @@ expect fun createSetting(): Settings
 
 expect suspend fun FileKit.pickDirectoryWithPermission(): PlatformFile?
 
+expect suspend fun FileKit.pickFileWithPermission(): PlatformFile?
+
 expect fun registerGlobalKeyEventDispatcher(keyEventDispatcher: GlobalKeyEventDispatcher)
 
 expect fun setupMidiOutput(output: MidiOutput, name: String, context: Any)

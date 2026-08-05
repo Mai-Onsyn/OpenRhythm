@@ -56,6 +56,9 @@ class UserSetting(
     // =====Waterfall Appearance=====
     var WaterfallBackgroundColor by st.observable("WaterfallBackgroundColor", Color.Unspecified)
     var CustomWaterfallBackgroundColor by st.observable("CustomWaterfallBackgroundColor", Color(48, 48, 48))
+    var BackgroundImageDir by st.observable("BackgroundImageDir", "")
+    var BackgroundImageOpacity by st.observable("BackgroundImageOpacity", 0.3f)
+    var BackgroundImageBlurDp by st.observable("BackgroundImageBlurDp", 0f)
 
     // =====Keyboard Appearance=====
     var KeyboardAutoAspect by st.observable("KeyBoardAutoAspect", true)

@@ -1,15 +1,31 @@
 package mai_onsyn.open_rhythm.ui.pages.setting.categories.waterfall
 
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.material3.Button
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.isSpecified
+import androidx.compose.ui.input.pointer.PointerIcon
+import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.unit.dp
+import io.github.vinceglb.filekit.FileKit
+import io.github.vinceglb.filekit.absolutePath
+import io.github.vinceglb.filekit.extension
+import io.github.vinceglb.filekit.isRegularFile
+import kotlinx.coroutines.launch
 import mai_onsyn.open_rhythm.bridge.Singleton
+import mai_onsyn.open_rhythm.bridge.pickFileWithPermission
+import mai_onsyn.open_rhythm.ui.icons.ic_delete
 import mai_onsyn.open_rhythm.ui.icons.ic_palette
 import mai_onsyn.open_rhythm.ui.modules.ColorSelector
 import mai_onsyn.open_rhythm.ui.pages.setting.ChoiceRow
@@ -59,6 +75,57 @@ fun WaterfallBackground() {
                     Singleton.settings.WaterfallBackgroundColor = it
                 }
             )
+        }
+
+        var bgImageDir by remember { mutableStateOf(Singleton.settings.BackgroundImageDir.let { it.ifBlank { null } }) }
+        item(
+            "Image",
+            bgImageDir
+        ) {
+            Row {
+                IconButton(
+                    onClick ={
+                        bgImageDir = null
+                        Singleton.settings.BackgroundImageDir = ""
+                    },
+                    modifier = Modifier.pointerHoverIcon(PointerIcon.Hand)
+                ) {
+                    Icon(
+                        imageVector = ic_delete,
+                        contentDescription = "clear",
+                        tint = MaterialTheme.colorScheme.error
+                    )
+                }
+                Spacer(Modifier.width(8.dp))
+                val scope = rememberCoroutineScope()
+                Button(
+                    onClick = {
+                        scope.launch {
+                            FileKit.pickFileWithPermission()?.let { file ->
+                                if (file.isRegularFile() && file.extension == "png" || file.extension == "jpg") {
+                                    bgImageDir = file.absolutePath()
+                                    Singleton.settings.BackgroundImageDir = file.absolutePath()
+                                }
+                            }
+                        }
+                    },
+                    shape = MaterialTheme.shapes.small,
+                    modifier = Modifier.pointerHoverIcon(PointerIcon.Hand)
+                ) {
+                    Text(
+                        text = "Select",
+                        style = MaterialTheme.typography.bodyMedium,
+                    )
+                }
+            }
+        }
+
+        val showBgImageSetting by derivedStateOf { !bgImageDir.isNullOrBlank() }
+        animatedItem(showBgImageSetting, "Image opacity", verticalLayout = true) {
+//            Text("aaa")
+        }
+        animatedItem(showBgImageSetting, "Image blur dp", verticalLayout = true) {
+
         }
     }
 }

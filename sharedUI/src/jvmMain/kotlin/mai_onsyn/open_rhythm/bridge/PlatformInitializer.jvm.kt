@@ -11,6 +11,7 @@ import dev.atsushieno.ktmidi.MidiOutput
 import io.github.vinceglb.filekit.FileKit
 import io.github.vinceglb.filekit.PlatformFile
 import io.github.vinceglb.filekit.dialogs.openDirectoryPicker
+import io.github.vinceglb.filekit.dialogs.openFilePicker
 import kotlinx.coroutines.runBlocking
 import mai_onsyn.open_rhythm.core.GlobalKeyEventDispatcher
 import java.awt.Cursor
@@ -52,6 +53,10 @@ actual fun createSetting(): Settings {
 
 actual suspend fun FileKit.pickDirectoryWithPermission(): PlatformFile? {
     return FileKit.openDirectoryPicker()
+}
+
+actual suspend fun FileKit.pickFileWithPermission(): PlatformFile? {
+    return FileKit.openFilePicker()
 }
 
 var keyEventDispatcher: GlobalKeyEventDispatcher? = null

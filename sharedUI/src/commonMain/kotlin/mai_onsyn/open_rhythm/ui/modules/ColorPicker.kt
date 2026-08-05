@@ -34,23 +34,6 @@ private fun parseHexToColor(hex: String): Color? {
     }
 }
 
-// ---------- 颜色转换工具函数 ----------
-private fun hsbToRgb(h: Float, s: Float, b: Float): Color {
-    // h: 0~360, s: 0~1, b: 0~1
-    val c = b * s
-    val x = c * (1 - abs((h / 60f) % 2 - 1))
-    val m = b - c
-    val (r, g, bl) = when {
-        h < 60 -> Triple(c, x, 0f)
-        h < 120 -> Triple(x, c, 0f)
-        h < 180 -> Triple(0f, c, x)
-        h < 240 -> Triple(0f, x, c)
-        h < 300 -> Triple(x, 0f, c)
-        else -> Triple(c, 0f, x)
-    }
-    return Color((r + m), (g + m), (bl + m))
-}
-
 private fun rgbToHsb(color: Color): Triple<Float, Float, Float> {
     val r = color.red
     val g = color.green
@@ -251,7 +234,6 @@ private fun HsbSliderRow(
             }
         )
 
-        // 3. 右侧数值显示
         Text(
             text = displayValue,
             style = MaterialTheme.typography.bodyMedium,

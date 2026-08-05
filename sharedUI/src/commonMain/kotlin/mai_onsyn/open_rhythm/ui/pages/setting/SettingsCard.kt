@@ -1,9 +1,7 @@
 package mai_onsyn.open_rhythm.ui.pages.setting
 
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.tween
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -34,6 +32,7 @@ class SettingsCardScope(
     fun item(
         name: String,
         description: String? = null,
+        verticalLayout: Boolean = false,
         content: @Composable () -> Unit
     ) {
         if (!firstItem && showDivider) {
@@ -42,9 +41,10 @@ class SettingsCardScope(
 
         firstItem = false
 
-        SettingItemRow(
+        SettingItemLayout(
             name = name,
             description = description,
+            verticalLayout = verticalLayout,
             content = content
         )
     }
@@ -54,6 +54,7 @@ class SettingsCardScope(
         visible: Boolean,
         name: String,
         description: String? = null,
+        verticalLayout: Boolean = false,
         content: @Composable () -> Unit
     ) {
         AnimatedVisibility(
@@ -64,6 +65,7 @@ class SettingsCardScope(
             item(
                 name = name,
                 description = description,
+                verticalLayout = verticalLayout,
                 content = content
             )
         }
@@ -206,30 +208,43 @@ private fun FoldItem(
 }
 
 @Composable
-private fun SettingItemRow(
+private fun SettingItemLayout(
     name: String,
     description: String?,
+    verticalLayout: Boolean,
     content: @Composable () -> Unit
 ) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(16.dp),
+    val titleContent: @Composable () -> Unit = {
+        Text(
+            text = name,
+            style = MaterialTheme.typography.bodyLarge,
+            fontWeight = FontWeight.Bold,
+        )
+        description?.let {
+            Text(
+                text = it,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+    }
+    val modifier = Modifier
+        .fillMaxWidth()
+        .padding(16.dp)
+    if (verticalLayout) Column(
+        modifier = modifier
+    ) {
+        Column(modifier = Modifier.padding(end = 8.dp)) {
+            titleContent()
+        }
+        content()
+    }
+    else Row(
+        modifier = modifier,
         verticalAlignment = Alignment.CenterVertically
     ) {
         Column(modifier = Modifier.weight(1f).padding(end = 8.dp)) {
-            Text(
-                text = name,
-                style = MaterialTheme.typography.bodyLarge,
-                fontWeight = FontWeight.Bold,
-            )
-            description?.let {
-                Text(
-                    text = it,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
+            titleContent()
         }
         content()
     }

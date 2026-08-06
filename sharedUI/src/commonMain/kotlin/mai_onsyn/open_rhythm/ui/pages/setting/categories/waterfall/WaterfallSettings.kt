@@ -1,19 +1,7 @@
 package mai_onsyn.open_rhythm.ui.pages.setting.categories.waterfall
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.horizontalScroll
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxWithConstraints
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.material3.MaterialTheme
+import androidx.compose.foundation.layout.*
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -29,14 +17,12 @@ import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import co.touchlab.kermit.Logger
 import mai_onsyn.open_rhythm.bridge.Singleton
 import mai_onsyn.open_rhythm.core.midi.Midi
 import mai_onsyn.open_rhythm.core.midi.parseMidi
 import mai_onsyn.open_rhythm.ui.pages.play_screen.PlayPage
 import openrhythm.sharedui.generated.resources.Res
 import org.jetbrains.compose.resources.InternalResourceApi
-import org.jetbrains.compose.resources.readResourceBytes
 
 @Composable
 fun WaterfallSettings() {

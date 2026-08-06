@@ -113,6 +113,28 @@ class SettingsCardScope(
             )
         }
     }
+
+    @Composable
+    fun animatedSwitch(
+        visible: Boolean,
+        name: String,
+        description: String? = null,
+        initial: Boolean = false,
+        onToggled: (Boolean) -> Unit
+    ) {
+        AnimatedVisibility(
+            visible = visible,
+            enter = expandVertically() + fadeIn(),
+            exit = shrinkVertically() + fadeOut()
+        ) {
+            itemWithSwitch(
+                name = name,
+                description = description,
+                initial = initial,
+                onToggled = onToggled
+            )
+        }
+    }
 }
 
 @Composable
@@ -243,7 +265,7 @@ private fun SettingItemLayout(
         modifier = modifier,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Column(modifier = Modifier.weight(1f).padding(end = 8.dp)) {
+        Column(modifier = Modifier.weight(1f).padding(bottom = 8.dp)) {
             titleContent()
         }
         content()

@@ -27,6 +27,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.max
 import coil3.compose.AsyncImage
 import coil3.compose.LocalPlatformContext
+import coil3.request.CachePolicy
 import coil3.request.ImageRequest
 import coil3.size.Size
 import io.github.vinceglb.filekit.PlatformFile
@@ -63,28 +64,30 @@ fun MidiUpRegion(
                 .weight(1f)
                 .background(Singleton.settings.WaterfallBackgroundColor.let { if (it.isUnspecified) MaterialTheme.colorScheme.surface else it })
         ) {
-            val bgImageBytes by produceState<ByteArray?>(null, Singleton.settings.BackgroundImageDir) {
+            val platformContext = LocalPlatformContext.current
+            val bgImageRequest by produceState<ImageRequest?>(null, Singleton.settings.BackgroundImageDir) {
                 val file = PlatformFile(Singleton.settings.BackgroundImageDir)
                 withContext(Dispatchers.IO) {
                     value = if (file.exists() && file.isRegularFile()) {
-                        file.readBytes()
+                        if (Singleton.settings.OriginalBackgroundImageSize) ImageRequest.Builder(platformContext)
+                            .data(file.readBytes())
+                            .size(Size.ORIGINAL)
+                            .build()
+                        else ImageRequest.Builder(platformContext)
+                            .data(file.readBytes())
+                            .build()
                     } else null
                 }
             }
-            bgImageBytes?.let {
-                AsyncImage(
-                    model = ImageRequest.Builder(LocalPlatformContext.current)
-                        .data(it)
-                        .size(Size.ORIGINAL)
-                        .build(),
-                    contentDescription = "background image",
-                    modifier = Modifier
-                        .alpha(Singleton.settings.BackgroundImageOpacity)
-                        .blur(Singleton.settings.BackgroundImageBlurDp.dp)
-                        .matchParentSize(),
-                    contentScale = ContentScale.Crop,
-                )
-            }
+            AsyncImage(
+                model = bgImageRequest,
+                contentDescription = "background image",
+                modifier = Modifier
+                    .alpha(Singleton.settings.BackgroundImageOpacity)
+                    .blur(Singleton.settings.BackgroundImageBlurDp.dp)
+                    .matchParentSize(),
+                contentScale = ContentScale.Crop,
+            )
             MidiUpFlow(
                 modifier = Modifier
                     .fillMaxSize(),

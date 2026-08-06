@@ -59,6 +59,7 @@ class UserSetting(
     var BackgroundImageDir by st.observable("BackgroundImageDir", "")
     var BackgroundImageOpacity by st.observable("BackgroundImageOpacity", 0.3f)
     var BackgroundImageBlurDp by st.observable("BackgroundImageBlurDp", 0f)
+    var OriginalBackgroundImageSize by st.observable("OriginalBackgroundImageSize", false)
 
     // =====Keyboard Appearance=====
     var KeyboardAutoAspect by st.observable("KeyBoardAutoAspect", true)

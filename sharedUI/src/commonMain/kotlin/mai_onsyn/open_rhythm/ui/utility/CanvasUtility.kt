@@ -18,13 +18,15 @@ import mai_onsyn.open_rhythm.ui.modules.midi_flow.findBarLines
 
 fun DrawScope.drawTextCentered(
     layoutResult: TextLayoutResult,
-    center: Offset
+    center: Offset,
+    alpha: Float = 1.0f,
 ) {
     val width = layoutResult.size.width
     val height = layoutResult.size.height
     drawText(
         textLayoutResult = layoutResult,
-        topLeft = Offset(center.x - width / 2, center.y - height / 2)
+        topLeft = Offset(center.x - width / 2, center.y - height / 2),
+        alpha = alpha
     )
 }
 

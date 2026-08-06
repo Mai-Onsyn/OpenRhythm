@@ -18,6 +18,7 @@ import androidx.compose.ui.graphics.isSpecified
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.unit.dp
+import co.touchlab.kermit.Logger
 import io.github.vinceglb.filekit.FileKit
 import io.github.vinceglb.filekit.absolutePath
 import io.github.vinceglb.filekit.extension
@@ -28,8 +29,11 @@ import mai_onsyn.open_rhythm.bridge.pickFileWithPermission
 import mai_onsyn.open_rhythm.ui.icons.ic_delete
 import mai_onsyn.open_rhythm.ui.icons.ic_palette
 import mai_onsyn.open_rhythm.ui.modules.ColorSelector
+import mai_onsyn.open_rhythm.ui.modules.LabeledSlider
+import mai_onsyn.open_rhythm.ui.modules.SliderWithSuffix
 import mai_onsyn.open_rhythm.ui.pages.setting.ChoiceRow
 import mai_onsyn.open_rhythm.ui.pages.setting.SettingsCard
+import kotlin.math.absoluteValue
 
 @Composable
 fun WaterfallBackground() {
@@ -121,11 +125,63 @@ fun WaterfallBackground() {
         }
 
         val showBgImageSetting by derivedStateOf { !bgImageDir.isNullOrBlank() }
+        animatedSwitch(
+            showBgImageSetting,
+            "Original image size",
+            "This can use a lot of memory for big images",  // 这得吃不少内存，先生
+            Singleton.settings.OriginalBackgroundImageSize,
+            { Singleton.settings.OriginalBackgroundImageSize = it }
+        )
         animatedItem(showBgImageSetting, "Image opacity", verticalLayout = true) {
-//            Text("aaa")
+            var value by remember { mutableStateOf((Singleton.settings.BackgroundImageOpacity * 100).toInt()) }
+            SliderWithSuffix(
+                value = value,
+                onValueChanged = {
+                    value = it
+                    Singleton.settings.BackgroundImageOpacity = value / 100f
+                },
+                range = 0..100,
+                steps = 1,
+                modifier = Modifier.fillMaxWidth()
+            )
         }
         animatedItem(showBgImageSetting, "Image blur dp", verticalLayout = true) {
-
+            val valueMappingList = remember {
+                val breakPoints = listOf(
+                    0 to 1,
+                    20 to 5,
+                    50 to 10,
+                    100 to 50,
+                    500 to 100,
+                )
+                val array = IntArray(41)
+                var currentStep = 0
+                var outputValue = 0
+                for (i in 0..40) {
+                    outputValue += currentStep
+                    array[i] = outputValue
+                    breakPoints.forEach { if (it.first == outputValue) currentStep = it.second }
+                }
+                array
+            }
+            val valueMapping: (Int) -> Int = { x -> valueMappingList[x] }
+            var value by remember { mutableStateOf(
+                valueMappingList.indexOf(
+                    Singleton.settings.BackgroundImageBlurDp.toInt()
+                ).let { if (it != -1) it else 0 }
+            ) }
+            SliderWithSuffix(
+                value = value,
+                onValueChanged = {
+                    value = it
+                    Singleton.settings.BackgroundImageBlurDp = valueMapping(value).toFloat()
+                    Logger.d { "Changed value: $value" }
+                },
+                range = 0..40,
+                steps = 1,
+                modifier = Modifier.fillMaxWidth(),
+                valueMapping = valueMapping
+            )
         }
     }
 }

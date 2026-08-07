@@ -16,6 +16,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.graphics.isSpecified
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.input.pointer.pointerInput
@@ -43,6 +44,8 @@ fun MidiKeyBoard(
     darkPart: Color = Color.Black,
     onPress: (Int, Int) -> Unit = { pitch, velocity -> },
     onRelease: (Int) -> Unit = {},
+    draggableAreaColor: Color? = null,
+    enableSplitRedLine: Boolean = true,
     onVerticalDragged: (Float) -> Unit = {}
 ) {
     require(minPitch >= 0 && maxPitch <= 127) { "Pitch out of range [0, 127]" }
@@ -59,20 +62,23 @@ fun MidiKeyBoard(
     val activeKey = midiActiveKey + userActiveKey
 
     val spacingPx = with(density) { spacing.toPx() }
-    val offsetStartY = with(density) { 12.dp.toPx() }
+    val offsetStartY = with(density) { (
+            if (draggableAreaColor == null && enableSplitRedLine) 4
+            else if (draggableAreaColor != null && enableSplitRedLine) 12
+            else if (draggableAreaColor != null && !enableSplitRedLine) 8
+            else 0
+    ).dp.toPx() }
     val endPadding = with(density) { 4.dp.toPx() }
 
     val focusRequester = remember { FocusRequester() }
     val pointerPressedKey = mutableSetOf<Int>()
 
     var whiteKeyWidth by remember { mutableStateOf(0f) }
-    val textRenderingItems = appendTexts.mapValues { (pitch, text) ->
-        rememberTextLayoutResult(
-            text,
-            (whiteKeyWidth * 0.3f).sp,
-            if (isBlackKey(pitch)) Color.White else Color.Black
-        )
-    }
+    val textRenderingItems = rememberTextLayoutResult(
+        appendTexts,
+        (whiteKeyWidth * 0.3f).sp,
+        { if (isBlackKey(it.key)) Color.White else Color.Black }
+    )
 
     var currentCursor by remember { mutableStateOf(PointerIcon.Default) }
     Canvas(
@@ -121,9 +127,9 @@ fun MidiKeyBoard(
                         var inAdjust = false
                         val firstChange = event.changes.first()
                         val activeRect = Rect(Offset.Zero, Size(size.width.toFloat(), 8.dp.toPx()))
-                        if (firstChange.position in activeRect) {
-                            currentCursor = AppCursors.verticalResize
-                        } else currentCursor = PointerIcon.Default
+                        currentCursor = if (firstChange.position in activeRect) {
+                            AppCursors.verticalResize
+                        } else PointerIcon.Default
                         if (inHeightRegionPressed) {
                             onVerticalDragged(firstChange.position.y - firstChange.previousPosition.y)
                             inAdjust = true
@@ -188,13 +194,15 @@ fun MidiKeyBoard(
     ) {
         whiteKeyWidth = (size.width - (whiteKeyCount - 1) * spacing.toPx()) / whiteKeyCount
 
-        drawRect(
-            color = colorScheme.surfaceContainer,
-            size = Size(size.width, 8.dp.toPx())
-        )
-        drawRect(
+        draggableAreaColor?.let {
+            drawRect(
+                color = if (it.isSpecified) it else colorScheme.surfaceContainer,
+                size = Size(size.width, 8.dp.toPx())
+            )
+        }
+        if (enableSplitRedLine) drawRect(
             color = Color(160, 32, 32),
-            topLeft = Offset(0f, 8.dp.toPx()),
+            topLeft = Offset(0f, (if (draggableAreaColor == null) 0 else 8).dp.toPx()),
             size = Size(size.width, 4.dp.toPx())
         )
 

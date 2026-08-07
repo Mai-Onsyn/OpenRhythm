@@ -40,7 +40,7 @@ fun BindInputDeviceEvents(
                         is NoteEvent -> {
                             if (Singleton.settings.EnableInputMidiNoteEvent) {
                                 if (it.on) {
-                                    userActiveKeys[it.pitch] = Singleton.settings.KeyboardUserInteractionDisplayColor
+                                    userActiveKeys[it.pitch] = Singleton.settings.KeyboardInteractionColor
                                     noteOn(it.pitch, it.velocity)
                                 } else {
                                     userActiveKeys.remove(it.pitch)

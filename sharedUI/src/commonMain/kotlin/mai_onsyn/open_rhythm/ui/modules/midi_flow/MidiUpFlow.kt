@@ -12,6 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
@@ -21,10 +22,10 @@ import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import co.touchlab.kermit.Logger
+import com.materialkolor.ktx.darken
 import kotlinx.coroutines.delay
 import mai_onsyn.open_rhythm.core.util.Time
-import mai_onsyn.open_rhythm.ui.utility.drawPitchLines
+import mai_onsyn.open_rhythm.ui.utility.drawOctaveLines
 import mai_onsyn.open_rhythm.ui.utility.isBlackKey
 import mai_onsyn.open_rhythm.ui.utility.reMeasure
 import kotlin.time.Duration.Companion.milliseconds
@@ -43,8 +44,9 @@ fun MidiUpFlow(
     minPitch: Int = 21,
     maxPitch: Int = 108,
     spacing: Dp = 1.dp,
-    drawPitchLine: Boolean = true,
+    drawOctaveLine: Boolean = true,
     blackHorizontalPercentage: Float = 0.75f,
+    noteRoundPercent: Float = 0.2f,
     color: Color = Color.Yellow,
 ) {
     val density = LocalDensity.current
@@ -62,7 +64,7 @@ fun MidiUpFlow(
                 reMeasure(gridPos, size, spacingPx, minPitch, maxPitch, blackHorizontalPercentage)
             }
     ) {
-        if (drawPitchLine) drawPitchLines(minPitch, maxPitch, gridPos)
+        if (drawOctaveLine) drawOctaveLines(minPitch, maxPitch, gridPos)
         val hpsPx = hps.toPx()
         maxCapacityNanos = (1_000_000_000L / hpsPx * size.height).toLong()
 
@@ -78,13 +80,10 @@ fun MidiUpFlow(
 
             val isBlackKey = isBlackKey(note.pitch)
             val lambda: DrawScope.() -> Unit = {
-                drawRoundRect(
-                    color = if (isBlackKey)
-                        Color(color.red, color.green, color.blue, 0.8f).compositeOver(Color.Black)
-                    else color,
-                    topLeft = Offset(x, startY),
-                    size = Size(w, endY - startY),
-                    cornerRadius = CornerRadius(w * 0.1f)
+                drawNoteGraphics(
+                    if (isBlackKey) color.darken(1.5f) else color,
+                    Rect(Offset(x, startY), Size(w, endY - startY)),
+                    w * 0.5f * noteRoundPercent
                 )
             }
             if (isBlackKey) toDrawBlacks.add(lambda)

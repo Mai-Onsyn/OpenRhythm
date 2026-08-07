@@ -16,6 +16,7 @@ import androidx.compose.ui.unit.dp
 import mai_onsyn.open_rhythm.bridge.Singleton
 import mai_onsyn.open_rhythm.ui.icons.*
 import mai_onsyn.open_rhythm.ui.modules.ColorPickerDialog
+import mai_onsyn.open_rhythm.ui.modules.getContrastTextColor
 import mai_onsyn.open_rhythm.ui.pages.setting.ChoiceRow
 import mai_onsyn.open_rhythm.ui.pages.setting.SettingsCard
 
@@ -139,7 +140,7 @@ private fun AppearanceSettings() {
                             imageVector = ic_add,
                             contentDescription = "custom color",
                             modifier = Modifier.size(16.dp),
-                            tint = MaterialTheme.colorScheme.onPrimary
+                            tint = getContrastTextColor(Singleton.settings.UserSpecifiedPrimarySeedColor)
                         )
                     }
                 }

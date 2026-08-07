@@ -2,6 +2,8 @@ package mai_onsyn.open_rhythm.ui.pages.setting.categories.waterfall
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -61,8 +63,13 @@ fun WaterfallSettings() {
 
 @Composable
 private fun SettingsRail(modifier: Modifier) {
-    Column(modifier) {
+    Column(
+        verticalArrangement = Arrangement.spacedBy(24.dp),
+        modifier = modifier.verticalScroll(rememberScrollState())
+    ) {
         WaterfallBackground()
+        NoteAppearance()
+        KeyboardAppearance()
     }
 }
 
@@ -91,10 +98,8 @@ fun Modifier.innerShadow(
     color: Color = Color.Black.copy(alpha = 0.25f),
     blur: Dp = 8.dp
 ): Modifier = this.drawWithContent {
-    // 1. 先正常绘制组件原本的内容（背景、文字等）
     drawContent()
 
-    // 2. 限制绘制区域，保证内阴影不会溢出 Shape 圆角外部
     clip(shape)
     val blurPx = blur.toPx()
 

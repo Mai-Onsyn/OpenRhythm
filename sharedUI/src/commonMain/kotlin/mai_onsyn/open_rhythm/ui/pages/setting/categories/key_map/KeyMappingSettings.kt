@@ -51,7 +51,7 @@ fun KeyMappingSettings() {
                 userActiveKey = userActiveMidiKeys,
                 appendTexts = appendTexts,
                 onPress = { pitch, velocity ->
-                    userActiveMidiKeys[pitch] = Singleton.settings.KeyboardUserInteractionDisplayColor
+                    userActiveMidiKeys[pitch] = Singleton.settings.KeyboardInteractionColor
                     Singleton.player.noteOn(pitch, velocity)
 
                     selectedKeyCode?.let { code ->
@@ -70,7 +70,9 @@ fun KeyMappingSettings() {
                 onRelease = {
                     userActiveMidiKeys.remove(it)
                     Singleton.player.noteOff(it)
-                }
+                },
+                draggableAreaColor = if (Singleton.settings.EnableKeyboardDragArea) Singleton.settings.KeyboardDragAreaColor else null,
+                enableSplitRedLine = Singleton.settings.DrawRedSplitLine
             )
 
             BindInputDeviceEvents(userActiveMidiKeys)

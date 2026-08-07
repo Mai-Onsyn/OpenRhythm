@@ -28,6 +28,7 @@ import mai_onsyn.open_rhythm.bridge.Singleton
 import mai_onsyn.open_rhythm.bridge.pickFileWithPermission
 import mai_onsyn.open_rhythm.ui.icons.ic_delete
 import mai_onsyn.open_rhythm.ui.icons.ic_palette
+import mai_onsyn.open_rhythm.ui.icons.ic_wallpaper
 import mai_onsyn.open_rhythm.ui.modules.ColorSelector
 import mai_onsyn.open_rhythm.ui.modules.LabeledSlider
 import mai_onsyn.open_rhythm.ui.modules.SliderWithSuffix
@@ -39,7 +40,7 @@ import kotlin.math.absoluteValue
 fun WaterfallBackground() {
     SettingsCard(
         title = "Background",
-        icon = ic_palette,
+        icon = ic_wallpaper,
         modifier = Modifier.fillMaxWidth()
     ) {
         var showCustomColorSetting by remember { mutableStateOf(Singleton.settings.WaterfallBackgroundColor.isSpecified) }
@@ -142,10 +143,10 @@ fun WaterfallBackground() {
                 },
                 range = 0..100,
                 steps = 1,
-                modifier = Modifier.fillMaxWidth()
+                extraSuffix = "%"
             )
         }
-        animatedItem(showBgImageSetting, "Image blur dp", verticalLayout = true) {
+        animatedItem(showBgImageSetting, "Image blur", verticalLayout = true) {
             val valueMappingList = remember {
                 val breakPoints = listOf(
                     0 to 1,
@@ -175,13 +176,25 @@ fun WaterfallBackground() {
                 onValueChanged = {
                     value = it
                     Singleton.settings.BackgroundImageBlurDp = valueMapping(value).toFloat()
-                    Logger.d { "Changed value: $value" }
+//                    Logger.d { "Changed value: $value" }
                 },
                 range = 0..40,
                 steps = 1,
-                modifier = Modifier.fillMaxWidth(),
+                extraSuffix = "dp",
                 valueMapping = valueMapping
             )
         }
+
+        itemWithSwitch(
+            name = "Draw octave lines",
+            initial = Singleton.settings.DrawOctaveLines,
+            onToggled = { Singleton.settings.DrawOctaveLines = it }
+        )
+
+        itemWithSwitch(
+            name = "Draw section lines",
+            initial = Singleton.settings.DrawSectionLines,
+            onToggled = { Singleton.settings.DrawSectionLines = it }
+        )
     }
 }

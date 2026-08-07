@@ -8,6 +8,7 @@ import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.hoverable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsHoveredAsState
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -125,7 +126,7 @@ fun LabeledSlider(
         val textLayoutResult = rememberTextLayoutResult(
             text = valueMapping(value).toString(),
             fontSize = (5.5 * density.density).sp,
-            color = colorScheme.onSurface,
+            color = colorScheme.onPrimaryContainer,
         )
         Box(
             modifier = Modifier
@@ -169,7 +170,7 @@ fun LabeledSlider(
                             }) {
                                 drawPath(
                                     path = tooltipIconPath,
-                                    color = colorScheme.surfaceContainer,
+                                    color = colorScheme.primaryContainer,
                                     alpha = interactingAlpha
                                 )
                                 drawTextCentered(
@@ -194,18 +195,27 @@ fun SliderWithSuffix(
     onValueChanged: (Int) -> Unit,
     onSlidStart: (Int) -> Unit = {},
     onSlidStop: () -> Unit = {},
+    extraSuffix: String? = null,
     valueMapping: (Int) -> Int = { it },
 ) {
     Row(modifier, verticalAlignment = Alignment.CenterVertically) {
         LabeledSlider(
             value, range, steps, Modifier.weight(1f), onValueChanged, onSlidStart, onSlidStop, valueMapping
         )
-        Spacer(Modifier.width(24.dp))
-        Text(
-            text = valueMapping(value).toString(),
-            style = MaterialTheme.typography.labelMedium,
-            modifier = Modifier.width(32.dp)
-        )
+        Spacer(Modifier.width(16.dp))
+        Row(Modifier.width(44.dp), horizontalArrangement = Arrangement.Center) {
+            Text(
+                text = valueMapping(value).toString(),
+                style = MaterialTheme.typography.labelMedium
+            )
+            extraSuffix?.let {
+                Spacer(Modifier.width(4.dp))
+                Text(
+                    text = it,
+                    style = MaterialTheme.typography.labelMedium
+                )
+            }
+        }
     }
 }
 

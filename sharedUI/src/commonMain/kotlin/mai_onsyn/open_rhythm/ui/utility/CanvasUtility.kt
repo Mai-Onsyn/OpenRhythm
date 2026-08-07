@@ -15,6 +15,7 @@ import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import mai_onsyn.open_rhythm.core.midi.Midi
 import mai_onsyn.open_rhythm.ui.modules.midi_flow.findBarLines
+import kotlin.collections.mapValues
 
 fun DrawScope.drawTextCentered(
     layoutResult: TextLayoutResult,
@@ -45,7 +46,41 @@ fun rememberTextLayoutResult(
     }
 }
 
-fun DrawScope.drawPitchLines(
+@Composable
+fun rememberTextLayoutResult(
+    texts: List<String>,
+    fontSize: TextUnit,
+    color: Color
+): List<TextLayoutResult> {
+    val textMeasurer = rememberTextMeasurer()
+    return remember(texts, fontSize, color) {
+        texts.map {
+            textMeasurer.measure(
+                text = it,
+                style = TextStyle(fontSize = fontSize, color = color)
+            )
+        }
+    }
+}
+
+@Composable
+fun <T> rememberTextLayoutResult(
+    texts: Map<T, String>,
+    fontSize: TextUnit,
+    color: (Map.Entry<T, String>) -> Color
+): Map<T, TextLayoutResult> {
+    val textMeasurer = rememberTextMeasurer()
+    return remember(texts, fontSize, color) {
+        texts.mapValues {
+            textMeasurer.measure(
+                text = it.value,
+                style = TextStyle(fontSize = fontSize, color = color(it))
+            )
+        }
+    }
+}
+
+fun DrawScope.drawOctaveLines(
     minPitch: Int,          // A0 default
     maxPitch: Int,          // C8 default
     gridPos: Map<Int, Pair<Float, Float>>,

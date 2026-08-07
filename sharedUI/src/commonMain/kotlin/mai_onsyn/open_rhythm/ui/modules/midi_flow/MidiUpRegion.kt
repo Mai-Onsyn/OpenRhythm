@@ -27,7 +27,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.max
 import coil3.compose.AsyncImage
 import coil3.compose.LocalPlatformContext
-import coil3.request.CachePolicy
 import coil3.request.ImageRequest
 import coil3.size.Size
 import io.github.vinceglb.filekit.PlatformFile
@@ -92,7 +91,9 @@ fun MidiUpRegion(
                 modifier = Modifier
                     .fillMaxSize(),
                 notes = notes,
-                color = Singleton.settings.KeyboardUserInteractionDisplayColor
+                color = Singleton.settings.KeyboardInteractionColor,
+                drawOctaveLine = Singleton.settings.DrawOctaveLines,
+                noteRoundPercent = Singleton.settings.NoteRoundConerPercent
             )
         }
 
@@ -102,7 +103,7 @@ fun MidiUpRegion(
                 .height(keyboardHeight),
             userActiveKey = activeKeys,
             onPress = { key, velocity ->
-                activeKeys[key] = Singleton.settings.KeyboardUserInteractionDisplayColor
+                activeKeys[key] = Singleton.settings.KeyboardInteractionColor
                 Singleton.player.noteOn(key, velocity)
 
                 notes.add(LiveNote(key, Time.nanos))
@@ -117,7 +118,9 @@ fun MidiUpRegion(
             },
             onVerticalDragged = {
                 keyboardHeight = max(64.dp, with(density) { keyboardHeight - it.toDp() })
-            }
+            },
+            draggableAreaColor = if (Singleton.settings.EnableKeyboardDragArea) Singleton.settings.KeyboardDragAreaColor else null,
+            enableSplitRedLine = Singleton.settings.DrawRedSplitLine
         )
 
         BindInputDeviceEvents(

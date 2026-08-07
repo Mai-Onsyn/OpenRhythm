@@ -111,13 +111,15 @@ private fun TestKeyboard() {
             maxPitch = 108,
             userActiveKey = userActiveKeys,
             onPress = { pitch, velocity ->
-                userActiveKeys[pitch] = Singleton.settings.KeyboardUserInteractionDisplayColor
+                userActiveKeys[pitch] = Singleton.settings.KeyboardInteractionColor
                 Singleton.player.noteOn(pitch, velocity)
             },
             onRelease = {
                 userActiveKeys.remove(it)
                 Singleton.player.noteOff(it)
-            }
+            },
+            draggableAreaColor = if (Singleton.settings.EnableKeyboardDragArea) Singleton.settings.KeyboardDragAreaColor else null,
+            enableSplitRedLine = Singleton.settings.DrawRedSplitLine
         )
 
         BindInputDeviceEvents(userActiveKeys)

@@ -22,30 +22,30 @@ class UserSetting(
     st: Settings
 ) {
     // =====General Appearance=====
-    var DarkMode by st.observable("DarkMode", 2)  // 0 = light; 1 = dark; 2 = system default
-    var PrimarySeedColor by st.observable("PrimarySeedColor", Color(0xFF485F84))
-    var UserSpecifiedPrimarySeedColor by st.observable("UserSpecifiedPrimarySeedColor", Color(0xFFCD20ED))
+    var DarkMode                        by st.observable("DarkMode",                        2)  // 0 = light; 1 = dark; 2 = system default
+    var PrimarySeedColor                by st.observable("PrimarySeedColor",                Color(0xFF485F84))
+    var UserSpecifiedPrimarySeedColor   by st.observable("UserSpecifiedPrimarySeedColor",   Color(0xFFCD20ED))
 
     // =====General Interaction=====
-    var DoubleClickToPlayPause by st.observable("DoubleClickToPlayPause", false)
-    var DoubleFingerTapToPlayPause by st.observable("DoubleFingerTapToPlayPause", true)
+    var DoubleClickToPlayPause      by st.observable("DoubleClickToPlayPause",      false)
+    var DoubleFingerTapToPlayPause  by st.observable("DoubleFingerTapToPlayPause",  true)
 
     // =====MIDI Input=====
-    val enabledMidiInputDeviceList by st.list("EnabledMidiInputDeviceList", mutableListOf("Virtual Keyboard"), String.serializer())
-    var EnableInputMidiNoteEvent by st.observable("EnableInputMidiNoteEvent", true)
-    var EnableInputMidiCCEvent by st.observable("EnableInputMidiCCEvent", true)
-    var EnableInputMidiPCEvent by st.observable("EnableInputMidiPCEvent", true)
-    var EnableInputMidiPBEvent by st.observable("EnableInputMidiPCBEvent", true)
-    var EnableInputOtherMidiEvent by st.observable("EnableInputOtherMidiEvent", true)
+    val enabledMidiInputDeviceList  by st.list("EnabledMidiInputDeviceList",    mutableListOf("Virtual Keyboard"), String.serializer())
+    var EnableInputMidiNoteEvent    by st.observable("EnableInputMidiNoteEvent",    true)
+    var EnableInputMidiCCEvent      by st.observable("EnableInputMidiCCEvent",      true)
+    var EnableInputMidiPCEvent      by st.observable("EnableInputMidiPCEvent",      true)
+    var EnableInputMidiPBEvent      by st.observable("EnableInputMidiPCBEvent",     true)
+    var EnableInputOtherMidiEvent   by st.observable("EnableInputOtherMidiEvent",   true)
 
     // =====MIDI Output=====
-    var SelectedOutputDeviceName by st.observable("SelectedOutputDeviceName", "")
-    var EnableOutputMidiNoteEvent by st.observable("EnableOutputMidiNoteEvent", true)
-    var EnableOutputMidiCCEvent by st.observable("EnableOutputMidiCCEvent", true)
-    var EnableOutputMidiPCEvent by st.observable("EnableOutputMidiPCBEvent", true)
-    var EnableOutputMidiPBEvent by st.observable("EnableOutputMidiPCBEvent", true)
-    var EnableOutputOtherMidiEvent by st.observable("EnableOutputOtherMidiEvent", true)
-    var GervillSF2Path by st.observable("GervillSF2Path", "")
+    var SelectedOutputDeviceName    by st.observable("SelectedOutputDeviceName",    "")
+    var EnableOutputMidiNoteEvent   by st.observable("EnableOutputMidiNoteEvent",   true)
+    var EnableOutputMidiCCEvent     by st.observable("EnableOutputMidiCCEvent",     true)
+    var EnableOutputMidiPCEvent     by st.observable("EnableOutputMidiPCBEvent",    true)
+    var EnableOutputMidiPBEvent     by st.observable("EnableOutputMidiPCBEvent",    true)
+    var EnableOutputOtherMidiEvent  by st.observable("EnableOutputOtherMidiEvent",  true)
+    var GervillSF2Path              by st.observable("GervillSF2Path",              "")
 
     // =====MIDI File=====
     var UseParserV1 by st.observable("UseParserV1", false)
@@ -54,18 +54,29 @@ class UserSetting(
     val userKeyMappings by st.list("UserKeyMappings", KeyMidiMapping.default(), KeyMidiMapping.serializer())
 
     // =====Waterfall Appearance=====
-    var WaterfallBackgroundColor by st.observable("WaterfallBackgroundColor", Color.Unspecified)
-    var CustomWaterfallBackgroundColor by st.observable("CustomWaterfallBackgroundColor", Color(48, 48, 48))
-    var BackgroundImageDir by st.observable("BackgroundImageDir", "")
-    var BackgroundImageOpacity by st.observable("BackgroundImageOpacity", 0.3f)
-    var BackgroundImageBlurDp by st.observable("BackgroundImageBlurDp", 0f)
-    var OriginalBackgroundImageSize by st.observable("OriginalBackgroundImageSize", false)
+    var WaterfallBackgroundColor        by st.observable("WaterfallBackgroundColor",        Color.Unspecified)
+    var CustomWaterfallBackgroundColor  by st.observable("CustomWaterfallBackgroundColor",  Color(48, 48, 48))
+    var BackgroundImageDir              by st.observable("BackgroundImageDir",              "")
+    var BackgroundImageOpacity          by st.observable("BackgroundImageOpacity",          0.3f)
+    var BackgroundImageBlurDp           by st.observable("BackgroundImageBlurDp",           0f)
+    var OriginalBackgroundImageSize     by st.observable("OriginalBackgroundImageSize",     false)
+    var DrawOctaveLines                 by st.observable("DrawOctaveLines",                 true)
+    var DrawSectionLines                by st.observable("DrawSectionLines",                true)
+
+    // =====Note Appearance=====
+    var NoteRoundConerPercent   by st.observable("NoteRoundConerPercent",   0.5f)
+    var QuarterNoteDpHeight     by st.observable("QuarterNoteDpHeight",     120f)
+    var DrawPitchLabels         by st.observable("DrawPitchLabels",         false)
+    var DrawNoteShadow          by st.observable("DrawNoteShadow",          true)
 
     // =====Keyboard Appearance=====
-    var KeyboardAutoAspect by st.observable("KeyBoardAutoAspect", true)
-    var KeyboardAspectRatio by st.observable("KeyBoardAspectRatio", 8f)
-    var KeyboardUserInteractionDisplayColor by st.observable("KeyboardUserInteractionDisplayColor", Color(138, 226, 52))
-    var CenterKeyboardOverlayLayers by st.observable("CenterKeyboardOverlayLayers", false)
+    var KeyboardAutoAspect              by st.observable("KeyBoardAutoAspect",          true)
+    var KeyboardAspectRatio             by st.observable("KeyBoardAspectRatio",         8f)
+    var KeyboardInteractionColor        by st.observable("KeyboardInteractionColor",    Color(138, 226, 52))
+    var EnableKeyboardDragArea          by st.observable("EnableKeyboardDragArea",      true)
+    var KeyboardDragAreaColor           by st.observable("KeyboardDragAreaColor",       Color.Unspecified)
+    var CustomKeyboardDragAreaColor     by st.observable("CustomKeyboardDragAreaColor", Color(0xFF404040))
+    var DrawRedSplitLine                by st.observable("DrawRedSplitLine",            true)
 
     // =====User Data=====
     val libraryFolderList by st.list("LibraryFolderList", mutableListOf(), UILibraryFolder.serializer())

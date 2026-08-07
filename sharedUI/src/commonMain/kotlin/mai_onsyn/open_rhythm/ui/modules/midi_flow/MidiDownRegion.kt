@@ -12,7 +12,6 @@ import androidx.compose.ui.draw.blur
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.isUnspecified
 import androidx.compose.ui.input.key.*
 import androidx.compose.ui.input.pointer.PointerEventPass
@@ -25,7 +24,6 @@ import androidx.compose.ui.unit.max
 import co.touchlab.kermit.Logger
 import coil3.compose.AsyncImage
 import coil3.compose.LocalPlatformContext
-import coil3.request.CachePolicy
 import coil3.request.ImageRequest
 import coil3.size.Size
 import io.github.vinceglb.filekit.PlatformFile
@@ -90,7 +88,7 @@ fun MidiDownRegion(
     ) {
         var currentTick by remember { mutableStateOf(0L) }
 
-        val hpb by remember { mutableStateOf(120.dp) }
+        val hpb by remember(Singleton.settings.QuarterNoteDpHeight) { mutableStateOf(Singleton.settings.QuarterNoteDpHeight.dp) }
         var deltaYpx by remember { mutableStateOf(0f) }
 
         Box(
@@ -162,7 +160,11 @@ fun MidiDownRegion(
                 midi = midi,
                 hpb = hpb,
                 activeNoteOutput = midiActiveKeys,
-                onVerticalDragged = { deltaYpx += it }
+                onVerticalDragged = { deltaYpx += it },
+                drawOctaveLine = Singleton.settings.DrawOctaveLines,
+                drawSectionLine = Singleton.settings.DrawSectionLines,
+                noteRoundPercent = Singleton.settings.NoteRoundConerPercent,
+                drawPitchLabel = Singleton.settings.DrawPitchLabels
             )
         }
 
@@ -219,7 +221,7 @@ fun MidiDownRegion(
             midiActiveKey = midiActiveKeys,
             userActiveKey = userActiveKeys,
             onPress = { key, velocity ->
-                userActiveKeys[key] = Singleton.settings.KeyboardUserInteractionDisplayColor
+                userActiveKeys[key] = Singleton.settings.KeyboardInteractionColor
                 Singleton.player.noteOn(key, velocity)
             },
             onRelease = { key ->
@@ -228,7 +230,9 @@ fun MidiDownRegion(
             },
             onVerticalDragged = {
                 keyboardHeight = max(64.dp, with(density) { keyboardHeight - it.toDp() })
-            }
+            },
+            draggableAreaColor = if (Singleton.settings.EnableKeyboardDragArea) Singleton.settings.KeyboardDragAreaColor else null,
+            enableSplitRedLine = Singleton.settings.DrawRedSplitLine
         )
     }
 }

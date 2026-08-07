@@ -2,32 +2,38 @@ package mai_onsyn.open_rhythm.ui.modules.midi_flow
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateMapOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
-import androidx.compose.ui.graphics.compositeOver
-import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.input.pointer.positionChanged
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.materialkolor.ktx.darken
 import mai_onsyn.open_rhythm.core.midi.Midi
 import mai_onsyn.open_rhythm.core.midi.Note
 import mai_onsyn.open_rhythm.core.midi.TimeSignatureEvent
-import mai_onsyn.open_rhythm.ui.utility.blackKeyOffset
 import mai_onsyn.open_rhythm.ui.utility.countWhiteKeys
-import mai_onsyn.open_rhythm.ui.utility.drawPitchLines
+import mai_onsyn.open_rhythm.ui.utility.drawOctaveLines
 import mai_onsyn.open_rhythm.ui.utility.drawSectionLines
+import mai_onsyn.open_rhythm.ui.utility.drawTextCentered
 import mai_onsyn.open_rhythm.ui.utility.isBlackKey
 import mai_onsyn.open_rhythm.ui.utility.reMeasure
+import mai_onsyn.open_rhythm.ui.utility.rememberTextLayoutResult
 
 @Composable
 fun MidiWaterFall(
@@ -42,7 +48,9 @@ fun MidiWaterFall(
     blackHorizontalPercentage: Float = 0.75f,
     activeNoteOutput: MutableMap<Int, Color> = mutableMapOf(),
     drawSectionLine: Boolean = true,
-    drawPitchLine: Boolean = true,
+    drawOctaveLine: Boolean = true,
+    noteRoundPercent: Float = 0.2f,
+    drawPitchLabel: Boolean = false,
     onVerticalDragged: (Float) -> Unit = {}
 ) {
 //    require(trackColors.size >= midi.hasNoteTracks) { "Not enough colors for tracks" }
@@ -61,10 +69,28 @@ fun MidiWaterFall(
         result
     }
 
+    val whiteKeyCount = countWhiteKeys(minPitch, maxPitch)
+    var whiteKeyWidth by remember { mutableStateOf(0f) }
+
+    val pitchLabels = if (drawPitchLabel) {
+        val pitchNames = remember(minPitch, maxPitch) {
+            mutableStateMapOf<Int, String>().apply {
+                for (i in minPitch..maxPitch)
+                    put(i, Note.toString(i))
+            }
+        }
+        rememberTextLayoutResult(
+            texts = pitchNames,
+            fontSize = (whiteKeyWidth * 0.3f).sp,
+            color = { Color.White }
+        )
+    } else null
+
     Canvas(
         modifier = modifier
             .clip(RectangleShape)
             .onSizeChanged { size ->
+                whiteKeyWidth = (size.width - (whiteKeyCount - 1) * spacingPx) / whiteKeyCount
                 reMeasure(gridPos, size, spacingPx, minPitch, maxPitch, blackHorizontalPercentage)
             }
             .pointerInput(Unit) {
@@ -80,7 +106,7 @@ fun MidiWaterFall(
                 }
             }
     ) {
-        if (drawPitchLine) drawPitchLines(minPitch, maxPitch, gridPos)
+        if (drawOctaveLine) drawOctaveLines(minPitch, maxPitch, gridPos)
         val height = size.height
         val visibleTickCount = (height / hpb.toPx() * midi.ppq).toInt()
         val pxPerTick = hpb.toPx() / midi.ppq
@@ -101,29 +127,33 @@ fun MidiWaterFall(
         toDrawNotes.sortWith(compareBy({ it.note.tick }, { it.trackNum }))
 
         activeNoteOutput.clear()
-        fun drawNote(pack: DrawableNote) {
+        fun drawNote(pack: DrawableNote, blackKey: Boolean) {
             val (x, w) = gridPos[pack.note.pitch] ?: return
             val pixelPos = (pack.note.tick - currTick) * pxPerTick
             val durationPx = pack.note.duration * pxPerTick
-            drawRoundRect(
-                color = if (isBlackKey(pack.note.pitch))
-                    Color(pack.color.red, pack.color.green, pack.color.blue, 0.8f).compositeOver(Color.Black)
-                else pack.color,
-                topLeft = Offset(x, (height - pixelPos - durationPx)),
-                size = Size(w, durationPx),
-                cornerRadius = CornerRadius(w * 0.1f)
+            val noteRect = Rect(Offset(x, (height - pixelPos - durationPx)), Size(w, durationPx))
+            drawNoteGraphics(
+                if (blackKey) pack.color.darken(1.5f) else pack.color,
+                noteRect,
+                w * 0.5f * noteRoundPercent
             )
-//            if (durationPx < 10) Logger.v { "Too short note: $pack" }
+            pitchLabels?.get(pack.note.pitch)?.let {
+                val labelCenterPos = noteRect.bottomCenter.let { it.copy(y = it.y - whiteKeyWidth * 0.4f) }
+                drawTextCentered(
+                    it,
+                    labelCenterPos,
+                )
+            }
             if (pack.note.tick <= currTick && pack.note.tick + pack.note.duration >= currTick) {
                 activeNoteOutput[pack.note.pitch] = pack.color
             }
         }
 
         for (pack in toDrawNotes) {
-            if (!isBlackKey(pack.note.pitch)) drawNote(pack)
+            if (!isBlackKey(pack.note.pitch)) drawNote(pack, false)
         }
         for (pack in toDrawNotes) {
-            if (isBlackKey(pack.note.pitch)) drawNote(pack)
+            if (isBlackKey(pack.note.pitch)) drawNote(pack, true)
         }
     }
 }

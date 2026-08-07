@@ -1,6 +1,6 @@
 # OpenRhythm 🎹
 
-![Screenshot](http://cdn.jsdelivr.net/gh/Mai-Onsyn/ExternalLinkCDN/images/github-readme/OpenRhythm/screenshot.png)
+![Screenshot](http://cdn.jsdelivr.net/gh/Mai-Onsyn/ExternalLinkCDN/images/github-readme/OpenRhythm/screenshot.png?v=20260807)
 
 > 🚧 **Status: Active Development** — Expect bugs, missing features, and rapid improvements!
 

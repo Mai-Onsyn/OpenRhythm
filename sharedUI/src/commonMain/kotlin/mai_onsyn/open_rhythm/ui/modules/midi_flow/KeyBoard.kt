@@ -23,8 +23,10 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.materialkolor.ktx.darken
 import mai_onsyn.open_rhythm.bridge.AppCursors
 import mai_onsyn.open_rhythm.ui.utility.*
 
@@ -41,6 +43,8 @@ fun MidiKeyBoard(
     spacing: Dp = 1.dp,
     appendTexts: Map<Int, String> = emptyMap(),
     centerAppendLayer: Boolean = false,
+    whiteKeyColor: Color = Color.White,
+    blackKeyColor: Color = Color.Black,
     darkPart: Color = Color.Black,
     onPress: (Int, Int) -> Unit = { pitch, velocity -> },
     onRelease: (Int) -> Unit = {},
@@ -55,10 +59,13 @@ fun MidiKeyBoard(
 
     val whiteKeyCount = countWhiteKeys(minPitch, maxPitch)
 
-    val keyRegions = remember(minPitch, maxPitch, blackVerticalPercentage, blackHorizontalPercentage, spacing) {
-        // (blackKeys, whiteKeys)
-        mutableStateOf(Pair(emptyList<Pair<Rect, Int>>(), emptyList<Pair<Rect, Int>>()))
-    }
+//    val keyRegions = remember(minPitch, maxPitch, blackVerticalPercentage, blackHorizontalPercentage, spacing) {
+//        // (blackKeys, whiteKeys)
+//        mutableStateOf(Pair(emptyList<Pair<Rect, Int>>(), emptyList<Pair<Rect, Int>>()))
+//    }
+    var blackKeyRects by remember { mutableStateOf(emptyMap<Int, Rect>()) }
+    var whiteKeyRects by remember { mutableStateOf(emptyMap<Int, Rect>()) }
+
     val activeKey = midiActiveKey + userActiveKey
 
     val spacingPx = with(density) { spacing.toPx() }
@@ -81,42 +88,54 @@ fun MidiKeyBoard(
     )
 
     var currentCursor by remember { mutableStateOf(PointerIcon.Default) }
+
+    var canvasSize by remember { mutableStateOf(IntSize.Zero) }
+    fun reCalcKeyRects() {
+        val width = canvasSize.width.toFloat()
+        val height = canvasSize.height.toFloat()
+        val whiteKeyWidth = (width - (whiteKeyCount - 1) * spacingPx) / whiteKeyCount
+
+        val wRects = mutableMapOf<Int, Rect>()
+        val bRects = mutableMapOf<Int, Rect>()
+
+        // 白键 Rect
+        for (pitch in minPitch..maxPitch) {
+            if (!isBlackKey(pitch)) {
+                val x = (countWhiteKeys(minPitch, pitch) - 1) * (whiteKeyWidth + spacingPx)
+                val topLeft = Offset(x, offsetStartY)
+                val keySize = Size(whiteKeyWidth, height - offsetStartY - endPadding)
+                wRects[pitch] = Rect(topLeft, keySize)
+            }
+        }
+        // 黑键 Rect
+        for (pitch in minPitch..maxPitch) {
+            if (isBlackKey(pitch)) {
+                val offsetPercent = blackKeyOffset(pitch)
+                val centerX = (countWhiteKeys(minPitch, pitch)) * (whiteKeyWidth + spacingPx) - spacingPx / 2
+                val blackBaseSize = Size(
+                    whiteKeyWidth * blackHorizontalPercentage,
+                    (height - offsetStartY - endPadding) * blackVerticalPercentage
+                )
+                val blackBaseOffset =
+                    Offset(centerX - blackBaseSize.width / 2 + blackBaseSize.width * offsetPercent, offsetStartY)
+                bRects[pitch] = Rect(blackBaseOffset, blackBaseSize)
+            }
+        }
+        whiteKeyRects = wRects
+        blackKeyRects = bRects
+    }
+    LaunchedEffect(canvasSize, minPitch, maxPitch) { reCalcKeyRects() }
+
     Canvas(
         modifier = modifier
             .background(darkPart)
             .focusRequester(focusRequester)
             .focusable()
             .onSizeChanged { size ->
-                val width = size.width.toFloat()
-                val height = size.height.toFloat()
-                val whiteKeyWidth = (width - (whiteKeyCount - 1) * spacingPx) / whiteKeyCount
-
-                val wRects = mutableListOf<Pair<Rect, Int>>()
-                val bRects = mutableListOf<Pair<Rect, Int>>()
-
-                // 白键 Rect
-                for (pitch in minPitch..maxPitch) {
-                    if (!isBlackKey(pitch)) {
-                        val x = (countWhiteKeys(minPitch, pitch) - 1) * (whiteKeyWidth + spacingPx)
-                        val topLeft = Offset(x, offsetStartY)
-                        val keySize = Size(whiteKeyWidth, height - offsetStartY - endPadding)
-                        wRects.add(Pair(Rect(topLeft, keySize), pitch))
-                    }
-                }
-                // 黑键 Rect
-                for (pitch in minPitch..maxPitch) {
-                    if (isBlackKey(pitch)) {
-                        val offsetPercent = blackKeyOffset(pitch)
-                        val centerX = (countWhiteKeys(minPitch, pitch)) * (whiteKeyWidth + spacingPx) - spacingPx / 2
-                        val blackBaseSize = Size(whiteKeyWidth * blackHorizontalPercentage, (height - offsetStartY - endPadding) * blackVerticalPercentage)
-                        val blackBaseOffset = Offset(centerX - blackBaseSize.width / 2 + blackBaseSize.width * offsetPercent, offsetStartY)
-                        bRects.add(Pair(Rect(blackBaseOffset, blackBaseSize), pitch))
-                    }
-                }
-                keyRegions.value = Pair(bRects, wRects)
+                canvasSize = size
             }
             .pointerHoverIcon(currentCursor)
-            .pointerInput(keyRegions) {
+            .pointerInput(whiteKeyRects, blackKeyRects) {
                 awaitPointerEventScope {
                     var inHeightRegionPressed = false
                     var lastCursorPressed = false
@@ -146,21 +165,20 @@ fun MidiKeyBoard(
                         // =========== Height adjust region ==========
 
                         val currentPressedKeys = mutableMapOf<Int, Float>()
-                        val (blackKeyRect, whiteKeyRect) = keyRegions.value
                         for (change in event.changes) {
                             if (change.pressed) {
                                 var findInBlackRegion = false
-                                for (blackKeyRegion in blackKeyRect) {
-                                    if (change.position in blackKeyRegion.first) {
-                                        currentPressedKeys[blackKeyRegion.second] = (change.position.y - offsetStartY) / blackKeyRegion.first.height
+                                for ((pitch, rect) in blackKeyRects) {
+                                    if (change.position in rect) {
+                                        currentPressedKeys[pitch] = (change.position.y - offsetStartY) / rect.height
                                         findInBlackRegion = true
                                         break
                                     }
                                 }
                                 if (!findInBlackRegion) {
-                                    for (whiteKeyRegion in whiteKeyRect) {
-                                        if (change.position in whiteKeyRegion.first) {
-                                            currentPressedKeys[whiteKeyRegion.second] = (change.position.y - offsetStartY) / whiteKeyRegion.first.height
+                                    for ((pitch, rect) in whiteKeyRects) {
+                                        if (change.position in rect) {
+                                            currentPressedKeys[pitch] = (change.position.y - offsetStartY) / rect.height
                                             break
                                         }
                                     }
@@ -209,21 +227,20 @@ fun MidiKeyBoard(
         // 白键
         for (pitch in minPitch..maxPitch) {
             if (!isBlackKey(pitch)) {
-                val rect = keyRegions.value.second[keyRegions.value.second.binarySearchBy(pitch) { it.second }].first
-                val isActive = activeKey.containsKey(pitch)
+                val rect = whiteKeyRects[pitch] ?: continue
                 drawRoundedBottomShape(
                     topLeft = rect.topLeft,
-                    size = if (isActive) Size(rect.size.width, rect.size.height + endPadding * 0.6f) else rect.size,
+                    size = if (activeKey.containsKey(pitch)) Size(rect.size.width, rect.size.height + endPadding * 0.6f) else rect.size,
                     rx = whiteKeyWidth * 0.3f,
                     ry = whiteKeyWidth * 0.15f,
-                    color = if (isActive) activeKey[pitch]!! else Color.White
+                    color = activeKey[pitch] ?: whiteKeyColor
                 )
             }
         }
         // 黑键
         for (pitch in minPitch..maxPitch) {
             if (isBlackKey(pitch)) {
-                val rect = keyRegions.value.first[keyRegions.value.first.binarySearchBy(pitch) { it.second }].first
+                val rect = blackKeyRects[pitch] ?: continue
                 val radiusUnit = whiteKeyWidth * 0.03f
                 drawRoundedBottomShape(
                     color = darkPart,
@@ -234,10 +251,7 @@ fun MidiKeyBoard(
                 )
 
                 drawRoundedBottomShape(
-                    color = if (activeKey.containsKey(pitch)) {
-                        val targetColor = activeKey[pitch]!!
-                        Color(targetColor.red, targetColor.green, targetColor.blue, 0.8f).compositeOver(Color.Black)
-                    } else Color.Black,
+                    color = activeKey[pitch]?.darken(1.5f) ?: blackKeyColor,
                     topLeft = Offset(rect.topLeft.x + rect.size.width * 0.07f, rect.topLeft.y),
                     size = Size(rect.size.width * 0.86f, rect.size.height - rect.size.width * 0.1f),
                     rx = radiusUnit * 4,
@@ -248,11 +262,11 @@ fun MidiKeyBoard(
 
         textRenderingItems.entries.forEach { (pitch, obj) ->
             val pos = if (isBlackKey(pitch)) {
-                val rect = keyRegions.value.first[keyRegions.value.first.binarySearchBy(pitch) { it.second }].first
+                val rect = blackKeyRects[pitch] ?: return@forEach
                 if (centerAppendLayer) rect.center
                 else rect.bottomCenter.let { it.copy(y = it.y - whiteKeyWidth * 0.5f) }
             } else {
-                val rect = keyRegions.value.second[keyRegions.value.second.binarySearchBy(pitch) { it.second }].first
+                val rect = whiteKeyRects[pitch] ?: return@forEach
                 if (centerAppendLayer) Offset(rect.center.x, rect.topLeft.y + rect.size.height * (blackVerticalPercentage * 0.5f + 0.5f))
                 else rect.bottomCenter.let { it.copy(y = it.y - whiteKeyWidth * 0.5f) }
             }

@@ -77,6 +77,12 @@ class UserSetting(
     var KeyboardDragAreaColor           by st.observable("KeyboardDragAreaColor",       Color.Unspecified)
     var CustomKeyboardDragAreaColor     by st.observable("CustomKeyboardDragAreaColor", Color(0xFF404040))
     var DrawRedSplitLine                by st.observable("DrawRedSplitLine",            true)
+    var KeyboardShadowColor             by st.observable("KeyboardShadowColor",         Color.Black)
+    var WhiteKeyColor                   by st.observable("WhiteKeyColor",               Color.White)
+    var BlackKeyColor                   by st.observable("BlackKeyColor",               Color.Black)
+    var OverlayLabelsMode               by st.observable("OverlayLabelsMode",           0)  // 0=无 1=仅Cx音符 2=仅白键 3=全部
+    var MinPitch                        by st.observable("MinPitch",                    21)
+    var MaxPitch                        by st.observable("MaxPitch",                    108)
 
     // =====User Data=====
     val libraryFolderList by st.list("LibraryFolderList", mutableListOf(), UILibraryFolder.serializer())

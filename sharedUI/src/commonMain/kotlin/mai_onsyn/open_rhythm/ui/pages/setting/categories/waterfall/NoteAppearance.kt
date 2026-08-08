@@ -47,7 +47,7 @@ fun NoteAppearance() {
                     Singleton.settings.QuarterNoteDpHeight = it.toFloat()
                 },
                 steps = 10,
-                range = 10..360,
+                range = 10..480,
                 extraSuffix = "dp"
             )
         }

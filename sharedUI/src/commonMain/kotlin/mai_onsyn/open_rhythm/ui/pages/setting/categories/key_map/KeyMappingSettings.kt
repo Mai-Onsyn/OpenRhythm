@@ -11,7 +11,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import mai_onsyn.open_rhythm.bridge.Singleton
 import mai_onsyn.open_rhythm.core.midi.device.KeyboardVirtualMidiInputDevice
-import mai_onsyn.open_rhythm.ui.modules.midi_flow.MidiKeyBoard
+import mai_onsyn.open_rhythm.ui.modules.midi_flow.AppDefaultMidiKeyboard
 import mai_onsyn.open_rhythm.ui.utility.BindInputDeviceEvents
 
 @Composable
@@ -46,7 +46,7 @@ fun KeyMappingSettings() {
                     put(mapping.pitch, keyCodeToShortName[mapping.keyCode] ?: "Non")
                 }
             }
-            MidiKeyBoard(
+            AppDefaultMidiKeyboard(
                 modifier = Modifier.fillMaxSize(),
                 userActiveKey = userActiveMidiKeys,
                 appendTexts = appendTexts,
@@ -70,9 +70,7 @@ fun KeyMappingSettings() {
                 onRelease = {
                     userActiveMidiKeys.remove(it)
                     Singleton.player.noteOff(it)
-                },
-                draggableAreaColor = if (Singleton.settings.EnableKeyboardDragArea) Singleton.settings.KeyboardDragAreaColor else null,
-                enableSplitRedLine = Singleton.settings.DrawRedSplitLine
+                }
             )
 
             BindInputDeviceEvents(userActiveMidiKeys)

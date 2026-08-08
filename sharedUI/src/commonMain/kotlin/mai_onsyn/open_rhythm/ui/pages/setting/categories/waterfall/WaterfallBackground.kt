@@ -72,8 +72,6 @@ fun WaterfallBackground() {
 
         animatedItem(showCustomColorSetting, "Custom Color") {
             ColorSelector(
-                modifier = Modifier
-                    .size(100.dp, 40.dp),
                 initialColor = Singleton.settings.CustomWaterfallBackgroundColor,
                 onColorSelected = {
                     Singleton.settings.CustomWaterfallBackgroundColor = it

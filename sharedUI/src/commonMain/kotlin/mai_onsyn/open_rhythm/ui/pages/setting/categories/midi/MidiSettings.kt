@@ -21,7 +21,7 @@ import kotlinx.coroutines.launch
 import mai_onsyn.open_rhythm.bridge.Singleton
 import mai_onsyn.open_rhythm.ui.icons.ic_audio_file
 import mai_onsyn.open_rhythm.ui.icons.ic_refresh
-import mai_onsyn.open_rhythm.ui.modules.midi_flow.MidiKeyBoard
+import mai_onsyn.open_rhythm.ui.modules.midi_flow.AppDefaultMidiKeyboard
 import mai_onsyn.open_rhythm.ui.pages.library.cachedMidiFiles
 import mai_onsyn.open_rhythm.ui.pages.setting.SettingsCard
 import mai_onsyn.open_rhythm.ui.utility.BindInputDeviceEvents
@@ -104,7 +104,7 @@ private fun TestKeyboard() {
             .aspectRatio(Singleton.settings.KeyboardAspectRatio)
     ) {
         val userActiveKeys = remember { mutableStateMapOf<Int, Color>() }
-        MidiKeyBoard(
+        AppDefaultMidiKeyboard(
             modifier = Modifier
                 .fillMaxSize(),
             minPitch = 21,
@@ -117,9 +117,7 @@ private fun TestKeyboard() {
             onRelease = {
                 userActiveKeys.remove(it)
                 Singleton.player.noteOff(it)
-            },
-            draggableAreaColor = if (Singleton.settings.EnableKeyboardDragArea) Singleton.settings.KeyboardDragAreaColor else null,
-            enableSplitRedLine = Singleton.settings.DrawRedSplitLine
+            }
         )
 
         BindInputDeviceEvents(userActiveKeys)

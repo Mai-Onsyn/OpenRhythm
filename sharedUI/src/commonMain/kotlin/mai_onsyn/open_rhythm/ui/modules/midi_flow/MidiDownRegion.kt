@@ -35,7 +35,9 @@ import kotlinx.coroutines.IO
 import kotlinx.coroutines.withContext
 import mai_onsyn.open_rhythm.bridge.Singleton
 import mai_onsyn.open_rhythm.core.midi.Midi
+import mai_onsyn.open_rhythm.core.midi.Note
 import mai_onsyn.open_rhythm.ui.utility.BindInputDeviceEvents
+import mai_onsyn.open_rhythm.ui.utility.isBlackKey
 
 @Composable
 fun MidiDownRegion(
@@ -176,7 +178,7 @@ fun MidiDownRegion(
             }
             else Singleton.player.pause()
         }
-        LaunchedEffect(isPlaying, midi) {
+        LaunchedEffect(isPlaying, midi, hpb) {
             while (true) {
                 withFrameMillis {
                     if (deltaYpx != 0f && !isPlaying) {
@@ -214,7 +216,9 @@ fun MidiDownRegion(
 //            }
 //        }
 
-        MidiKeyBoard(
+        val appendTextMap = appliedOverlayLabels()
+
+        AppDefaultMidiKeyboard(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(keyboardHeight),
@@ -231,8 +235,7 @@ fun MidiDownRegion(
             onVerticalDragged = {
                 keyboardHeight = max(64.dp, with(density) { keyboardHeight - it.toDp() })
             },
-            draggableAreaColor = if (Singleton.settings.EnableKeyboardDragArea) Singleton.settings.KeyboardDragAreaColor else null,
-            enableSplitRedLine = Singleton.settings.DrawRedSplitLine
+            appendTexts = appendTextMap
         )
     }
 }

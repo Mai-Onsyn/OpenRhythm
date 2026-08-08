@@ -53,7 +53,7 @@ fun LabeledSlider(
     val colorScheme = MaterialTheme.colorScheme
     val totalTicks = (range.last - range.first).toFloat()
 
-    var progress by remember { mutableStateOf(value / totalTicks) }
+    var progress by remember { mutableStateOf(((value - range.first) / totalTicks).coerceIn(0f, 1f) ) }
     val animatedProgress by animateFloatAsState(progress)
 
     val interactionSource = remember { MutableInteractionSource() }

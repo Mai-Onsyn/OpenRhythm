@@ -4,6 +4,7 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.size
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -24,7 +25,7 @@ import mai_onsyn.open_rhythm.ui.modules.dialog.DialogPopup
 
 @Composable
 fun ColorSelector(
-    modifier: Modifier = Modifier,
+    modifier: Modifier = Modifier.size(100.dp, 40.dp),
     initialColor: Color,
     onColorSelected: (Color) -> Unit,
 ) {

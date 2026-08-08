@@ -1,4 +1,4 @@
-package mai_onsyn.open_rhythm.ui.pages.setting.categories.waterfall
+package mai_onsyn.open_rhythm.ui.pages.setting.categories.keyboard
 
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -14,16 +14,16 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.isSpecified
 import androidx.compose.ui.unit.dp
 import mai_onsyn.open_rhythm.bridge.Singleton
-import mai_onsyn.open_rhythm.ui.icons.ic_piano
+import mai_onsyn.open_rhythm.ui.icons.ic_page_header
 import mai_onsyn.open_rhythm.ui.modules.ColorSelector
 import mai_onsyn.open_rhythm.ui.pages.setting.ChoiceRow
 import mai_onsyn.open_rhythm.ui.pages.setting.SettingsCard
 
 @Composable
-fun KeyboardAppearance() {
+fun HeadAppearance() {
     SettingsCard(
-        title = "Keyboard",
-        icon = ic_piano,
+        title = "Head",
+        icon = ic_page_header,
         modifier = Modifier.fillMaxWidth()
     ) {
         itemWithSwitch(
@@ -69,7 +69,6 @@ fun KeyboardAppearance() {
             name = "Custom drag area color"
         ) {
             ColorSelector(
-                modifier = Modifier.size(100.dp, 40.dp),
                 initialColor = Singleton.settings.CustomKeyboardDragAreaColor,
                 onColorSelected = {
                     Singleton.settings.KeyboardDragAreaColor = it

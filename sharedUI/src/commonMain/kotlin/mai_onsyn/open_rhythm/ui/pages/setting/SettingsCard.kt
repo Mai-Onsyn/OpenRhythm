@@ -256,7 +256,7 @@ private fun SettingItemLayout(
     if (verticalLayout) Column(
         modifier = modifier
     ) {
-        Column(modifier = Modifier.padding(end = 8.dp)) {
+        Column(modifier = Modifier.padding(bottom = 8.dp)) {
             titleContent()
         }
         content()
@@ -265,7 +265,7 @@ private fun SettingItemLayout(
         modifier = modifier,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Column(modifier = Modifier.weight(1f).padding(bottom = 8.dp)) {
+        Column(modifier = Modifier.weight(1f).padding(end = 8.dp)) {
             titleContent()
         }
         content()

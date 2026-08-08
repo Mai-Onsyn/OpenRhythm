@@ -97,7 +97,9 @@ fun MidiUpRegion(
             )
         }
 
-        MidiKeyBoard(
+        val appendTextMap = appliedOverlayLabels()
+
+        AppDefaultMidiKeyboard(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(keyboardHeight),
@@ -119,8 +121,7 @@ fun MidiUpRegion(
             onVerticalDragged = {
                 keyboardHeight = max(64.dp, with(density) { keyboardHeight - it.toDp() })
             },
-            draggableAreaColor = if (Singleton.settings.EnableKeyboardDragArea) Singleton.settings.KeyboardDragAreaColor else null,
-            enableSplitRedLine = Singleton.settings.DrawRedSplitLine
+            appendTexts = appendTextMap
         )
 
         BindInputDeviceEvents(

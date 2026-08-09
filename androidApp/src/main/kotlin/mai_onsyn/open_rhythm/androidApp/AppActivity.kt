@@ -18,13 +18,17 @@ import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowInsetsControllerCompat
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import mai_onsyn.open_rhythm.bridge.initAndroid
+import mai_onsyn.open_rhythm.core.log.LogManager
 import mai_onsyn.open_rhythm.ui.App
 
 class AppActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+
         initAndroid(this)
+        LogManager.initialize()
+
         setContent {
             val configuration = LocalConfiguration.current
             val view = LocalView.current

@@ -14,6 +14,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 
@@ -66,6 +67,73 @@ fun CompactOutlinedTextField(
                     OutlinedTextFieldDefaults.Container(
                         enabled = true,
                         isError = false,
+                        interactionSource = interactionSource,
+                        colors = OutlinedTextFieldDefaults.colors(),
+                        shape = MaterialTheme.shapes.small
+                    )
+                },
+                placeholder = placeholder,
+                isError = isError
+            )
+        }
+    )
+}
+
+@Composable
+fun CompactOutlinedTextField(
+    modifier: Modifier = Modifier,
+    value: Int,
+    onValueChange: (Int) -> Unit,
+    isError: Boolean = false,
+    placeholder: @Composable (() -> Unit)? = null,
+    trailingIcon: @Composable (() -> Unit)? = null,
+    textStyle: TextStyle = MaterialTheme.typography.bodyLarge.copy(
+        color = MaterialTheme.colorScheme.onSurface
+    ),
+    interactionSource: MutableInteractionSource? = null,
+    keyboardOptions: KeyboardOptions = KeyboardOptions(
+        keyboardType = KeyboardType.Number,
+        imeAction = ImeAction.Done
+    ),
+    onConfirm: () -> Unit = {},
+    keyboardActions: KeyboardActions = KeyboardActions(
+        onDone = { onConfirm() }
+    ),
+    label: @Composable (() -> Unit)? = null,
+    contentPadding: PaddingValues = PaddingValues(horizontal = 12.dp, vertical = 8.dp)
+) {
+    val interactionSource = remember { interactionSource ?: MutableInteractionSource() }
+    val displayValue = value.toString()                 // Int → String
+
+    BasicTextField(
+        value = displayValue,
+        onValueChange = { newValue ->
+            val filtered = newValue.filter { it.isDigit() }
+            if (filtered.isNotEmpty()) {
+                filtered.toIntOrNull()?.let { onValueChange(it) }
+            }
+        },
+        modifier = modifier.fillMaxWidth(),
+        textStyle = textStyle,
+        keyboardOptions = keyboardOptions,
+        keyboardActions = keyboardActions,
+        singleLine = true,
+        interactionSource = interactionSource,
+        decorationBox = { innerTextField ->
+            OutlinedTextFieldDefaults.DecorationBox(
+                value = displayValue,
+                innerTextField = innerTextField,
+                enabled = true,
+                singleLine = true,
+                visualTransformation = VisualTransformation.None,
+                interactionSource = interactionSource,
+                trailingIcon = trailingIcon,
+                label = label,
+                contentPadding = contentPadding,
+                container = {
+                    OutlinedTextFieldDefaults.Container(
+                        enabled = true,
+                        isError = isError,
                         interactionSource = interactionSource,
                         colors = OutlinedTextFieldDefaults.colors(),
                         shape = MaterialTheme.shapes.small

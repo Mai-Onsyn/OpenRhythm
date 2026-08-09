@@ -2,11 +2,30 @@ package mai_onsyn.open_rhythm.core.util
 
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.delay
+import kotlinx.datetime.LocalDate
+import kotlinx.datetime.LocalDateTime
+import kotlinx.datetime.LocalTime
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.format.char
+import kotlinx.datetime.toLocalDateTime
 import kotlin.time.Clock
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.nanoseconds
+import kotlin.time.Instant
 
 object Time {
+    private val timeFormat = LocalDateTime.Format {
+        date(LocalDate.Formats.ISO)
+        char(' ')
+        time(LocalTime.Format {
+            hour()
+            char(':')
+            minute()
+            char(':')
+            second()
+        })
+    }
+
     val nanos: Long get() {
         val instant = Clock.System.now()
         return instant.epochSeconds * 1_000_000_000 + instant.nanosecondsOfSecond
@@ -15,33 +34,7 @@ object Time {
     val millis: Long get() = Clock.System.now().toEpochMilliseconds()
     val seconds: Long get() = Clock.System.now().epochSeconds
 
-    suspend fun wait(targetDelayMs: Long, onInterrupted: () -> Unit = {}) {
-//        val timer = TimeSource.Monotonic
-//        val start = timer.markNow()
-//
-//        if (targetDelayMs > 2) {
-//            val safeDelayMs = (targetDelayMs - 2).coerceAtLeast(0)
-//            try {
-//                delay(safeDelayMs)
-//            } catch (e: CancellationException) {
-//                onInterrupted()
-//                throw e
-//            }
-//        }
-//
-//        while (true) {
-//            if (!currentCoroutineContext().isActive) {
-//                onInterrupted()
-//                break
-//            }
-//            val elapsed = start.elapsedNow().inWholeNanoseconds
-//            val targetNs = targetDelayMs * 1_000_000L
-//            if (elapsed >= targetNs) break
-//
-//            if (targetNs - elapsed > 100_000) {
-//                yield()
-//            }
-//        }
+    suspend fun waitMillis(targetDelayMs: Long, onInterrupted: () -> Unit = {}) {
         if (targetDelayMs <= 0) return
         try {
             delay(targetDelayMs.milliseconds)
@@ -79,6 +72,15 @@ object Time {
 
         return if (hours > 0) "${hours.pad(2)}:${minutes.pad(2)}:${seconds.pad(2)}"//String.format("%02d:%02d:%02d", hours, minutes, seconds)
         else "${minutes.pad(2)}:${seconds.pad(2)}"//String.format("%02d:%02d", minutes, seconds)
+    }
+
+    fun formatMillis(timestamp: Long): String {
+        val instant = Instant.fromEpochMilliseconds(timestamp)
+        val zone = TimeZone.currentSystemDefault()
+
+        val localDateTime = instant.toLocalDateTime(zone)
+
+        return timeFormat.format(localDateTime)
     }
 }
 

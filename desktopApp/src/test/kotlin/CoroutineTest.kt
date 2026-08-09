@@ -12,7 +12,7 @@ class CoroutineTest {
         scope.launch {
             repeat(10000) {
                 val start = Time.nanos
-                Time.wait(10)
+                Time.waitMillis(10)
                 val end = Time.nanos
                 println(end - start)
             }

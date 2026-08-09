@@ -37,55 +37,23 @@ fun SettingsPage(
     useWideLayout: Boolean,
     onBack: () -> Unit = {}
 ) {
-    BackHandler { onBack() }
     Row(
         modifier = Modifier
             .fillMaxSize()
     ) {
-        var selectedIndex by remember { mutableStateOf(0) }
+        var selectedIndex by remember { mutableStateOf(if (useWideLayout) 1 else 0) }
         if (useWideLayout) {
-            Column(
-                modifier = Modifier
-                    .safeDrawingPadding()
-                    .padding(24.dp)
-                    .width(200.dp),
-            ) {
-                Row {
-                    IconButton(
-                        onClick = onBack,
-                        shape = MaterialTheme.shapes.small,
-                        modifier = Modifier
-                            .size(56.dp, 32.dp)
-                            .pointerHoverIcon(PointerIcon.Hand)
-                    ) {
-                        Icon(
-                            imageVector = ic_arrow_back,
-                            contentDescription = "Back",
-                            modifier = Modifier.size(24.dp)
-                        )
-                    }
-                    Spacer(Modifier.width(8.dp))
-                    Text(
-                        text = "Settings",
-                        style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
-
-                Spacer(Modifier.height(24.dp))
-
-                val choices = remember {
-                    SettingsContent.entries.map { it.displayName to it.icon }
-                }
-                ChoiceColumn(
-                    choices = choices,
-                    selectedIndex = selectedIndex,
-                    onSelect = { selectedIndex = it },
-                    itemHeight = 56.dp,
-                    modifier = Modifier
-                        .weight(1f)
-                )
+            WideNavigation(onBack, selectedIndex) { selectedIndex = it + 1 }
+        }
+        BackHandler {
+            if (useWideLayout) onBack()
+            else {
+                if (selectedIndex != 0) selectedIndex = 0
+                else onBack()
             }
+        }
+        LaunchedEffect(useWideLayout) {
+            if (useWideLayout && selectedIndex == 0) selectedIndex = 1
         }
 
         Surface(
@@ -95,7 +63,7 @@ fun SettingsPage(
             color = MaterialTheme.colorScheme.surfaceContainer,
         ) {
             BoxWithConstraints(
-                modifier = Modifier.safeDrawingPadding().padding(24.dp)
+                modifier = Modifier.safeDrawingPadding().padding(if (selectedIndex == 0) 0.dp else 24.dp)
             ) {
                 val limitWidth = SettingsContent.entries[selectedIndex] == SettingsContent.WATERFALL ||
                         SettingsContent.entries[selectedIndex] == SettingsContent.KEYBOARD
@@ -133,11 +101,15 @@ fun SettingsPage(
                             )
                         }
                     ) { setting ->
-                        if (limitWidth) {
-                            Box(Modifier.widthIn(400.dp, contentWidth!!.value)) {
-                                setting.content()
-                            }
-                        } else setting.content()
+                        if (setting.id != 0) {
+                            if (limitWidth) {
+                                Box(Modifier.widthIn(400.dp, contentWidth!!.value)) {
+                                    setting.content()
+                                }
+                            } else setting.content()
+                        } else {
+                            NarrowNavigation(onBack) { selectedIndex = it }
+                        }
                     }
 
                     AnimatedVisibility(
@@ -154,6 +126,98 @@ fun SettingsPage(
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun WideNavigation(onBack: () -> Unit, selectedIndex: Int, onSelected: (index: Int) -> Unit) {
+    Column(
+        modifier = Modifier
+            .safeDrawingPadding()
+            .padding(24.dp)
+            .width(200.dp),
+    ) {
+        NavigationHeader(onBack)
+        Spacer(Modifier.height(24.dp))
+
+        val choices = remember {
+            SettingsContent.entries.takeLast(SettingsContent.entries.size - 1).map { it.displayName to it.icon }
+        }
+        ChoiceColumn(
+            choices = choices,
+            selectedIndex = selectedIndex - 1,
+            onSelect = onSelected,
+            itemHeight = 56.dp,
+            modifier = Modifier.weight(1f)
+        )
+    }
+}
+
+@Composable
+private fun NarrowNavigation(onBack: () -> Unit, onSelected: (index: Int) -> Unit) {
+    Column(
+        modifier = Modifier.fillMaxSize()
+    ) {
+        Spacer(Modifier.height(24.dp))
+        NavigationHeader(onBack)
+        Spacer(Modifier.height(24.dp))
+
+        SettingsContent.entries.forEachIndexed { index, settingsContent ->
+            if (index == 0) return@forEachIndexed
+
+            Surface(
+                onClick = { onSelected(index) },
+                color = Color.Transparent,
+                contentColor = MaterialTheme.colorScheme.onSurface,
+            ) {
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .pointerHoverIcon(PointerIcon.Hand)
+                        .padding(24.dp)
+                ) {
+                    Icon(
+                        imageVector = settingsContent.icon,
+                        contentDescription = settingsContent.displayName,
+                        modifier = Modifier.size(24.dp)
+                    )
+                    Text(
+                        text = settingsContent.displayName,
+                        style = MaterialTheme.typography.bodyLarge
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun NavigationHeader(onBack: () -> Unit) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+    ) {
+        IconButton(
+            onClick = onBack,
+            shape = MaterialTheme.shapes.small,
+            modifier = Modifier
+                .size(56.dp, 32.dp)
+                .pointerHoverIcon(PointerIcon.Hand)
+                .align(Alignment.CenterStart)
+        ) {
+            Icon(
+                imageVector = ic_arrow_back,
+                contentDescription = "Back",
+                modifier = Modifier.size(24.dp)
+            )
+        }
+        Text(
+            text = "Settings",
+            style = MaterialTheme.typography.titleLarge,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.align(Alignment.Center)
+        )
     }
 }
 

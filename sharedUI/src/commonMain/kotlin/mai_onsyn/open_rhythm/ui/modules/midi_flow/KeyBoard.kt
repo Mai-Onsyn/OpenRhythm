@@ -124,7 +124,16 @@ fun MidiKeyBoard(
         whiteKeyRects = wRects
         blackKeyRects = bRects
     }
-    LaunchedEffect(canvasSize, minPitch, maxPitch) { reCalcKeyRects() }
+    LaunchedEffect(
+        canvasSize,
+        minPitch,
+        maxPitch,
+        spacing,
+        blackVerticalPercentage,
+        blackHorizontalPercentage,
+        draggableAreaColor,
+        enableSplitRedLine
+    ) { reCalcKeyRects() }
 
     Canvas(
         modifier = modifier

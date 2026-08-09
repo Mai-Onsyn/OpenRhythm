@@ -8,11 +8,13 @@ import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
 import mai_onsyn.open_rhythm.bridge.keyEventDispatcher
+import mai_onsyn.open_rhythm.core.log.LogManager
 import java.awt.Dimension
 import mai_onsyn.open_rhythm.ui.App
 import java.awt.event.KeyEvent
 
 fun main() = application {
+    LogManager.initialize()
     val pressedKey = remember { mutableSetOf<Key>() }
     Window(
         title = "OpenRhythm",

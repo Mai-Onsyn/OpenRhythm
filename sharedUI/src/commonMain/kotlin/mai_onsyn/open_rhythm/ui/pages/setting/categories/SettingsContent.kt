@@ -17,6 +17,8 @@ enum class SettingsContent(
     val icon: ImageVector,
     val content: @Composable () -> Unit
 ) {
+    GUIDE(0, "Guide", ic_settings, {}),
+
     GENERAL(100, "General", ic_settings, ::GeneralSettings),
     MIDI(200, "MIDI", ic_instant_mix, ::MidiSettings),
     KEY_MAP(400, "Key Mapping", ic_keyboard, ::KeyMappingSettings),

@@ -84,6 +84,10 @@ class UserSetting(
     var MinPitch                        by st.observable("MinPitch",                    21)
     var MaxPitch                        by st.observable("MaxPitch",                    108)
 
+    // =====Log=====
+    var LogLevel        by st.observable("LogLevel",        2)  // 2=Info
+    var MaxLogCount     by st.observable("MaxLogCount",     5000)
+
     // =====User Data=====
     val libraryFolderList by st.list("LibraryFolderList", mutableListOf(), UILibraryFolder.serializer())
 }

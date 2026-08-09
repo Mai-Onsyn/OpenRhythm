@@ -39,88 +39,10 @@ import kotlin.random.Random
 fun App(
     onThemeChanged: @Composable (isDark: Boolean) -> Unit = {}
 ) = AppTheme(onThemeChanged) {
-
     AppNavigation(
         modifier = Modifier.fillMaxSize()
     )
-
-//    var midi by remember { mutableStateOf<Midi?>(null) }
-//    val trackColors = remember { _testOnly_GenerateTrackColors() }
-//
-//    LaunchedEffect(Unit) {
-//        midi = _testOnly_LoadMidi()
-//    }
-//
-//    var isPlaying by remember { mutableStateOf(false) }
-////    OriginalApp()
-//    midi?.let { m ->
-//        MidiDownRegion(
-//            modifier = Modifier.fillMaxSize(),
-//            midi = m,
-//            trackColors = trackColors,
-//            isPlaying = isPlaying,
-//            keyboardRatio = if (Singleton.settings.KeyboardAutoAspect) Singleton.settings.KeyboardAspectRatio else 0f,
-//            onPlayStateChange = { isPlaying = it }
-//        )
-//    }
-//    LaunchedEffect(Unit) {
-//        delay(5000)
-//        isPlaying = true
-//    }
-
 }
-
-private fun _testOnly_GenerateTrackColors(): List<Color> = mutableListOf(
-    Color(255, 182, 193),
-    Color(220, 20, 60),
-    Color(255, 105, 180),
-    Color(218, 112, 214),
-    Color(238, 130, 238),
-    Color(255, 0, 255),
-    Color(65, 105, 225),
-    Color(176, 196, 222),
-    Color(240, 248, 255),
-    Color(0, 191, 255),
-    Color(95, 158, 160),
-    Color(0, 206, 209),
-    Color(47, 79, 79),
-    Color(0, 255, 127),
-    Color(0, 128, 0),
-    Color(173, 255, 47),
-    Color(255, 255, 0),
-    Color(128, 128, 0),
-    Color(255, 165, 0),
-    Color(205, 92, 92),
-    Color(128, 0, 0),
-).apply {
-    this.shuffle(Random(114514))
-}
-
-suspend fun _testOnly_LoadMidi(): Midi? {
-//    val file = FileUtils.fromString("D:\\Users\\Desktop\\Files\\voice\\MIDI\\蓬莱伝説 v1.11.mid", false)
-//    val file = FileUtils.fromString("D:\\Users\\Desktop\\天球の奇蹟.mid", false)
-//    val file = FileUtils.fromString("D:\\Users\\Desktop\\U.N. Owen.mid", false)
-//    val file = FileUtils.fromString("D:\\Users\\Desktop\\Files\\voice\\MIDI\\最终鬼畜妹.mid", false)
-    val file: IPlatformFile? = null
-    var loaded = true
-    if (file == null) {
-        Logger.e { "Cant find test.mid" }
-        loaded = false
-    }
-    if (loaded) {
-        val byteArray = file!!.openInputStream()?.readByteArray()
-        if (byteArray == null) {
-            Logger.e { "Cant read test.mid" }
-            loaded = false
-        }
-        if (loaded) return Midi.fromFile(file.nameWithoutExtension, byteArray!!.toList())
-    }
-
-    val openFilePicker = FileKit.openFilePicker() ?: return null
-    val bytes = openFilePicker.readBytes()
-    return Midi.fromFile(openFilePicker.nameWithoutExtension, bytes.toList())
-}
-
 
 @Composable
 fun OriginalApp() {

@@ -1,6 +1,12 @@
 package mai_onsyn.open_rhythm.ui.modules.midi_flow
 
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateMapOf
@@ -8,6 +14,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.CornerRadius
@@ -24,9 +31,12 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.materialkolor.ktx.darken
+import mai_onsyn.open_rhythm.bridge.Singleton
 import mai_onsyn.open_rhythm.core.midi.Midi
 import mai_onsyn.open_rhythm.core.midi.Note
 import mai_onsyn.open_rhythm.core.midi.TimeSignatureEvent
+import mai_onsyn.open_rhythm.core.util.Time
+import mai_onsyn.open_rhythm.ui.modules.getContrastTextColor
 import mai_onsyn.open_rhythm.ui.utility.countWhiteKeys
 import mai_onsyn.open_rhythm.ui.utility.drawOctaveLines
 import mai_onsyn.open_rhythm.ui.utility.drawSectionLines
@@ -86,74 +96,116 @@ fun MidiWaterFall(
         )
     } else null
 
-    Canvas(
-        modifier = modifier
-            .clip(RectangleShape)
-            .onSizeChanged { size ->
-                whiteKeyWidth = (size.width - (whiteKeyCount - 1) * spacingPx) / whiteKeyCount
-                reMeasure(gridPos, size, spacingPx, minPitch, maxPitch, blackHorizontalPercentage)
-            }
-            .pointerInput(Unit) {
-                awaitPointerEventScope {
-                    while (true) {
-                        val event = awaitPointerEvent()
-                        val change = event.changes.first()
-                        if (change.pressed && change.positionChanged()) {
-                            val deltaPx = change.position.y - change.previousPosition.y
-                            onVerticalDragged(deltaPx)
+    var lastDrawTime by remember { mutableStateOf(0L) }
+    var frameTime by remember { mutableStateOf(0L) }
+    var renderingNoteCount by remember { mutableStateOf(0) }
+    var activeNoteCount by remember { mutableStateOf(0) }
+
+    Box {
+        Canvas(
+            modifier = modifier
+                .clip(RectangleShape)
+                .onSizeChanged { size ->
+                    whiteKeyWidth = (size.width - (whiteKeyCount - 1) * spacingPx) / whiteKeyCount
+                    reMeasure(gridPos, size, spacingPx, minPitch, maxPitch, blackHorizontalPercentage)
+                }
+                .pointerInput(Unit) {
+                    awaitPointerEventScope {
+                        while (true) {
+                            val event = awaitPointerEvent()
+                            val change = event.changes.first()
+                            if (change.pressed && change.positionChanged()) {
+                                val deltaPx = change.position.y - change.previousPosition.y
+                                onVerticalDragged(deltaPx)
+                            }
                         }
                     }
                 }
-            }
-    ) {
-        if (drawOctaveLine) drawOctaveLines(minPitch, maxPitch, gridPos)
-        val height = size.height
-        val visibleTickCount = (height / hpb.toPx() * midi.ppq).toInt()
-        val pxPerTick = hpb.toPx() / midi.ppq
-        if (drawSectionLine) drawSectionLines(midi, currTick, currTick + visibleTickCount, pxPerTick)
+        ) {
+            if (drawOctaveLine) drawOctaveLines(minPitch, maxPitch, gridPos)
+            val height = size.height
+            val visibleTickCount = (height / hpb.toPx() * midi.ppq).toInt()
+            val pxPerTick = hpb.toPx() / midi.ppq
+            if (drawSectionLine) drawSectionLines(midi, currTick, currTick + visibleTickCount, pxPerTick)
 
-        val toDrawNotes = mutableListOf<DrawableNote>()
-        for (i in 0 until midi.hasNoteTracks) {
-            if (!midi.tracks[i].visible || !midi.tracks[i].enable) continue
-            findVisibleNotes(
-                currTick,
-                currTick + visibleTickCount,
-                maxNoteDurationList[i],
-                midi.tracks[i].notes
-            ).forEach {
-                toDrawNotes.add(DrawableNote(it, trackColors[i % trackColors.size], i))
+            val toDrawNotes = mutableListOf<DrawableNote>()
+            for (i in 0 until midi.hasNoteTracks) {
+                if (!midi.tracks[i].visible || !midi.tracks[i].enable) continue
+                findVisibleNotes(
+                    currTick,
+                    currTick + visibleTickCount,
+                    maxNoteDurationList[i],
+                    midi.tracks[i].notes
+                ).forEach {
+                    toDrawNotes.add(DrawableNote(it, trackColors[i % trackColors.size], i))
+                }
             }
-        }
-        toDrawNotes.sortWith(compareBy({ it.note.tick }, { it.trackNum }))
+            toDrawNotes.sortWith(compareBy({ it.note.tick }, { it.trackNum }))
+            renderingNoteCount = toDrawNotes.size
 
-        activeNoteOutput.clear()
-        fun drawNote(pack: DrawableNote, blackKey: Boolean) {
-            val (x, w) = gridPos[pack.note.pitch] ?: return
-            val pixelPos = (pack.note.tick - currTick) * pxPerTick
-            val durationPx = pack.note.duration * pxPerTick
-            val noteRect = Rect(Offset(x, (height - pixelPos - durationPx)), Size(w, durationPx))
-            drawNoteGraphics(
-                if (blackKey) pack.color.darken(1.5f) else pack.color,
-                noteRect,
-                w * 0.5f * noteRoundPercent
-            )
-            pitchLabels?.get(pack.note.pitch)?.let {
-                val labelCenterPos = noteRect.bottomCenter.let { it.copy(y = it.y - whiteKeyWidth * 0.4f) }
-                drawTextCentered(
-                    it,
-                    labelCenterPos,
+            activeNoteOutput.clear()
+            fun drawNote(pack: DrawableNote, blackKey: Boolean) {
+                val (x, w) = gridPos[pack.note.pitch] ?: return
+                val pixelPos = (pack.note.tick - currTick) * pxPerTick
+                val durationPx = pack.note.duration * pxPerTick
+                val noteRect = Rect(Offset(x, (height - pixelPos - durationPx)), Size(w, durationPx))
+                drawNoteGraphics(
+                    if (blackKey) pack.color.darken(1.5f) else pack.color,
+                    noteRect,
+                    w * 0.5f * noteRoundPercent
                 )
+                pitchLabels?.get(pack.note.pitch)?.let {
+                    val labelCenterPos = noteRect.bottomCenter.let { it.copy(y = it.y - whiteKeyWidth * 0.4f) }
+                    drawTextCentered(
+                        it,
+                        labelCenterPos,
+                    )
+                }
+                if (pack.note.tick <= currTick && pack.note.tick + pack.note.duration >= currTick) {
+                    activeNoteOutput[pack.note.pitch] = pack.color
+                }
             }
-            if (pack.note.tick <= currTick && pack.note.tick + pack.note.duration >= currTick) {
-                activeNoteOutput[pack.note.pitch] = pack.color
+
+            for (pack in toDrawNotes) {
+                if (!isBlackKey(pack.note.pitch)) drawNote(pack, false)
             }
+            for (pack in toDrawNotes) {
+                if (isBlackKey(pack.note.pitch)) drawNote(pack, true)
+            }
+            activeNoteCount = activeNoteOutput.size
+            val now = Time.millis
+            frameTime = now - lastDrawTime
+            lastDrawTime = now
         }
 
-        for (pack in toDrawNotes) {
-            if (!isBlackKey(pack.note.pitch)) drawNote(pack, false)
-        }
-        for (pack in toDrawNotes) {
-            if (isBlackKey(pack.note.pitch)) drawNote(pack, true)
+        Box(Modifier.matchParentSize()) {
+            val color by Singleton.settings.WaterfallBackgroundColor.let { remember(it) {
+                mutableStateOf(getContrastTextColor(it))
+            } }
+
+            Column(
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier
+                    .align(Alignment.BottomStart)
+                    .padding(16.dp)
+            ) {
+                @Composable
+                fun ShowText(str: String) {
+                    Text(
+                        text = str,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = color
+                    )
+                }
+                if (Singleton.settings.ShowCurrentTick)
+                    ShowText("Tick=${currTick}")
+                if (Singleton.settings.ShowFrameTime)
+                    ShowText("Frame Time=${frameTime}")
+                if (Singleton.settings.ShowRenderingNoteCount)
+                    ShowText("Note Count=${renderingNoteCount}")
+                if (Singleton.settings.ShowActiveNoteCount)
+                    ShowText("Active Note Count=${activeNoteCount}")
+            }
         }
     }
 }

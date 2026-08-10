@@ -293,7 +293,7 @@ fun parseMidi(name: String, bytes: List<Byte>): Midi {
     return Midi(
         name = name,
         ppq = midiFile.deltaTimeSpec,
-        totalTicks = midiFile.getTotalTicks(),
+        totalTicks = lastTick,//midiFile.getTotalTicks(),
         tracks = resultTrackList,
         tempoEvents = tempoEvents,
         timeSignatureEvents = timeSignatureEvents,

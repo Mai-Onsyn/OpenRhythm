@@ -35,18 +35,19 @@ object LogManager {
             allowedExtensions = setOf("txt", "log")
         ) ?: return
         try {
-            var exportedCount = 0
             file.sink().buffered().use { output ->
+                if (memoryLogWriter.recordedCount > memoryLogWriter.count) {
+                    output.writeString("The number of logs has exceeded the set record limit: originally ${memoryLogWriter.recordedCount}; ${memoryLogWriter.count} were output\n")
+                }
                 memoryLogWriter.forEach { entry ->
                     output.writeString("[${Time.formatMillis(entry.timestamp)}] [${entry.severity.name}] ${entry.message}\n")
                     entry.throwable?.let { throwable ->
                         output.writeString("${throwable.stackTraceToString()}\n")
                     }
-                    exportedCount++
                 }
             }
             Logger.i { "Log exported to ${file.absolutePath()}" }
-            onCompleted(file, exportedCount)
+            onCompleted(file, memoryLogWriter.count)
         } catch (e: Exception) {
             Logger.e(e) { "Log export failed" }
             onFailed(file, e)

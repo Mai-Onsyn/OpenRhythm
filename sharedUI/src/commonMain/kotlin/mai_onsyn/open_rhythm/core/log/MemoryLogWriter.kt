@@ -16,6 +16,12 @@ class MemoryLogWriter(
     private val lock = SynchronizedObject()
     private val logs = ArrayDeque<LogEntry>()
 
+    var recordedCount = 0
+        private set
+
+    val count: Int
+        get() = logs.size
+
     override fun log(severity: Severity, message: String, tag: String, throwable: Throwable?) {
         synchronized(lock) {
             if (logs.size >= maxSize) {
@@ -27,6 +33,7 @@ class MemoryLogWriter(
                 message = message,
                 throwable = throwable
             ))
+            recordedCount++
         }
     }
 
@@ -35,6 +42,7 @@ class MemoryLogWriter(
             logs.forEach(action)
         }
     }
+
     fun getAllLogs(): List<LogEntry> = synchronized(lock) { logs.toList() }
     fun clear() = synchronized(lock) { logs.clear() }
 }

@@ -3,6 +3,7 @@ package mai_onsyn.open_rhythm.ui.pages.setting.categories.advance
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material3.Button
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
@@ -18,6 +19,7 @@ import kotlinx.coroutines.launch
 import mai_onsyn.open_rhythm.bridge.Singleton
 import mai_onsyn.open_rhythm.core.log.LogManager
 import mai_onsyn.open_rhythm.ui.icons.ic_assignment
+import mai_onsyn.open_rhythm.ui.icons.ic_ios_share
 import mai_onsyn.open_rhythm.ui.modules.CompactOutlinedTextField
 import mai_onsyn.open_rhythm.ui.modules.ContextDropDownMenuItem
 import mai_onsyn.open_rhythm.ui.modules.ContextDropdownMenu
@@ -94,9 +96,10 @@ fun LogSettings() {
                 modifier = Modifier.pointerHoverIcon(PointerIcon.Hand),
                 shape = MaterialTheme.shapes.small
             ) {
-                Text(
-                    text = "Export",
-                    style = MaterialTheme.typography.bodyMedium
+                Icon(
+                    imageVector = ic_ios_share,
+                    contentDescription = "Export",
+                    modifier = Modifier.size(20.dp),
                 )
             }
         }

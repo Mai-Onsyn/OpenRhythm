@@ -88,6 +88,12 @@ class UserSetting(
     var LogLevel        by st.observable("LogLevel",        2)  // 2=Info
     var MaxLogCount     by st.observable("MaxLogCount",     5000)
 
+    // =====Overlay=====
+    var ShowCurrentTick         by st.observable("ShowCurrentTick",             false)
+    var ShowFrameTime           by st.observable("ShowFrameTime",               false)
+    var ShowRenderingNoteCount  by st.observable("ShowRenderingNoteCount",      false)
+    var ShowActiveNoteCount     by st.observable("ShowActiveNoteCount",         false)
+
     // =====User Data=====
     val libraryFolderList by st.list("LibraryFolderList", mutableListOf(), UILibraryFolder.serializer())
 }

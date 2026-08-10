@@ -19,11 +19,8 @@ import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import mai_onsyn.open_rhythm.bridge.Singleton
-import mai_onsyn.open_rhythm.ui.icons.ic_audio_file
 import mai_onsyn.open_rhythm.ui.icons.ic_refresh
 import mai_onsyn.open_rhythm.ui.modules.midi_flow.AppDefaultMidiKeyboard
-import mai_onsyn.open_rhythm.ui.pages.library.cachedMidiFiles
-import mai_onsyn.open_rhythm.ui.pages.setting.SettingsCard
 import mai_onsyn.open_rhythm.ui.utility.BindInputDeviceEvents
 
 const val UNKNOWN_DEVICE = "Unknown Device"
@@ -41,7 +38,6 @@ fun MidiSettings() {
         ) {
             MidiInputSettings()
             MidiOutputSettings()
-            MidiFileSettings()
 
             TestKeyboard()
         }
@@ -73,25 +69,6 @@ fun RefreshDeviceButton(
             modifier = Modifier
                 .size(24.dp)
                 .rotate(iconRotationValue)
-        )
-    }
-}
-
-@Composable
-private fun MidiFileSettings() {
-    SettingsCard(
-        title = "File",
-        icon = ic_audio_file,
-        modifier = Modifier.widthIn(400.dp, 800.dp)
-    ) {
-        itemWithSwitch(
-            name = "Don't parse midi",
-            description = "NOT RECOMMENDED: Only you want the original track",
-            initial = Singleton.settings.UseParserV1,
-            onToggled = {
-                Singleton.settings.UseParserV1 = it
-                cachedMidiFiles.clear()
-            }
         )
     }
 }

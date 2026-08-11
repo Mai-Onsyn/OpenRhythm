@@ -4,7 +4,7 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import mai_onsyn.open_rhythm.bridge.Singleton
+import mai_onsyn.open_rhythm.bridge.Global
 import mai_onsyn.open_rhythm.ui.icons.ic_bug_report
 import mai_onsyn.open_rhythm.ui.pages.library.cachedMidiFiles
 import mai_onsyn.open_rhythm.ui.pages.setting.SettingsCard
@@ -19,9 +19,9 @@ fun DebugSettings() {
         itemWithSwitch(
             name = "Don't parse midi",
             description = "NOT RECOMMENDED: Only you want the original track",
-            initial = Singleton.settings.UseParserV1,
+            initial = Global.settings.UseParserV1,
             onToggled = {
-                Singleton.settings.UseParserV1 = it
+                Global.settings.UseParserV1 = it
                 cachedMidiFiles.clear()
             }
         )
@@ -30,26 +30,32 @@ fun DebugSettings() {
             itemWithSwitch(
                 name = "Show current tick",
                 description = "The MIDI tick position at the bottom boundary of the waterfall flow",
-                initial = Singleton.settings.ShowCurrentTick,
-                onToggled = { Singleton.settings.ShowCurrentTick = it }
+                initial = Global.settings.ShowCurrentTick,
+                onToggled = { Global.settings.ShowCurrentTick = it }
+            )
+            itemWithSwitch(
+                name = "Show FPS",
+                description = "Frame per second of midi waterfall flow",
+                initial = Global.settings.ShowFps,
+                onToggled = { Global.settings.ShowFps = it }
             )
             itemWithSwitch(
                 name = "Show frame time",
                 description = "The interval millisecond time between two waterfall stream frames",
-                initial = Singleton.settings.ShowFrameTime,
-                onToggled = { Singleton.settings.ShowFrameTime = it }
+                initial = Global.settings.ShowFrameTime,
+                onToggled = { Global.settings.ShowFrameTime = it }
             )
             itemWithSwitch(
                 name = "Show rendering note count",
                 description = "The total number of notes currently rendered on the screen",
-                initial = Singleton.settings.ShowRenderingNoteCount,
-                onToggled = { Singleton.settings.ShowRenderingNoteCount = it }
+                initial = Global.settings.ShowRenderingNoteCount,
+                onToggled = { Global.settings.ShowRenderingNoteCount = it }
             )
             itemWithSwitch(
                 name = "Show active note count",
                 description = "Total number of notes currently active",
-                initial = Singleton.settings.ShowActiveNoteCount,
-                onToggled = { Singleton.settings.ShowActiveNoteCount = it }
+                initial = Global.settings.ShowActiveNoteCount,
+                onToggled = { Global.settings.ShowActiveNoteCount = it }
             )
         }
     }

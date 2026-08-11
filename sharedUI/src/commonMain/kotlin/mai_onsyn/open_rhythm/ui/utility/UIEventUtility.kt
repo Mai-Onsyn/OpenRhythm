@@ -12,7 +12,7 @@ import kotlinx.coroutines.channels.ClosedReceiveChannelException
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.launch
-import mai_onsyn.open_rhythm.bridge.Singleton
+import mai_onsyn.open_rhythm.bridge.Global
 import mai_onsyn.open_rhythm.core.midi.MidiCCEvent
 import mai_onsyn.open_rhythm.core.midi.MidiPBEvent
 import mai_onsyn.open_rhythm.core.midi.MidiPCEvent
@@ -38,31 +38,31 @@ fun BindInputDeviceEvents(
                 device.handle {
                     when (it) {
                         is NoteEvent -> {
-                            if (Singleton.settings.EnableInputMidiNoteEvent) {
+                            if (Global.settings.EnableInputMidiNoteEvent) {
                                 if (it.on) {
-                                    userActiveKeys[it.pitch] = Singleton.settings.KeyboardInteractionColor
+                                    userActiveKeys[it.pitch] = Global.settings.KeyboardInteractionColor
                                     noteOn(it.pitch, it.velocity)
                                 } else {
                                     userActiveKeys.remove(it.pitch)
                                     noteOff(it.pitch)
                                 }
-                                Singleton.player.sendShortEvent(it.event)
+                                Global.player.sendShortEvent(it.event)
                                 Logger.v { "Note input: $it" }
                             }
                         }
 
-                        is MidiCCEvent -> if (Singleton.settings.EnableInputMidiCCEvent) {
-                            Singleton.player.sendShortEvent(it.event)
+                        is MidiCCEvent -> if (Global.settings.EnableInputMidiCCEvent) {
+                            Global.player.sendShortEvent(it.event)
                             Logger.v { "CC input: $it" }
                         }
 
-                        is MidiPCEvent -> if (Singleton.settings.EnableInputMidiPCEvent) {
-                            Singleton.player.sendShortEvent(it.event)
+                        is MidiPCEvent -> if (Global.settings.EnableInputMidiPCEvent) {
+                            Global.player.sendShortEvent(it.event)
                             Logger.v { "PC input: $it" }
                         }
 
-                        is MidiPBEvent -> if (Singleton.settings.EnableInputMidiPBEvent) {
-                            Singleton.player.sendShortEvent(it.event)
+                        is MidiPBEvent -> if (Global.settings.EnableInputMidiPBEvent) {
+                            Global.player.sendShortEvent(it.event)
                             Logger.v { "PB input: $it" }
                         }
 
@@ -76,11 +76,11 @@ fun BindInputDeviceEvents(
         aliveDevices.remove(device)
     }
     LaunchedEffect(Unit) {
-        Singleton.midiInputDevices.values.forEach { it.clearEvents() }
+        Global.midiInputDevices.values.forEach { it.clearEvents() }
 
         while (true) {
             ensureActive()
-            Singleton.midiInputDevices.values.forEach { device ->
+            Global.midiInputDevices.values.forEach { device ->
                 if (!aliveDevices.contains(device)) {
                     scope.launch {
                         threadBody(device)
@@ -91,7 +91,7 @@ fun BindInputDeviceEvents(
         }
     }
 
-    for (device in Singleton.midiInputDevices.values) {
+    for (device in Global.midiInputDevices.values) {
         LaunchedEffect(Unit) {
             threadBody(device)
         }

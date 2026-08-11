@@ -2,7 +2,6 @@ package mai_onsyn.open_rhythm.ui.pages.setting.categories.keyboard
 
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.size
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -13,7 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.isSpecified
 import androidx.compose.ui.unit.dp
-import mai_onsyn.open_rhythm.bridge.Singleton
+import mai_onsyn.open_rhythm.bridge.Global
 import mai_onsyn.open_rhythm.ui.icons.ic_page_header
 import mai_onsyn.open_rhythm.ui.modules.ColorSelector
 import mai_onsyn.open_rhythm.ui.pages.setting.ChoiceRow
@@ -29,16 +28,16 @@ fun HeadAppearance() {
         itemWithSwitch(
             name = "Show drag area",
             description = "Drag this area to adjust the height of midi keyboard",
-            initial = Singleton.settings.EnableKeyboardDragArea,
-            onToggled = { Singleton.settings.EnableKeyboardDragArea = it }
+            initial = Global.settings.EnableKeyboardDragArea,
+            onToggled = { Global.settings.EnableKeyboardDragArea = it }
         )
 
-        var showCustomColorSetting by remember { mutableStateOf(Singleton.settings.KeyboardDragAreaColor.isSpecified) }
+        var showCustomColorSetting by remember { mutableStateOf(Global.settings.KeyboardDragAreaColor.isSpecified) }
         animatedItem(
-            visible = Singleton.settings.EnableKeyboardDragArea,
+            visible = Global.settings.EnableKeyboardDragArea,
             name = "Drag area color"
         ) {
-            var selected by remember { mutableStateOf(if (Singleton.settings.KeyboardDragAreaColor.isSpecified) 1 else 0) }
+            var selected by remember { mutableStateOf(if (Global.settings.KeyboardDragAreaColor.isSpecified) 1 else 0) }
             val choices = remember {
                 listOf(
                     "Theme" to null,
@@ -52,8 +51,8 @@ fun HeadAppearance() {
                     selected = it
                     showCustomColorSetting = selected == 1
                     if (showCustomColorSetting) {
-                        Singleton.settings.KeyboardDragAreaColor = Singleton.settings.CustomKeyboardDragAreaColor
-                    } else Singleton.settings.KeyboardDragAreaColor = Color.Unspecified
+                        Global.settings.KeyboardDragAreaColor = Global.settings.CustomKeyboardDragAreaColor
+                    } else Global.settings.KeyboardDragAreaColor = Color.Unspecified
                 },
                 modifier = Modifier.height(40.dp),
                 itemWidth = 96.dp,
@@ -65,22 +64,22 @@ fun HeadAppearance() {
 
 
         animatedItem(
-            visible = Singleton.settings.EnableKeyboardDragArea && showCustomColorSetting,
+            visible = Global.settings.EnableKeyboardDragArea && showCustomColorSetting,
             name = "Custom drag area color"
         ) {
             ColorSelector(
-                initialColor = Singleton.settings.CustomKeyboardDragAreaColor,
+                initialColor = Global.settings.CustomKeyboardDragAreaColor,
                 onColorSelected = {
-                    Singleton.settings.KeyboardDragAreaColor = it
-                    Singleton.settings.CustomKeyboardDragAreaColor = it
+                    Global.settings.KeyboardDragAreaColor = it
+                    Global.settings.CustomKeyboardDragAreaColor = it
                 }
             )
         }
 
         itemWithSwitch(
             name = "Draw red split line",
-            initial = Singleton.settings.DrawRedSplitLine,
-            onToggled = { Singleton.settings.DrawRedSplitLine = it }
+            initial = Global.settings.DrawRedSplitLine,
+            onToggled = { Global.settings.DrawRedSplitLine = it }
         )
     }
 }

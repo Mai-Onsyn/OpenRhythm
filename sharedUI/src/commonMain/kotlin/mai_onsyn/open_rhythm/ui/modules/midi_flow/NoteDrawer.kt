@@ -5,7 +5,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.DrawScope
-import mai_onsyn.open_rhythm.bridge.Singleton
+import mai_onsyn.open_rhythm.bridge.Global
 
 fun DrawScope.drawNoteGraphics(
     color: Color,
@@ -13,7 +13,7 @@ fun DrawScope.drawNoteGraphics(
     cornerRadius: Float,
 ) {
     // shadow
-    if (Singleton.settings.DrawNoteShadow) drawRoundRect(
+    if (Global.settings.DrawNoteShadow) drawRoundRect(
         color = Color.Black.copy(alpha = 0.12f),
         topLeft = rect.topLeft + Offset(rect.width * 0.1f, rect.width * 0.07f),
         size = rect.size,

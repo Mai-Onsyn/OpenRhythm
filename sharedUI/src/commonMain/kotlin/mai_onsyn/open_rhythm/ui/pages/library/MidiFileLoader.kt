@@ -2,7 +2,7 @@ package mai_onsyn.open_rhythm.ui.pages.library
 
 import co.touchlab.kermit.Logger
 import io.github.vinceglb.filekit.*
-import mai_onsyn.open_rhythm.bridge.Singleton
+import mai_onsyn.open_rhythm.bridge.Global
 import mai_onsyn.open_rhythm.core.midi.Midi
 import mai_onsyn.open_rhythm.core.midi.msAtTick
 import mai_onsyn.open_rhythm.core.midi.parseMidi
@@ -74,7 +74,7 @@ suspend fun loadMidiFile(file: PlatformFile): Midi {
         return cachedMidiFiles[file.path]!!
     }
 //    val midi = Midi.fromFile(file.nameWithoutExtension, file.readBytes().toList())
-    val midi = if (Singleton.settings.UseParserV1) Midi.fromFile(file.nameWithoutExtension, file.readBytes().toList())
+    val midi = if (Global.settings.UseParserV1) Midi.fromFile(file.nameWithoutExtension, file.readBytes().toList())
         else parseMidi(file.nameWithoutExtension, file.readBytes().toList())
 
     var noteCount = 0

@@ -1,9 +1,7 @@
 package mai_onsyn.open_rhythm.ui.pages.setting.categories.keyboard
 
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
@@ -16,7 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.unit.dp
-import mai_onsyn.open_rhythm.bridge.Singleton
+import mai_onsyn.open_rhythm.bridge.Global
 import mai_onsyn.open_rhythm.ui.icons.ic_piano
 import mai_onsyn.open_rhythm.ui.modules.ColorSelector
 import mai_onsyn.open_rhythm.ui.modules.ContextDropDownMenuItem
@@ -35,22 +33,22 @@ fun Body() {
         itemWithSwitch(
             name = "Auto aspect ratio",
             description = "Auto adjust the aspect ratio when the window size changed",
-            initial = Singleton.settings.KeyboardAutoAspect,
-            onToggled = { Singleton.settings.KeyboardAutoAspect = it }
+            initial = Global.settings.KeyboardAutoAspect,
+            onToggled = { Global.settings.KeyboardAutoAspect = it }
         )
 
         animatedItem(
-            visible = Singleton.settings.KeyboardAutoAspect,
+            visible = Global.settings.KeyboardAutoAspect,
             name = "Aspect ratio",
             description = "The keyboard aspect ratio for auto aspect",
             verticalLayout = true
         ) {
-            var aspectRatio by remember { mutableStateOf(Singleton.settings.KeyboardAspectRatio.toInt()) }
+            var aspectRatio by remember { mutableStateOf(Global.settings.KeyboardAspectRatio.toInt()) }
             SliderWithSuffix(
                 value = aspectRatio,
                 onValueChanged = {
                     aspectRatio = it
-                    Singleton.settings.KeyboardAspectRatio = it.toFloat()
+                    Global.settings.KeyboardAspectRatio = it.toFloat()
                 },
                 range = 2..16,
                 steps = 1
@@ -59,15 +57,15 @@ fun Body() {
 
         item("White key color") {
             ColorSelector(
-                initialColor = Singleton.settings.WhiteKeyColor,
-                onColorSelected = { Singleton.settings.WhiteKeyColor = it }
+                initialColor = Global.settings.WhiteKeyColor,
+                onColorSelected = { Global.settings.WhiteKeyColor = it }
             )
         }
 
         item("Black key color") {
             ColorSelector(
-                initialColor = Singleton.settings.BlackKeyColor,
-                onColorSelected = { Singleton.settings.BlackKeyColor = it }
+                initialColor = Global.settings.BlackKeyColor,
+                onColorSelected = { Global.settings.BlackKeyColor = it }
             )
         }
 
@@ -83,8 +81,8 @@ fun Body() {
                 expanded = expandDropMenu,
                 onDismissRequest = { expandDropMenu = false },
                 items = dropDownItems,
-                selectedIndex = Singleton.settings.OverlayLabelsMode,
-                onSelect = { Singleton.settings.OverlayLabelsMode = it }
+                selectedIndex = Global.settings.OverlayLabelsMode,
+                onSelect = { Global.settings.OverlayLabelsMode = it }
             ) {
                 OutlinedButton(
                     onClick = { expandDropMenu = true },
@@ -94,7 +92,7 @@ fun Body() {
                         .width(100.dp)
                 ) {
                     Text(
-                        text = dropDownItems.getOrNull(Singleton.settings.OverlayLabelsMode)?.label ?: "Error",
+                        text = dropDownItems.getOrNull(Global.settings.OverlayLabelsMode)?.label ?: "Error",
                         style = MaterialTheme.typography.bodyMedium
                     )
                 }

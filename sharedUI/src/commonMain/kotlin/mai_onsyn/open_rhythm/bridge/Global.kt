@@ -2,7 +2,6 @@ package mai_onsyn.open_rhythm.bridge
 
 import co.touchlab.kermit.Logger
 import dev.atsushieno.ktmidi.MidiAccess
-import dev.atsushieno.ktmidi.PortCreatorContext
 import kotlinx.coroutines.runBlocking
 import mai_onsyn.open_rhythm.core.GlobalKeyEventDispatcher
 import mai_onsyn.open_rhythm.core.midi.MidiPlayer2
@@ -11,7 +10,7 @@ import mai_onsyn.open_rhythm.core.midi.device.KtMidiInputDevice
 import mai_onsyn.open_rhythm.core.midi.device.MidiInputDevice
 import mai_onsyn.open_rhythm.ui.pages.setting.categories.key_map.toMappingMap
 
-object Singleton {
+object Global {
     val settings: UserSetting = UserSetting(createSetting())
     var midiAccess = getMidiAccess()
     val player: MidiPlayer2 = createMidiPlayer(midiAccess)
@@ -57,7 +56,7 @@ private fun createMidiPlayer(access: MidiAccess): MidiPlayer2 {
         return MidiPlayer2(null)
     }
 
-    val userSpecified = Singleton.settings.SelectedOutputDeviceName
+    val userSpecified = Global.settings.SelectedOutputDeviceName
     val candidates = mutableListOf<String>()
     if (userSpecified.isNotEmpty()) {
         candidates.add(userSpecified)
@@ -71,12 +70,12 @@ private fun createMidiPlayer(access: MidiAccess): MidiPlayer2 {
     } ?: outputs.first()
 
 
-    Singleton.settings.SelectedOutputDeviceName = selected.name ?: "Unknown Device"
+    Global.settings.SelectedOutputDeviceName = selected.name ?: "Unknown Device"
     return MidiPlayer2(runBlocking {
         try {
             val output = access.openOutput(selected.id)
             if (selected.name == "Gervill") {
-                setupMidiOutput(output, "Gervill", Singleton.settings.GervillSF2Path)
+                setupMidiOutput(output, "Gervill", Global.settings.GervillSF2Path)
             }
             output
         } catch (e: Exception) {

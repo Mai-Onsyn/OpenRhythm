@@ -14,6 +14,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
@@ -24,14 +25,13 @@ import mai_onsyn.open_rhythm.ui.icons.ic_arrow_drop_down
 class SettingsCardScope(
     private val showDivider: Boolean = true
 ) {
-
     private var firstItem = true
-
 
     @Composable
     fun item(
         name: String,
         description: String? = null,
+        descColor: Color = MaterialTheme.colorScheme.onSurfaceVariant,
         verticalLayout: Boolean = false,
         content: @Composable () -> Unit
     ) {
@@ -44,6 +44,7 @@ class SettingsCardScope(
         SettingItemLayout(
             name = name,
             description = description,
+            descColor = descColor,
             verticalLayout = verticalLayout,
             content = content
         )
@@ -54,6 +55,7 @@ class SettingsCardScope(
         visible: Boolean,
         name: String,
         description: String? = null,
+        descColor: Color = MaterialTheme.colorScheme.onSurfaceVariant,
         verticalLayout: Boolean = false,
         content: @Composable () -> Unit
     ) {
@@ -65,6 +67,7 @@ class SettingsCardScope(
             item(
                 name = name,
                 description = description,
+                descColor = descColor,
                 verticalLayout = verticalLayout,
                 content = content
             )
@@ -94,10 +97,11 @@ class SettingsCardScope(
     fun itemWithSwitch(
         name: String,
         description: String? = null,
+        descColor: Color = MaterialTheme.colorScheme.onSurfaceVariant,
         initial: Boolean = false,
         onToggled: (Boolean) -> Unit
     ) {
-        item(name, description) {
+        item(name, description, descColor) {
 
             var checked by remember(initial) {
                 mutableStateOf(initial)
@@ -119,6 +123,7 @@ class SettingsCardScope(
         visible: Boolean,
         name: String,
         description: String? = null,
+        descColor: Color = MaterialTheme.colorScheme.onSurfaceVariant,
         initial: Boolean = false,
         onToggled: (Boolean) -> Unit
     ) {
@@ -130,6 +135,7 @@ class SettingsCardScope(
             itemWithSwitch(
                 name = name,
                 description = description,
+                descColor = descColor,
                 initial = initial,
                 onToggled = onToggled
             )
@@ -233,6 +239,7 @@ private fun FoldItem(
 private fun SettingItemLayout(
     name: String,
     description: String?,
+    descColor: Color = MaterialTheme.colorScheme.onSurfaceVariant,
     verticalLayout: Boolean,
     content: @Composable () -> Unit
 ) {
@@ -246,7 +253,7 @@ private fun SettingItemLayout(
             Text(
                 text = it,
                 style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                color = descColor
             )
         }
     }

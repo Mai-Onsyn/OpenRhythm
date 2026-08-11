@@ -10,21 +10,12 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import co.touchlab.kermit.Logger
-import dev.zwander.kotlin.file.IPlatformFile
-import io.github.vinceglb.filekit.FileKit
-import io.github.vinceglb.filekit.dialogs.openFilePicker
-import io.github.vinceglb.filekit.nameWithoutExtension
-import io.github.vinceglb.filekit.readBytes
 import kotlinx.coroutines.isActive
-import kotlinx.io.readByteArray
-import mai_onsyn.open_rhythm.core.midi.Midi
 import mai_onsyn.open_rhythm.ui.icons.ic_unknown
 import mai_onsyn.open_rhythm.ui.pages.AppNavigation
 import mai_onsyn.open_rhythm.ui.theme.AppTheme
@@ -32,7 +23,6 @@ import mai_onsyn.open_rhythm.ui.theme.LocalThemeIsDark
 import openrhythm.sharedui.generated.resources.*
 import org.jetbrains.compose.resources.Font
 import org.jetbrains.compose.resources.stringResource
-import kotlin.random.Random
 
 @Preview
 @Composable

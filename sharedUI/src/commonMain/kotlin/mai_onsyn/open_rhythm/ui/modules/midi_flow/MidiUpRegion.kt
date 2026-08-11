@@ -36,7 +36,7 @@ import io.github.vinceglb.filekit.readBytes
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.withContext
-import mai_onsyn.open_rhythm.bridge.Singleton
+import mai_onsyn.open_rhythm.bridge.Global
 import mai_onsyn.open_rhythm.core.util.Time
 import mai_onsyn.open_rhythm.ui.utility.BindInputDeviceEvents
 import kotlin.collections.set
@@ -61,14 +61,14 @@ fun MidiUpRegion(
         Box(
             Modifier
                 .weight(1f)
-                .background(Singleton.settings.WaterfallBackgroundColor.let { if (it.isUnspecified) MaterialTheme.colorScheme.surface else it })
+                .background(Global.settings.WaterfallBackgroundColor.let { if (it.isUnspecified) MaterialTheme.colorScheme.surface else it })
         ) {
             val platformContext = LocalPlatformContext.current
-            val bgImageRequest by produceState<ImageRequest?>(null, Singleton.settings.BackgroundImageDir) {
-                val file = PlatformFile(Singleton.settings.BackgroundImageDir)
+            val bgImageRequest by produceState<ImageRequest?>(null, Global.settings.BackgroundImageDir) {
+                val file = PlatformFile(Global.settings.BackgroundImageDir)
                 withContext(Dispatchers.IO) {
                     value = if (file.exists() && file.isRegularFile()) {
-                        if (Singleton.settings.OriginalBackgroundImageSize) ImageRequest.Builder(platformContext)
+                        if (Global.settings.OriginalBackgroundImageSize) ImageRequest.Builder(platformContext)
                             .data(file.readBytes())
                             .size(Size.ORIGINAL)
                             .build()
@@ -82,8 +82,8 @@ fun MidiUpRegion(
                 model = bgImageRequest,
                 contentDescription = "background image",
                 modifier = Modifier
-                    .alpha(Singleton.settings.BackgroundImageOpacity)
-                    .blur(Singleton.settings.BackgroundImageBlurDp.dp)
+                    .alpha(Global.settings.BackgroundImageOpacity)
+                    .blur(Global.settings.BackgroundImageBlurDp.dp)
                     .matchParentSize(),
                 contentScale = ContentScale.Crop,
             )
@@ -91,9 +91,9 @@ fun MidiUpRegion(
                 modifier = Modifier
                     .fillMaxSize(),
                 notes = notes,
-                color = Singleton.settings.KeyboardInteractionColor,
-                drawOctaveLine = Singleton.settings.DrawOctaveLines,
-                noteRoundPercent = Singleton.settings.NoteRoundConerPercent
+                color = Global.settings.KeyboardInteractionColor,
+                drawOctaveLine = Global.settings.DrawOctaveLines,
+                noteRoundPercent = Global.settings.NoteRoundConerPercent
             )
         }
 
@@ -105,14 +105,14 @@ fun MidiUpRegion(
                 .height(keyboardHeight),
             userActiveKey = activeKeys,
             onPress = { key, velocity ->
-                activeKeys[key] = Singleton.settings.KeyboardInteractionColor
-                Singleton.player.noteOn(key, velocity)
+                activeKeys[key] = Global.settings.KeyboardInteractionColor
+                Global.player.noteOn(key, velocity)
 
                 notes.add(LiveNote(key, Time.nanos))
             },
             onRelease = { key ->
                 activeKeys.remove(key)
-                Singleton.player.noteOff(key)
+                Global.player.noteOff(key)
 
                 notes.firstOrNull { it.pitch == key && it.endNanos == null }?.let {
                     it.endNanos = Time.nanos

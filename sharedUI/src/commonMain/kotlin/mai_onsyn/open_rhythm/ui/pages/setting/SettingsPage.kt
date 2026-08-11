@@ -22,7 +22,7 @@ import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import mai_onsyn.open_rhythm.bridge.Singleton
+import mai_onsyn.open_rhythm.bridge.Global
 import mai_onsyn.open_rhythm.core.midi.Midi
 import mai_onsyn.open_rhythm.core.midi.parseMidi
 import mai_onsyn.open_rhythm.ui.icons.ic_arrow_back
@@ -234,8 +234,8 @@ fun PreviewRail(modifier: Modifier) {
 
         DisposableEffect(Unit) {
             onDispose {
-                Singleton.player.stop()
-                Singleton.player.seek((midi?.startTick ?: 0).toLong())
+                Global.player.stop()
+                Global.player.seek((midi?.startTick ?: 0).toLong())
             }
         }
     }

@@ -8,16 +8,15 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
@@ -31,7 +30,8 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.materialkolor.ktx.darken
-import mai_onsyn.open_rhythm.bridge.Singleton
+import kotlinx.coroutines.delay
+import mai_onsyn.open_rhythm.bridge.Global
 import mai_onsyn.open_rhythm.core.midi.Midi
 import mai_onsyn.open_rhythm.core.midi.Note
 import mai_onsyn.open_rhythm.core.midi.TimeSignatureEvent
@@ -44,6 +44,10 @@ import mai_onsyn.open_rhythm.ui.utility.drawTextCentered
 import mai_onsyn.open_rhythm.ui.utility.isBlackKey
 import mai_onsyn.open_rhythm.ui.utility.reMeasure
 import mai_onsyn.open_rhythm.ui.utility.rememberTextLayoutResult
+import kotlin.math.pow
+import kotlin.math.roundToInt
+import kotlin.time.Duration.Companion.nanoseconds
+import kotlin.time.Duration.Companion.seconds
 
 @Composable
 fun MidiWaterFall(
@@ -96,8 +100,21 @@ fun MidiWaterFall(
         )
     } else null
 
+    // =====调试状态统计=====
     var lastDrawTime by remember { mutableStateOf(0L) }
     var frameTime by remember { mutableStateOf(0L) }
+    var fps by remember { mutableStateOf(0) }
+    var countedFrames by remember { mutableStateOf(0) }
+    var lastClearFrameCounterTime by remember { mutableStateOf(0L) }
+    if (Global.settings.ShowFps) LaunchedEffect(Unit) {
+        while (true) {
+            delay(1.seconds)
+            val now = Time.micros
+            fps = (1_000_000f * countedFrames / (now - lastClearFrameCounterTime)).roundToInt()
+            countedFrames = 0
+            lastClearFrameCounterTime = now
+        }
+    }
     var renderingNoteCount by remember { mutableStateOf(0) }
     var activeNoteCount by remember { mutableStateOf(0) }
 
@@ -155,7 +172,7 @@ fun MidiWaterFall(
                     w * 0.5f * noteRoundPercent
                 )
                 pitchLabels?.get(pack.note.pitch)?.let {
-                    val labelCenterPos = noteRect.bottomCenter.let { it.copy(y = it.y - whiteKeyWidth * 0.4f) }
+                    val labelCenterPos = noteRect.bottomCenter.let { offset -> offset.copy(y = offset.y - whiteKeyWidth * 0.4f) }
                     drawTextCentered(
                         it,
                         labelCenterPos,
@@ -176,10 +193,11 @@ fun MidiWaterFall(
             val now = Time.millis
             frameTime = now - lastDrawTime
             lastDrawTime = now
+            countedFrames++
         }
 
         Box(Modifier.matchParentSize()) {
-            val color by Singleton.settings.WaterfallBackgroundColor.let { remember(it) {
+            val color by Global.settings.WaterfallBackgroundColor.let { remember(it) {
                 mutableStateOf(getContrastTextColor(it))
             } }
 
@@ -197,13 +215,15 @@ fun MidiWaterFall(
                         color = color
                     )
                 }
-                if (Singleton.settings.ShowCurrentTick)
+                if (Global.settings.ShowCurrentTick)
                     ShowText("Tick=${currTick}")
-                if (Singleton.settings.ShowFrameTime)
+                if (Global.settings.ShowFps)
+                    ShowText("FPS=${fps}")
+                if (Global.settings.ShowFrameTime)
                     ShowText("Frame Time=${frameTime}")
-                if (Singleton.settings.ShowRenderingNoteCount)
+                if (Global.settings.ShowRenderingNoteCount)
                     ShowText("Note Count=${renderingNoteCount}")
-                if (Singleton.settings.ShowActiveNoteCount)
+                if (Global.settings.ShowActiveNoteCount)
                     ShowText("Active Note Count=${activeNoteCount}")
             }
         }

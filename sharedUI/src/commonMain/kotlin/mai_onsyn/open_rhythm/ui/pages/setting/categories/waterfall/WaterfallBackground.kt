@@ -4,7 +4,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
@@ -18,23 +17,19 @@ import androidx.compose.ui.graphics.isSpecified
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.unit.dp
-import co.touchlab.kermit.Logger
 import io.github.vinceglb.filekit.FileKit
 import io.github.vinceglb.filekit.absolutePath
 import io.github.vinceglb.filekit.extension
 import io.github.vinceglb.filekit.isRegularFile
 import kotlinx.coroutines.launch
-import mai_onsyn.open_rhythm.bridge.Singleton
+import mai_onsyn.open_rhythm.bridge.Global
 import mai_onsyn.open_rhythm.bridge.pickFileWithPermission
 import mai_onsyn.open_rhythm.ui.icons.ic_delete
-import mai_onsyn.open_rhythm.ui.icons.ic_palette
 import mai_onsyn.open_rhythm.ui.icons.ic_wallpaper
 import mai_onsyn.open_rhythm.ui.modules.ColorSelector
-import mai_onsyn.open_rhythm.ui.modules.LabeledSlider
 import mai_onsyn.open_rhythm.ui.modules.SliderWithSuffix
 import mai_onsyn.open_rhythm.ui.pages.setting.ChoiceRow
 import mai_onsyn.open_rhythm.ui.pages.setting.SettingsCard
-import kotlin.math.absoluteValue
 
 @Composable
 fun WaterfallBackground() {
@@ -43,9 +38,9 @@ fun WaterfallBackground() {
         icon = ic_wallpaper,
         modifier = Modifier.fillMaxWidth()
     ) {
-        var showCustomColorSetting by remember { mutableStateOf(Singleton.settings.WaterfallBackgroundColor.isSpecified) }
+        var showCustomColorSetting by remember { mutableStateOf(Global.settings.WaterfallBackgroundColor.isSpecified) }
         item("Color") {
-            var selected by remember { mutableStateOf(if (Singleton.settings.WaterfallBackgroundColor.isSpecified) 1 else 0) }
+            var selected by remember { mutableStateOf(if (Global.settings.WaterfallBackgroundColor.isSpecified) 1 else 0) }
             val choices = remember {
                 listOf(
                     "Theme" to null,
@@ -59,8 +54,8 @@ fun WaterfallBackground() {
                     selected = it
                     showCustomColorSetting = selected == 1
                     if (showCustomColorSetting) {
-                        Singleton.settings.WaterfallBackgroundColor = Singleton.settings.CustomWaterfallBackgroundColor
-                    } else Singleton.settings.WaterfallBackgroundColor = Color.Unspecified
+                        Global.settings.WaterfallBackgroundColor = Global.settings.CustomWaterfallBackgroundColor
+                    } else Global.settings.WaterfallBackgroundColor = Color.Unspecified
                 },
                 modifier = Modifier.height(40.dp),
                 itemWidth = 96.dp,
@@ -72,15 +67,15 @@ fun WaterfallBackground() {
 
         animatedItem(showCustomColorSetting, "Custom Color") {
             ColorSelector(
-                initialColor = Singleton.settings.CustomWaterfallBackgroundColor,
+                initialColor = Global.settings.CustomWaterfallBackgroundColor,
                 onColorSelected = {
-                    Singleton.settings.CustomWaterfallBackgroundColor = it
-                    Singleton.settings.WaterfallBackgroundColor = it
+                    Global.settings.CustomWaterfallBackgroundColor = it
+                    Global.settings.WaterfallBackgroundColor = it
                 }
             )
         }
 
-        var bgImageDir by remember { mutableStateOf(Singleton.settings.BackgroundImageDir.let { it.ifBlank { null } }) }
+        var bgImageDir by remember { mutableStateOf(Global.settings.BackgroundImageDir.let { it.ifBlank { null } }) }
         item(
             "Image",
             bgImageDir
@@ -89,7 +84,7 @@ fun WaterfallBackground() {
                 IconButton(
                     onClick ={
                         bgImageDir = null
-                        Singleton.settings.BackgroundImageDir = ""
+                        Global.settings.BackgroundImageDir = ""
                     },
                     modifier = Modifier.pointerHoverIcon(PointerIcon.Hand)
                 ) {
@@ -107,7 +102,7 @@ fun WaterfallBackground() {
                             FileKit.pickFileWithPermission()?.let { file ->
                                 if (file.isRegularFile() && file.extension == "png" || file.extension == "jpg") {
                                     bgImageDir = file.absolutePath()
-                                    Singleton.settings.BackgroundImageDir = file.absolutePath()
+                                    Global.settings.BackgroundImageDir = file.absolutePath()
                                 }
                             }
                         }
@@ -125,19 +120,19 @@ fun WaterfallBackground() {
 
         val showBgImageSetting by derivedStateOf { !bgImageDir.isNullOrBlank() }
         animatedSwitch(
-            showBgImageSetting,
-            "Original image size",
-            "This can use a lot of memory for big images",  // 这得吃不少内存，先生
-            Singleton.settings.OriginalBackgroundImageSize,
-            { Singleton.settings.OriginalBackgroundImageSize = it }
+            visible = showBgImageSetting,
+            name = "Original image size",
+            description = "This can use a lot of memory for big images",  // 这得吃不少内存，先生
+            initial = Global.settings.OriginalBackgroundImageSize,
+            onToggled = { Global.settings.OriginalBackgroundImageSize = it }
         )
         animatedItem(showBgImageSetting, "Image opacity", verticalLayout = true) {
-            var value by remember { mutableStateOf((Singleton.settings.BackgroundImageOpacity * 100).toInt()) }
+            var value by remember { mutableStateOf((Global.settings.BackgroundImageOpacity * 100).toInt()) }
             SliderWithSuffix(
                 value = value,
                 onValueChanged = {
                     value = it
-                    Singleton.settings.BackgroundImageOpacity = value / 100f
+                    Global.settings.BackgroundImageOpacity = value / 100f
                 },
                 range = 0..100,
                 steps = 1,
@@ -166,14 +161,14 @@ fun WaterfallBackground() {
             val valueMapping: (Int) -> Int = { x -> valueMappingList[x] }
             var value by remember { mutableStateOf(
                 valueMappingList.indexOf(
-                    Singleton.settings.BackgroundImageBlurDp.toInt()
+                    Global.settings.BackgroundImageBlurDp.toInt()
                 ).let { if (it != -1) it else 0 }
             ) }
             SliderWithSuffix(
                 value = value,
                 onValueChanged = {
                     value = it
-                    Singleton.settings.BackgroundImageBlurDp = valueMapping(value).toFloat()
+                    Global.settings.BackgroundImageBlurDp = valueMapping(value).toFloat()
 //                    Logger.d { "Changed value: $value" }
                 },
                 range = 0..40,
@@ -185,14 +180,14 @@ fun WaterfallBackground() {
 
         itemWithSwitch(
             name = "Draw octave lines",
-            initial = Singleton.settings.DrawOctaveLines,
-            onToggled = { Singleton.settings.DrawOctaveLines = it }
+            initial = Global.settings.DrawOctaveLines,
+            onToggled = { Global.settings.DrawOctaveLines = it }
         )
 
         itemWithSwitch(
             name = "Draw section lines",
-            initial = Singleton.settings.DrawSectionLines,
-            onToggled = { Singleton.settings.DrawSectionLines = it }
+            initial = Global.settings.DrawSectionLines,
+            onToggled = { Global.settings.DrawSectionLines = it }
         )
     }
 }

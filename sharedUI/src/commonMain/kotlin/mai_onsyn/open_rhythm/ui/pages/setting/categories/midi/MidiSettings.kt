@@ -18,7 +18,7 @@ import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
-import mai_onsyn.open_rhythm.bridge.Singleton
+import mai_onsyn.open_rhythm.bridge.Global
 import mai_onsyn.open_rhythm.ui.icons.ic_refresh
 import mai_onsyn.open_rhythm.ui.modules.midi_flow.AppDefaultMidiKeyboard
 import mai_onsyn.open_rhythm.ui.utility.BindInputDeviceEvents
@@ -55,7 +55,7 @@ fun RefreshDeviceButton(
         onClick = {
             iconRotation += 360
             scope.launch {
-                Singleton.refreshMidiAccess()
+                Global.refreshMidiAccess()
                 onRefresh()
             }
         },
@@ -78,7 +78,7 @@ private fun TestKeyboard() {
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .aspectRatio(Singleton.settings.KeyboardAspectRatio)
+            .aspectRatio(Global.settings.KeyboardAspectRatio)
     ) {
         val userActiveKeys = remember { mutableStateMapOf<Int, Color>() }
         AppDefaultMidiKeyboard(
@@ -88,12 +88,12 @@ private fun TestKeyboard() {
             maxPitch = 108,
             userActiveKey = userActiveKeys,
             onPress = { pitch, velocity ->
-                userActiveKeys[pitch] = Singleton.settings.KeyboardInteractionColor
-                Singleton.player.noteOn(pitch, velocity)
+                userActiveKeys[pitch] = Global.settings.KeyboardInteractionColor
+                Global.player.noteOn(pitch, velocity)
             },
             onRelease = {
                 userActiveKeys.remove(it)
-                Singleton.player.noteOff(it)
+                Global.player.noteOff(it)
             }
         )
 

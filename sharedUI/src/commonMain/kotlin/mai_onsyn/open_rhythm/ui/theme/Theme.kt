@@ -11,7 +11,7 @@ import androidx.compose.ui.unit.dp
 import co.touchlab.kermit.Logger
 import com.materialkolor.DynamicMaterialTheme
 import com.materialkolor.PaletteStyle
-import mai_onsyn.open_rhythm.bridge.Singleton
+import mai_onsyn.open_rhythm.bridge.Global
 import mai_onsyn.open_rhythm.ui.modules.dialog.LocalPopupHostState
 import mai_onsyn.open_rhythm.ui.modules.dialog.PopupHostState
 import mai_onsyn.open_rhythm.ui.modules.dialog.RootPopupHost
@@ -81,11 +81,11 @@ internal fun AppTheme(
     onThemeChanged: @Composable (isDark: Boolean) -> Unit,
     content: @Composable () -> Unit
 ) {
-    val st = Singleton.settings
+    val st = Global.settings
     val systemIsDark = isSystemInDarkTheme()
-    val isDark = remember(Singleton.settings.DarkMode, systemIsDark) {
-        Logger.d { "Change darkmode to ${Singleton.settings.DarkMode}, system isDark: $systemIsDark" }
-        when (Singleton.settings.DarkMode) {
+    val isDark = remember(Global.settings.DarkMode, systemIsDark) {
+        Logger.d { "Change darkmode to ${Global.settings.DarkMode}, system isDark: $systemIsDark" }
+        when (Global.settings.DarkMode) {
             0 -> false
             1 -> true
             else -> systemIsDark
@@ -99,7 +99,7 @@ internal fun AppTheme(
     ) {
         onThemeChanged(!isDark)
         DynamicMaterialTheme(
-            seedColor = Singleton.settings.PrimarySeedColor,
+            seedColor = Global.settings.PrimarySeedColor,
             isDark = isDark,
             style = if (isDark) PaletteStyle.Content else PaletteStyle.TonalSpot,
             animate = true

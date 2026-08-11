@@ -18,7 +18,7 @@ import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.unit.dp
 import co.touchlab.kermit.Logger
 import kotlinx.coroutines.launch
-import mai_onsyn.open_rhythm.bridge.Singleton
+import mai_onsyn.open_rhythm.bridge.Global
 import mai_onsyn.open_rhythm.bridge.setupMidiOutput
 import mai_onsyn.open_rhythm.ui.icons.ic_graphic_eq
 import mai_onsyn.open_rhythm.ui.modules.CompactOutlinedTextField
@@ -31,7 +31,7 @@ import mai_onsyn.open_rhythm.ui.pages.setting.SettingsCard
 @Composable
 fun MidiOutputSettings() {
     val colorScheme = MaterialTheme.colorScheme
-    var gervillSelected by remember { mutableStateOf(Singleton.settings.SelectedOutputDeviceName == "Gervill") }
+    var gervillSelected by remember { mutableStateOf(Global.settings.SelectedOutputDeviceName == "Gervill") }
     SettingsCard(
         title = "Output",
         icon = ic_graphic_eq,
@@ -41,10 +41,10 @@ fun MidiOutputSettings() {
 
         item("Output device") {
             var devices by remember {
-                mutableStateOf(Singleton.midiAccess.outputs.toList())
+                mutableStateOf(Global.midiAccess.outputs.toList())
             }
             val deviceNames = remember(devices) { devices.map { it.name ?: UNKNOWN_DEVICE } }
-            var selectedDeviceIndex by remember { mutableStateOf(deviceNames.indexOf(Singleton.settings.SelectedOutputDeviceName)) }
+            var selectedDeviceIndex by remember { mutableStateOf(deviceNames.indexOf(Global.settings.SelectedOutputDeviceName)) }
             val choices = remember(deviceNames, selectedDeviceIndex) {
                 deviceNames.map {
                     ContextDropDownMenuItem(
@@ -61,7 +61,7 @@ fun MidiOutputSettings() {
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 RefreshDeviceButton(
                     scope = coroutineScope,
-                    onRefresh = { devices = Singleton.midiAccess.outputs.toList() }
+                    onRefresh = { devices = Global.midiAccess.outputs.toList() }
                 )
                 ContextDropdownMenu(
                     expanded = dropDownMenuExpanded,
@@ -70,16 +70,16 @@ fun MidiOutputSettings() {
                     onSelect = {
                         coroutineScope.launch {
                             try {
-                                Singleton.player.midiOutput?.close()
-                                Singleton.player.setOutput(Singleton.midiAccess.openOutput(devices[it].id).let { output ->
+                                Global.player.midiOutput?.close()
+                                Global.player.setOutput(Global.midiAccess.openOutput(devices[it].id).let { output ->
                                     if (devices[it].name == "Gervill") {
-                                        setupMidiOutput(output, "Gervill", Singleton.settings.GervillSF2Path)
+                                        setupMidiOutput(output, "Gervill", Global.settings.GervillSF2Path)
                                         gervillSelected = true
                                     } else gervillSelected = false
                                     output
                                 })
                                 selectedDeviceIndex = it
-                                Singleton.settings.SelectedOutputDeviceName = deviceNames.getOrElse(selectedDeviceIndex) { UNKNOWN_DEVICE }
+                                Global.settings.SelectedOutputDeviceName = deviceNames.getOrElse(selectedDeviceIndex) { UNKNOWN_DEVICE }
                                 Logger.i { "Switched midi port to ${devices[it].id}" }
                             } catch (e: Exception) {
                                 Logger.e(e) { "Cannot Open Output: ${devices[it].id}" }
@@ -123,10 +123,10 @@ fun MidiOutputSettings() {
         ) {
             fun reload() {
                 coroutineScope.launch {
-                    Singleton.player.midiOutput?.close()
-                    val portDetails = Singleton.midiAccess.outputs.toList().firstOrNull { it.name == "Gervill" } ?: return@launch
-                    Singleton.player.setOutput(Singleton.midiAccess.openOutput(portDetails.id).let { output ->
-                        setupMidiOutput(output, "Gervill", Singleton.settings.GervillSF2Path)
+                    Global.player.midiOutput?.close()
+                    val portDetails = Global.midiAccess.outputs.toList().firstOrNull { it.name == "Gervill" } ?: return@launch
+                    Global.player.setOutput(Global.midiAccess.openOutput(portDetails.id).let { output ->
+                        setupMidiOutput(output, "Gervill", Global.settings.GervillSF2Path)
                         output
                     })
                 }
@@ -135,8 +135,8 @@ fun MidiOutputSettings() {
             CompactOutlinedTextField(
                 modifier = Modifier
                     .widthIn(max = 300.dp),
-                value = Singleton.settings.GervillSF2Path,
-                onValueChange = { Singleton.settings.GervillSF2Path = it },
+                value = Global.settings.GervillSF2Path,
+                onValueChange = { Global.settings.GervillSF2Path = it },
                 onConfirm = {
                     reload()
                 }
@@ -147,32 +147,32 @@ fun MidiOutputSettings() {
             itemWithSwitch(
                 name = "Send note events",
                 description = "Enable key events input for notes",
-                initial = Singleton.settings.EnableOutputMidiNoteEvent,
-                onToggled = { Singleton.settings.EnableOutputMidiNoteEvent = it }
+                initial = Global.settings.EnableOutputMidiNoteEvent,
+                onToggled = { Global.settings.EnableOutputMidiNoteEvent = it }
             )
             itemWithSwitch(
                 name = "Send PC events",
                 description = "Event for controlling instrument changes",
-                initial = Singleton.settings.EnableOutputMidiPCEvent,
-                onToggled = { Singleton.settings.EnableOutputMidiPCEvent = it }
+                initial = Global.settings.EnableOutputMidiPCEvent,
+                onToggled = { Global.settings.EnableOutputMidiPCEvent = it }
             )
             itemWithSwitch(
                 name = "Send CC events",
                 description = "Performance control events, like pressing the pedal",
-                initial = Singleton.settings.EnableOutputMidiCCEvent,
-                onToggled = { Singleton.settings.EnableOutputMidiCCEvent = it }
+                initial = Global.settings.EnableOutputMidiCCEvent,
+                onToggled = { Global.settings.EnableOutputMidiCCEvent = it }
             )
             itemWithSwitch(
                 name = "Send PB events",
                 description = "Dynamically adjust pitch to achieve glissando, vibrato, and other effects",
-                initial = Singleton.settings.EnableOutputMidiPBEvent,
-                onToggled = { Singleton.settings.EnableOutputMidiPBEvent = it }
+                initial = Global.settings.EnableOutputMidiPBEvent,
+                onToggled = { Global.settings.EnableOutputMidiPBEvent = it }
             )
             itemWithSwitch(
                 name = "Send other events",
                 description = "Somewhat rare midi events",
-                initial = Singleton.settings.EnableOutputOtherMidiEvent,
-                onToggled = { Singleton.settings.EnableOutputOtherMidiEvent = it }
+                initial = Global.settings.EnableOutputOtherMidiEvent,
+                onToggled = { Global.settings.EnableOutputOtherMidiEvent = it }
             )
         }
     }

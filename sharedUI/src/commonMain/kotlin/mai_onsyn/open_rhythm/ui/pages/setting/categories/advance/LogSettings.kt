@@ -16,7 +16,7 @@ import io.github.vinceglb.filekit.absolutePath
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.launch
-import mai_onsyn.open_rhythm.bridge.Singleton
+import mai_onsyn.open_rhythm.bridge.Global
 import mai_onsyn.open_rhythm.core.log.LogManager
 import mai_onsyn.open_rhythm.ui.icons.ic_assignment
 import mai_onsyn.open_rhythm.ui.icons.ic_ios_share
@@ -48,8 +48,8 @@ fun LogSettings() {
             ContextDropdownMenu(
                 expanded = expanded,
                 onDismissRequest = { expanded = false },
-                selectedIndex = Singleton.settings.LogLevel,
-                onSelect = { Singleton.settings.LogLevel = it },
+                selectedIndex = Global.settings.LogLevel,
+                onSelect = { Global.settings.LogLevel = it },
                 items = candidates,
             ) {
                 OutlinedButton(
@@ -58,7 +58,7 @@ fun LogSettings() {
                     shape = MaterialTheme.shapes.small
                 ) {
                     Text(
-                        text = candidates[Singleton.settings.LogLevel].label!!,
+                        text = candidates[Global.settings.LogLevel].label!!,
                         style = MaterialTheme.typography.bodyMedium
                     )
                 }
@@ -68,9 +68,9 @@ fun LogSettings() {
         item("Log limit", "The current log limit, doesn't affect the logs that have already been output") {
             CompactOutlinedTextField(
                 modifier = Modifier
-                    .size(100.dp, 40.dp),
-                value = Singleton.settings.MaxLogCount,
-                onValueChange = { Singleton.settings.MaxLogCount = it },
+                    .size(80.dp, 40.dp),
+                value = Global.settings.MaxLogCount,
+                onValueChange = { Global.settings.MaxLogCount = it },
             )
         }
 

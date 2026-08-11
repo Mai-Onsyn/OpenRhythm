@@ -19,7 +19,7 @@ import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KProperty
 
 class UserSetting(
-    st: Settings
+    private val st: Settings
 ) {
     // =====General Appearance=====
     var DarkMode                        by st.observable("DarkMode",                        2)  // 0 = light; 1 = dark; 2 = system default
@@ -90,12 +90,15 @@ class UserSetting(
 
     // =====Overlay=====
     var ShowCurrentTick         by st.observable("ShowCurrentTick",             false)
+    var ShowFps                 by st.observable("ShowFps",                     false)
     var ShowFrameTime           by st.observable("ShowFrameTime",               false)
     var ShowRenderingNoteCount  by st.observable("ShowRenderingNoteCount",      false)
     var ShowActiveNoteCount     by st.observable("ShowActiveNoteCount",         false)
 
     // =====User Data=====
     val libraryFolderList by st.list("LibraryFolderList", mutableListOf(), UILibraryFolder.serializer())
+
+    fun resetAllSettings() = st.clear()
 }
 
 inline fun <reified T> Settings.observable(

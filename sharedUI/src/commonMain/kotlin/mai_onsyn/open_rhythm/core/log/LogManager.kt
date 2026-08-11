@@ -10,7 +10,7 @@ import io.github.vinceglb.filekit.dialogs.openFileSaver
 import io.github.vinceglb.filekit.sink
 import kotlinx.io.buffered
 import kotlinx.io.writeString
-import mai_onsyn.open_rhythm.bridge.Singleton
+import mai_onsyn.open_rhythm.bridge.Global
 import mai_onsyn.open_rhythm.core.util.Time
 
 object LogManager {
@@ -21,8 +21,8 @@ object LogManager {
             platformLogWriter(),
             memoryLogWriter
         )
-        Logger.setMinSeverity(Severity.entries[Singleton.settings.LogLevel])
-        memoryLogWriter.maxSize = Singleton.settings.MaxLogCount
+        Logger.setMinSeverity(Severity.entries[Global.settings.LogLevel])
+        memoryLogWriter.maxSize = Global.settings.MaxLogCount
     }
 
     suspend fun export(

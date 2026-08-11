@@ -31,7 +31,7 @@ import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.runBlocking
-import mai_onsyn.open_rhythm.bridge.Singleton
+import mai_onsyn.open_rhythm.bridge.Global
 import mai_onsyn.open_rhythm.core.midi.device.KeyboardVirtualMidiInputDevice
 import mai_onsyn.open_rhythm.core.midi.device.KtMidiInputDevice
 import mai_onsyn.open_rhythm.ui.icons.ic_settings_input_svideo
@@ -80,7 +80,7 @@ fun MidiInputSettings() {
                         modifier = Modifier.align(Alignment.CenterHorizontally)
                     )
 
-                    var inputs by remember { mutableStateOf(Singleton.midiAccess.inputs.toList()) }
+                    var inputs by remember { mutableStateOf(Global.midiAccess.inputs.toList()) }
                     Column(
                         modifier = Modifier
                             .heightIn(max = 600.dp)
@@ -92,18 +92,18 @@ fun MidiInputSettings() {
                         DeviceRow(
                             id = "OpenRhythm",
                             name = virtualKeyboard,
-                            initial = Singleton.midiInputDevices.contains(virtualKeyboard),
+                            initial = Global.midiInputDevices.contains(virtualKeyboard),
                             onChecked = {
                                 if (it) {
-                                    Singleton.midiInputDevices[virtualKeyboard] = KeyboardVirtualMidiInputDevice(
-                                        Singleton.globalKeyEventDispatcher,
-                                        Singleton.settings.userKeyMappings.toMappingMap()
+                                    Global.midiInputDevices[virtualKeyboard] = KeyboardVirtualMidiInputDevice(
+                                        Global.globalKeyEventDispatcher,
+                                        Global.settings.userKeyMappings.toMappingMap()
                                     )
-                                    Singleton.settings.enabledMidiInputDeviceList.add(virtualKeyboard)
+                                    Global.settings.enabledMidiInputDeviceList.add(virtualKeyboard)
                                 } else {
-                                    runBlocking { Singleton.midiInputDevices[virtualKeyboard]?.close() }
-                                    Singleton.midiInputDevices.remove(virtualKeyboard)
-                                    Singleton.settings.enabledMidiInputDeviceList.remove(virtualKeyboard)
+                                    runBlocking { Global.midiInputDevices[virtualKeyboard]?.close() }
+                                    Global.midiInputDevices.remove(virtualKeyboard)
+                                    Global.settings.enabledMidiInputDeviceList.remove(virtualKeyboard)
                                 }
                             }
                         )
@@ -115,15 +115,15 @@ fun MidiInputSettings() {
                             DeviceRow(
                                 id = id,
                                 name = name,
-                                initial = Singleton.midiInputDevices.contains(id),
+                                initial = Global.midiInputDevices.contains(id),
                                 onChecked = {
                                     if (it) {
-                                        Singleton.midiInputDevices[id] = KtMidiInputDevice(input, Singleton.midiAccess)
-                                        Singleton.settings.enabledMidiInputDeviceList.add(name)
+                                        Global.midiInputDevices[id] = KtMidiInputDevice(input, Global.midiAccess)
+                                        Global.settings.enabledMidiInputDeviceList.add(name)
                                     } else {
-                                        runBlocking { Singleton.midiInputDevices[id]?.close() }
-                                        Singleton.midiInputDevices.remove(id)
-                                        Singleton.settings.enabledMidiInputDeviceList.remove(name)
+                                        runBlocking { Global.midiInputDevices[id]?.close() }
+                                        Global.midiInputDevices.remove(id)
+                                        Global.settings.enabledMidiInputDeviceList.remove(name)
                                     }
                                 }
                             )
@@ -138,7 +138,7 @@ fun MidiInputSettings() {
                         val coroutineScope = rememberCoroutineScope()
                         RefreshDeviceButton(
                             scope = coroutineScope,
-                            onRefresh = { inputs = Singleton.midiAccess.inputs.toList() }
+                            onRefresh = { inputs = Global.midiAccess.inputs.toList() }
                         )
                         PrimaryOperationButton("Close", { showDialog = false })
                     }
@@ -150,32 +150,32 @@ fun MidiInputSettings() {
             itemWithSwitch(
                 name = "Receive note events",
                 description = "Enable key events input for notes",
-                initial = Singleton.settings.EnableInputMidiNoteEvent,
-                onToggled = { Singleton.settings.EnableInputMidiNoteEvent = it }
+                initial = Global.settings.EnableInputMidiNoteEvent,
+                onToggled = { Global.settings.EnableInputMidiNoteEvent = it }
             )
             itemWithSwitch(
                 name = "Receive PC events",
                 description = "Event for controlling instrument changes",
-                initial = Singleton.settings.EnableInputMidiPCEvent,
-                onToggled = { Singleton.settings.EnableInputMidiPCEvent = it }
+                initial = Global.settings.EnableInputMidiPCEvent,
+                onToggled = { Global.settings.EnableInputMidiPCEvent = it }
             )
             itemWithSwitch(
                 name = "Receive CC events",
                 description = "Performance control events, like pressing the pedal",
-                initial = Singleton.settings.EnableInputMidiCCEvent,
-                onToggled = { Singleton.settings.EnableInputMidiCCEvent = it }
+                initial = Global.settings.EnableInputMidiCCEvent,
+                onToggled = { Global.settings.EnableInputMidiCCEvent = it }
             )
             itemWithSwitch(
                 name = "Receive PB events",
                 description = "Dynamically adjust pitch to achieve glissando, vibrato, and other effects",
-                initial = Singleton.settings.EnableInputMidiPBEvent,
-                onToggled = { Singleton.settings.EnableInputMidiPBEvent = it }
+                initial = Global.settings.EnableInputMidiPBEvent,
+                onToggled = { Global.settings.EnableInputMidiPBEvent = it }
             )
             itemWithSwitch(
                 name = "Receive other events",
                 description = "Somewhat rare midi events",
-                initial = Singleton.settings.EnableInputOtherMidiEvent,
-                onToggled = { Singleton.settings.EnableInputOtherMidiEvent = it }
+                initial = Global.settings.EnableInputOtherMidiEvent,
+                onToggled = { Global.settings.EnableInputOtherMidiEvent = it }
             )
         }
     }

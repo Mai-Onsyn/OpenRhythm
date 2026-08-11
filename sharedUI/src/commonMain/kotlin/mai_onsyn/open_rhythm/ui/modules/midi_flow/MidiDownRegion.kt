@@ -33,11 +33,9 @@ import io.github.vinceglb.filekit.readBytes
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.withContext
-import mai_onsyn.open_rhythm.bridge.Singleton
+import mai_onsyn.open_rhythm.bridge.Global
 import mai_onsyn.open_rhythm.core.midi.Midi
-import mai_onsyn.open_rhythm.core.midi.Note
 import mai_onsyn.open_rhythm.ui.utility.BindInputDeviceEvents
-import mai_onsyn.open_rhythm.ui.utility.isBlackKey
 
 @Composable
 fun MidiDownRegion(
@@ -90,20 +88,20 @@ fun MidiDownRegion(
     ) {
         var currentTick by remember { mutableStateOf(0L) }
 
-        val hpb by remember(Singleton.settings.QuarterNoteDpHeight) { mutableStateOf(Singleton.settings.QuarterNoteDpHeight.dp) }
+        val hpb by remember(Global.settings.QuarterNoteDpHeight) { mutableStateOf(Global.settings.QuarterNoteDpHeight.dp) }
         var deltaYpx by remember { mutableStateOf(0f) }
 
         Box(
             Modifier
                 .weight(1f)
-                .background(Singleton.settings.WaterfallBackgroundColor.let { if (it.isUnspecified) MaterialTheme.colorScheme.surface else it })
+                .background(Global.settings.WaterfallBackgroundColor.let { if (it.isUnspecified) MaterialTheme.colorScheme.surface else it })
         ) {
             val platformContext = LocalPlatformContext.current
-            val bgImageRequest by produceState<ImageRequest?>(null, Singleton.settings.BackgroundImageDir) {
-                val file = PlatformFile(Singleton.settings.BackgroundImageDir)
+            val bgImageRequest by produceState<ImageRequest?>(null, Global.settings.BackgroundImageDir) {
+                val file = PlatformFile(Global.settings.BackgroundImageDir)
                 withContext(Dispatchers.IO) {
                     value = if (file.exists() && file.isRegularFile()) {
-                        if (Singleton.settings.OriginalBackgroundImageSize) ImageRequest.Builder(platformContext)
+                        if (Global.settings.OriginalBackgroundImageSize) ImageRequest.Builder(platformContext)
                             .data(file.readBytes())
                             .size(Size.ORIGINAL)
                             .build()
@@ -117,8 +115,8 @@ fun MidiDownRegion(
                 model = bgImageRequest,
                 contentDescription = "background image",
                 modifier = Modifier
-                    .alpha(Singleton.settings.BackgroundImageOpacity)
-                    .blur(Singleton.settings.BackgroundImageBlurDp.dp)
+                    .alpha(Global.settings.BackgroundImageOpacity)
+                    .blur(Global.settings.BackgroundImageBlurDp.dp)
                     .matchParentSize(),
                 contentScale = ContentScale.Crop,
             )
@@ -137,7 +135,7 @@ fun MidiDownRegion(
                                     }
                                 }
 
-                                if (Singleton.settings.DoubleFingerTapToPlayPause) {
+                                if (Global.settings.DoubleFingerTapToPlayPause) {
                                     if (event.changes.size == 2 && event.changes.first().pressed && event.changes.last().pressed) {
                                         Logger.i { "Double Click Toggle to ${!currentIsPlaying}" }
                                         onPlayStateChange(!currentIsPlaying)
@@ -147,7 +145,7 @@ fun MidiDownRegion(
                         }
                     }
                     .then(
-                        if (Singleton.settings.DoubleClickToPlayPause)
+                        if (Global.settings.DoubleClickToPlayPause)
                             Modifier.pointerInput(Unit) {
                                 detectTapGestures(
                                     onDoubleTap = {
@@ -163,30 +161,30 @@ fun MidiDownRegion(
                 hpb = hpb,
                 activeNoteOutput = midiActiveKeys,
                 onVerticalDragged = { deltaYpx += it },
-                drawOctaveLine = Singleton.settings.DrawOctaveLines,
-                drawSectionLine = Singleton.settings.DrawSectionLines,
-                noteRoundPercent = Singleton.settings.NoteRoundConerPercent,
-                drawPitchLabel = Singleton.settings.DrawPitchLabels
+                drawOctaveLine = Global.settings.DrawOctaveLines,
+                drawSectionLine = Global.settings.DrawSectionLines,
+                noteRoundPercent = Global.settings.NoteRoundConerPercent,
+                drawPitchLabel = Global.settings.DrawPitchLabels
             )
         }
 
         LaunchedEffect(isPlaying) {
             if (isPlaying) {
 //                Singleton.player.setMidi(midi)
-                Singleton.player.onCompletion = { onPlayStateChange(false) }
-                Singleton.player.play()
+                Global.player.onCompletion = { onPlayStateChange(false) }
+                Global.player.play()
             }
-            else Singleton.player.pause()
+            else Global.player.pause()
         }
         LaunchedEffect(isPlaying, midi, hpb) {
             while (true) {
                 withFrameMillis {
                     if (deltaYpx != 0f && !isPlaying) {
                         val deltaTick = (deltaYpx * midi.ppq / with(density) { hpb.toPx() }).toLong()
-                        currentTick = Singleton.player.preciseTick + deltaTick
-                        Singleton.player.seek(currentTick)
+                        currentTick = Global.player.preciseTick + deltaTick
+                        Global.player.seek(currentTick)
                     }
-                    else currentTick = Singleton.player.preciseTick
+                    else currentTick = Global.player.preciseTick
                     onProgressChange(currentTick / midi.totalTicks.toFloat())
                     deltaYpx = 0f
 //                    if (Singleton.settings.AlwaysFocusMidiRegion) focusRequester.requestFocus()
@@ -194,13 +192,13 @@ fun MidiDownRegion(
             }
         }
         LaunchedEffect(midi) {
-            Singleton.player.setMidi(midi)
+            Global.player.setMidi(midi)
         }
         LaunchedEffect(Unit) {
 //            midiInputDevice?.clearEvents()
             focusRequester.requestFocus()
-            Singleton.player.setMidi(midi)
-            Singleton.player.seek(midi.startTick.toLong())
+            Global.player.setMidi(midi)
+            Global.player.seek(midi.startTick.toLong())
         }
         BindInputDeviceEvents(userActiveKeys)
 //        DisposableEffect(Unit) {
@@ -225,12 +223,12 @@ fun MidiDownRegion(
             midiActiveKey = midiActiveKeys,
             userActiveKey = userActiveKeys,
             onPress = { key, velocity ->
-                userActiveKeys[key] = Singleton.settings.KeyboardInteractionColor
-                Singleton.player.noteOn(key, velocity)
+                userActiveKeys[key] = Global.settings.KeyboardInteractionColor
+                Global.player.noteOn(key, velocity)
             },
             onRelease = { key ->
                 userActiveKeys.remove(key)
-                Singleton.player.noteOff(key)
+                Global.player.noteOff(key)
             },
             onVerticalDragged = {
                 keyboardHeight = max(64.dp, with(density) { keyboardHeight - it.toDp() })

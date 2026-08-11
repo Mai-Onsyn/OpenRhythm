@@ -18,7 +18,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
-import mai_onsyn.open_rhythm.bridge.Singleton
+import mai_onsyn.open_rhythm.bridge.Global
 import mai_onsyn.open_rhythm.bridge.pickDirectoryWithPermission
 import mai_onsyn.open_rhythm.ui.icons.ic_add
 import mai_onsyn.open_rhythm.ui.icons.ic_arrow_back
@@ -100,7 +100,7 @@ fun LibraryPage(
                     title = "Name for this New Folder",
                     onConfirm = {
                         newFolderName = it
-                        Singleton.settings.libraryFolderList.add(UILibraryFolder(newFolderName, newFolderDir))
+                        Global.settings.libraryFolderList.add(UILibraryFolder(newFolderName, newFolderDir))
                         showNewFolderPopup = false
                     }
                 )
@@ -199,7 +199,7 @@ private fun FolderRail(
 
             OpacitySurface(contentPadding = 2.dp) {
                 Text(
-                    text = Singleton.settings.libraryFolderList.size.toString(),
+                    text = Global.settings.libraryFolderList.size.toString(),
                     style = MaterialTheme.typography.bodyMedium
                 )
             }
@@ -207,19 +207,19 @@ private fun FolderRail(
         Spacer(Modifier.height(16.dp))
         FolderManageRail(
             modifier = Modifier,
-            items = Singleton.settings.libraryFolderList,
+            items = Global.settings.libraryFolderList,
             selectedIndex = selectedFolderIndex,
             onSelect = onSelect,
             onChange = { index, newValue ->
-                Singleton.settings.libraryFolderList[index] = newValue
+                Global.settings.libraryFolderList[index] = newValue
             },
             onDelete = {
-                (Singleton.settings.libraryFolderList.size - 1).let { maxIdx ->
+                (Global.settings.libraryFolderList.size - 1).let { maxIdx ->
                     if (selectedFolderIndex > maxIdx) {
                         onSelect(maxIdx)
                     }
                 }
-                Singleton.settings.libraryFolderList.removeAt(it)
+                Global.settings.libraryFolderList.removeAt(it)
             }
         )
     }
@@ -254,7 +254,7 @@ private fun FileRail(
         Spacer(Modifier.height(16.dp))
         FileManageRail(
             modifier = Modifier.fillMaxSize(),
-            path = Singleton.settings.libraryFolderList.let {
+            path = Global.settings.libraryFolderList.let {
                 if (it.isEmpty()) ""
                 else it[min(selectedFolderIndex, it.size - 1)].dir
             },

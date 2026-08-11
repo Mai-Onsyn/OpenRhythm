@@ -12,6 +12,7 @@ import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
@@ -52,6 +53,7 @@ fun CompactOutlinedTextField(
         keyboardActions = keyboardActions,
         singleLine = true,
         interactionSource = interactionSource,
+        cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
         decorationBox = { innerTextField ->
             OutlinedTextFieldDefaults.DecorationBox(
                 value = value,
@@ -102,46 +104,24 @@ fun CompactOutlinedTextField(
     label: @Composable (() -> Unit)? = null,
     contentPadding: PaddingValues = PaddingValues(horizontal = 12.dp, vertical = 8.dp)
 ) {
-    val interactionSource = remember { interactionSource ?: MutableInteractionSource() }
-    val displayValue = value.toString()                 // Int → String
-
-    BasicTextField(
-        value = displayValue,
-        onValueChange = { newValue ->
-            val filtered = newValue.filter { it.isDigit() }
+    CompactOutlinedTextField(
+        modifier = modifier,
+        value = value.toString(),
+        onValueChange = { stringValue ->
+            val filtered = stringValue.filter { it.isDigit() }
             if (filtered.isNotEmpty()) {
                 filtered.toIntOrNull()?.let { onValueChange(it) }
             }
         },
-        modifier = modifier.fillMaxWidth(),
+        isError = isError,
+        placeholder = placeholder,
+        trailingIcon = trailingIcon,
         textStyle = textStyle,
-        keyboardOptions = keyboardOptions,
-        keyboardActions = keyboardActions,
-        singleLine = true,
         interactionSource = interactionSource,
-        decorationBox = { innerTextField ->
-            OutlinedTextFieldDefaults.DecorationBox(
-                value = displayValue,
-                innerTextField = innerTextField,
-                enabled = true,
-                singleLine = true,
-                visualTransformation = VisualTransformation.None,
-                interactionSource = interactionSource,
-                trailingIcon = trailingIcon,
-                label = label,
-                contentPadding = contentPadding,
-                container = {
-                    OutlinedTextFieldDefaults.Container(
-                        enabled = true,
-                        isError = isError,
-                        interactionSource = interactionSource,
-                        colors = OutlinedTextFieldDefaults.colors(),
-                        shape = MaterialTheme.shapes.small
-                    )
-                },
-                placeholder = placeholder,
-                isError = isError
-            )
-        }
+        keyboardOptions = keyboardOptions,
+        onConfirm = onConfirm,
+        keyboardActions = keyboardActions,
+        label = label,
+        contentPadding = contentPadding
     )
 }

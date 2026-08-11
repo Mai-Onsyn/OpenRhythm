@@ -6,7 +6,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import mai_onsyn.open_rhythm.bridge.Singleton
+import mai_onsyn.open_rhythm.bridge.Global
 import mai_onsyn.open_rhythm.core.midi.Note
 import mai_onsyn.open_rhythm.ui.utility.isBlackKey
 
@@ -22,13 +22,13 @@ fun AppDefaultMidiKeyboard(
     spacing: Dp = 1.dp,
     appendTexts: Map<Int, String> = emptyMap(),
     centerAppendLayer: Boolean = false,
-    whiteKeyColor: Color = Singleton.settings.WhiteKeyColor,
-    blackKeyColor: Color = Singleton.settings.BlackKeyColor,
-    darkPart: Color = Singleton.settings.KeyboardShadowColor,
+    whiteKeyColor: Color = Global.settings.WhiteKeyColor,
+    blackKeyColor: Color = Global.settings.BlackKeyColor,
+    darkPart: Color = Global.settings.KeyboardShadowColor,
     onPress: (Int, Int) -> Unit = { pitch, velocity -> },
     onRelease: (Int) -> Unit = {},
-    draggableAreaColor: Color? = if (Singleton.settings.EnableKeyboardDragArea) Singleton.settings.KeyboardDragAreaColor else null,
-    enableSplitRedLine: Boolean = Singleton.settings.DrawRedSplitLine,
+    draggableAreaColor: Color? = if (Global.settings.EnableKeyboardDragArea) Global.settings.KeyboardDragAreaColor else null,
+    enableSplitRedLine: Boolean = Global.settings.DrawRedSplitLine,
     onVerticalDragged: (Float) -> Unit = {}
 ) {
     MidiKeyBoard(
@@ -56,13 +56,13 @@ fun AppDefaultMidiKeyboard(
 @Composable
 fun appliedOverlayLabels(): MutableMap<Int, String> {
     val appendTextMap = remember(
-        Singleton.settings.OverlayLabelsMode,
-        Singleton.settings.MinPitch,
-        Singleton.settings.MaxPitch
+        Global.settings.OverlayLabelsMode,
+        Global.settings.MinPitch,
+        Global.settings.MaxPitch
     ) {
         mutableMapOf<Int, String>().apply {
-            for (i in Singleton.settings.MinPitch..Singleton.settings.MaxPitch) {
-                val access = when (Singleton.settings.OverlayLabelsMode) {
+            for (i in Global.settings.MinPitch..Global.settings.MaxPitch) {
+                val access = when (Global.settings.OverlayLabelsMode) {
                     1 -> i % 12 == 0
                     2 -> !isBlackKey(i)
                     3 -> true

@@ -13,7 +13,7 @@ import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import mai_onsyn.open_rhythm.bridge.Singleton
+import mai_onsyn.open_rhythm.bridge.Global
 import mai_onsyn.open_rhythm.core.util.Time
 import mai_onsyn.open_rhythm.ui.icons.ic_music_note
 import mai_onsyn.open_rhythm.ui.modules.MorphingPlayPauseButton
@@ -80,24 +80,24 @@ fun FileManageRail(
             }
             LaunchedEffect(isPlaying, playingIdx, path) {
                 if (playingIdx == -1) {
-                    Singleton.player.stop()
+                    Global.player.stop()
                     return@LaunchedEffect
                 }
 
                 if (isPlaying) {
                     loadMidiFile(midiFiles[playingIdx].path)?.let {
-                        Singleton.player.stop()
-                        Singleton.player.setMidi(it)
-                        Singleton.player.play()
-                        Singleton.player.onCompletion = { isPlaying = false }
+                        Global.player.stop()
+                        Global.player.setMidi(it)
+                        Global.player.play()
+                        Global.player.onCompletion = { isPlaying = false }
                     }
                 } else {
-                    Singleton.player.stop()
+                    Global.player.stop()
                 }
             }
             DisposableEffect(Unit) {
                 onDispose {
-                    if (isPlaying) Singleton.player.stop()
+                    if (isPlaying) Global.player.stop()
                 }
             }
             LazyColumn(

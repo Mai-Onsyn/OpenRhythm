@@ -22,7 +22,7 @@ import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import co.touchlab.kermit.Logger
-import mai_onsyn.open_rhythm.bridge.Singleton
+import mai_onsyn.open_rhythm.bridge.Global
 import mai_onsyn.open_rhythm.core.midi.Midi
 import mai_onsyn.open_rhythm.core.midi.bpmAtTick
 import mai_onsyn.open_rhythm.ui.modules.midi_flow.MidiDownRegion
@@ -65,7 +65,7 @@ fun PlayPage(
             midi = displayMidi,
             trackColors = trackColors,
             isPlaying = isPlaying,
-            keyboardRatio = if (Singleton.settings.KeyboardAutoAspect) Singleton.settings.KeyboardAspectRatio else 0f,
+            keyboardRatio = if (Global.settings.KeyboardAutoAspect) Global.settings.KeyboardAspectRatio else 0f,
             onPlayStateChange = { isPlaying = it; Logger.d { isPlaying.toString() } },
             onProgressChange = { playProgress = it },
             focusRequester = focusRequester,
@@ -93,24 +93,24 @@ fun PlayPage(
                 progress = playProgress,
                 onProgressChangeStart = {
                     if (isPlaying) {
-                        Singleton.player.pause()
+                        Global.player.pause()
                     }
                 },
                 onProgressChange = {
                     playProgress = it
-                    Singleton.player.seek(it.toDouble())
+                    Global.player.seek(it.toDouble())
                 },
                 onProgressChangeEnd = {
                     if (isPlaying) {
-                        Singleton.player.play()
+                        Global.player.play()
                     }
                 },
                 speed = playSpeed,
                 onSpeedChange = {
                     playSpeed = it
-                    Singleton.player.setSpeed(it / 100f)
+                    Global.player.setSpeed(it / 100f)
                 },
-                bpm = ((midi?.tempoEvents?.bpmAtTick(Singleton.player.preciseTick) ?: 120.0) * Singleton.player.getSpeed()).roundToInt(),
+                bpm = ((midi?.tempoEvents?.bpmAtTick(Global.player.preciseTick) ?: 120.0) * Global.player.getSpeed()).roundToInt(),
                 focusRequester = focusRequester
             )
         }

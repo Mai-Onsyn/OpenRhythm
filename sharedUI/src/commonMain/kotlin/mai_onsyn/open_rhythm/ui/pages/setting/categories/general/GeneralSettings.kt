@@ -13,7 +13,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.unit.dp
-import mai_onsyn.open_rhythm.bridge.Singleton
+import mai_onsyn.open_rhythm.bridge.Global
 import mai_onsyn.open_rhythm.ui.icons.*
 import mai_onsyn.open_rhythm.ui.modules.ColorPickerDialog
 import mai_onsyn.open_rhythm.ui.modules.getContrastTextColor
@@ -45,7 +45,7 @@ private fun AppearanceSettings() {
             .widthIn(400.dp, 800.dp)
     ) {
         item("Theme") {
-            var selected by remember { mutableStateOf(Singleton.settings.DarkMode) }
+            var selected by remember { mutableStateOf(Global.settings.DarkMode) }
             val choices = remember {
                 listOf(
                     null to ic_light_mode,
@@ -57,7 +57,7 @@ private fun AppearanceSettings() {
                 choices = choices,
                 selectedIndex = selected,
                 onSelect = {
-                    Singleton.settings.DarkMode = it
+                    Global.settings.DarkMode = it
                     selected = it
                 },
                 modifier = Modifier.height(32.dp),
@@ -78,7 +78,7 @@ private fun AppearanceSettings() {
                 )
             }
             var selected by remember {
-                mutableStateOf(colors.indexOf(Singleton.settings.PrimarySeedColor))
+                mutableStateOf(colors.indexOf(Global.settings.PrimarySeedColor))
             }
 
             Row(
@@ -99,7 +99,7 @@ private fun AppearanceSettings() {
                             )
                             .clickable {
                                 selected = index
-                                Singleton.settings.PrimarySeedColor = color
+                                Global.settings.PrimarySeedColor = color
                             },
                         contentAlignment = Alignment.Center
                     ) {
@@ -133,26 +133,26 @@ private fun AppearanceSettings() {
                         modifier = Modifier
                             .size(24.dp)
                             .clip(CircleShape)
-                            .background(Singleton.settings.UserSpecifiedPrimarySeedColor),
+                            .background(Global.settings.UserSpecifiedPrimarySeedColor),
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
                             imageVector = ic_add,
                             contentDescription = "custom color",
                             modifier = Modifier.size(16.dp),
-                            tint = getContrastTextColor(Singleton.settings.UserSpecifiedPrimarySeedColor)
+                            tint = getContrastTextColor(Global.settings.UserSpecifiedPrimarySeedColor)
                         )
                     }
                 }
 
                 ColorPickerDialog(
                     visible = colorPickerVisible,
-                    initialColor = Singleton.settings.UserSpecifiedPrimarySeedColor,
+                    initialColor = Global.settings.UserSpecifiedPrimarySeedColor,
                     onDismissRequest = { colorPickerVisible = false },
                     onConfirmRequest = {
                         colorPickerVisible = false
-                        Singleton.settings.PrimarySeedColor = it
-                        Singleton.settings.UserSpecifiedPrimarySeedColor = it
+                        Global.settings.PrimarySeedColor = it
+                        Global.settings.UserSpecifiedPrimarySeedColor = it
                         selected = -1
                     }
                 )
@@ -171,14 +171,14 @@ private fun InteractionSettings() {
         itemWithSwitch(
             name = "Double tap to play/pause",
             description = "This is pretty easy to trigger by accident",
-            initial = Singleton.settings.DoubleClickToPlayPause,
-            onToggled = { Singleton.settings.DoubleClickToPlayPause = it }
+            initial = Global.settings.DoubleClickToPlayPause,
+            onToggled = { Global.settings.DoubleClickToPlayPause = it }
         )
         itemWithSwitch(
             name = "Tap with two fingers to play/pause",
             description = "This might be tricky to handle",
-            initial = Singleton.settings.DoubleFingerTapToPlayPause,
-            onToggled = { Singleton.settings.DoubleFingerTapToPlayPause = it }
+            initial = Global.settings.DoubleFingerTapToPlayPause,
+            onToggled = { Global.settings.DoubleFingerTapToPlayPause = it }
         )
     }
 }

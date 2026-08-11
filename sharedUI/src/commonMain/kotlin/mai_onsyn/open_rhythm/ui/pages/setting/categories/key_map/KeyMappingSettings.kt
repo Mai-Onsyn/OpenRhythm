@@ -9,7 +9,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import mai_onsyn.open_rhythm.bridge.Singleton
+import mai_onsyn.open_rhythm.bridge.Global
 import mai_onsyn.open_rhythm.core.midi.device.KeyboardVirtualMidiInputDevice
 import mai_onsyn.open_rhythm.ui.modules.midi_flow.AppDefaultMidiKeyboard
 import mai_onsyn.open_rhythm.ui.utility.BindInputDeviceEvents
@@ -39,10 +39,10 @@ fun KeyMappingSettings() {
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .aspectRatio(Singleton.settings.KeyboardAspectRatio)
+                .aspectRatio(Global.settings.KeyboardAspectRatio)
         ) {
             val appendTexts = mutableMapOf<Int, String>().apply {
-                for (mapping in Singleton.settings.userKeyMappings) {
+                for (mapping in Global.settings.userKeyMappings) {
                     put(mapping.pitch, keyCodeToShortName[mapping.keyCode] ?: "Non")
                 }
             }
@@ -51,25 +51,25 @@ fun KeyMappingSettings() {
                 userActiveKey = userActiveMidiKeys,
                 appendTexts = appendTexts,
                 onPress = { pitch, velocity ->
-                    userActiveMidiKeys[pitch] = Singleton.settings.KeyboardInteractionColor
-                    Singleton.player.noteOn(pitch, velocity)
+                    userActiveMidiKeys[pitch] = Global.settings.KeyboardInteractionColor
+                    Global.player.noteOn(pitch, velocity)
 
                     selectedKeyCode?.let { code ->
 //                        Singleton.settings.userKeyMappings.removeAll { it.keyCode == code }
-                        Singleton.settings.userKeyMappings.let { list ->
+                        Global.settings.userKeyMappings.let { list ->
                             val toRemove = list.filter { it.keyCode == code || it.pitch == pitch }
                             toRemove.forEach { list.remove(it) }
                         }
 
-                        Singleton.settings.userKeyMappings.add(KeyMidiMapping(code, pitch))
-                        (Singleton.midiInputDevices["Virtual Keyboard"] as? KeyboardVirtualMidiInputDevice)?.updateMappings(
-                            Singleton.settings.userKeyMappings.toMappingMap()
+                        Global.settings.userKeyMappings.add(KeyMidiMapping(code, pitch))
+                        (Global.midiInputDevices["Virtual Keyboard"] as? KeyboardVirtualMidiInputDevice)?.updateMappings(
+                            Global.settings.userKeyMappings.toMappingMap()
                         )
                     }
                 },
                 onRelease = {
                     userActiveMidiKeys.remove(it)
-                    Singleton.player.noteOff(it)
+                    Global.player.noteOff(it)
                 }
             )
 
@@ -82,7 +82,7 @@ fun KeyMappingSettings() {
         VisualKeyboard(
             modifier = Modifier
                 .fillMaxWidth(),
-            eventDispatcher = Singleton.globalKeyEventDispatcher,
+            eventDispatcher = Global.globalKeyEventDispatcher,
             activeKeys = activeKeys,
             selectedKey = selectedKeyCode,
             onSelectChanged = {

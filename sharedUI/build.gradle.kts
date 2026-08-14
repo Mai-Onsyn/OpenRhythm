@@ -8,6 +8,7 @@ plugins {
     alias(libs.plugins.compose.multiplatform)
     alias(libs.plugins.android.kmp.library)
     alias(libs.plugins.kotlinx.serialization)
+    id("com.mikepenz.aboutlibraries.plugin")
 }
 
 kotlin {
@@ -51,6 +52,7 @@ kotlin {
             implementation("org.jetbrains.compose.ui:ui-backhandler:1.11.1")
 
             implementation("com.materialkolor:material-kolor:4.1.1")
+            implementation("com.mikepenz:aboutlibraries-compose-m3:14.2.1")
         }
 
         commonTest.dependencies {
@@ -86,4 +88,14 @@ kotlin {
 
 dependencies {
     androidRuntimeClasspath(libs.compose.ui.tooling)
+}
+
+aboutLibraries {
+    export {
+//        outputFile = project.layout.buildDirectory
+//            .dir("generated/compose/resourceGenerator/preparedResources/commonMain/composeResources/files")
+//            .map { it.file("aboutlibraries.json") }
+//            .get().asFile
+        outputFile = project.file("build/generated/compose/resourceGenerator/preparedResources/commonMain/composeResources/files/aboutlibraries.json")
+    }
 }

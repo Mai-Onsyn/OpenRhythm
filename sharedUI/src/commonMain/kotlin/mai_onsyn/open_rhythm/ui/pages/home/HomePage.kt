@@ -14,6 +14,9 @@ import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.unit.dp
 import mai_onsyn.open_rhythm.ui.icons.*
+import openrhythm.sharedui.generated.resources.Res
+import openrhythm.sharedui.generated.resources.monochrome_256x
+import org.jetbrains.compose.resources.painterResource
 
 @Composable
 fun HomePage(
@@ -40,20 +43,19 @@ fun HomePage(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                Surface(
-                    modifier = Modifier.size(64.dp),
-                    shape = MaterialTheme.shapes.large,
-                    color = MaterialTheme.colorScheme.primaryContainer
-                ) {
-                    Box(contentAlignment = Alignment.Center) {
-                        Icon(
-                            imageVector = ic_unknown,
-                            contentDescription = null,
-                            modifier = Modifier
-                                .size(40.dp)
-                        )
-                    }
-                }
+//                Surface(
+//                    modifier = Modifier.size(64.dp),
+//                    shape = MaterialTheme.shapes.large,
+//                    color = MaterialTheme.colorScheme.primaryContainer
+//                ) {
+//                    Box(contentAlignment = Alignment.Center) {
+//                        Icon(
+//                            painter = painterResource(Res.drawable.monochrome_256x),
+//                            contentDescription = null,
+//                            modifier = Modifier.size(64.dp)
+//                        )
+//                    }
+//                }
                 Text(
                     text = "Open Rhythm",
                     style = MaterialTheme.typography.displayMedium

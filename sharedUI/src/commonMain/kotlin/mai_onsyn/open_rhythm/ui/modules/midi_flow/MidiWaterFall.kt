@@ -7,13 +7,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateMapOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -37,16 +31,8 @@ import mai_onsyn.open_rhythm.core.midi.Note
 import mai_onsyn.open_rhythm.core.midi.TimeSignatureEvent
 import mai_onsyn.open_rhythm.core.util.Time
 import mai_onsyn.open_rhythm.ui.modules.getContrastTextColor
-import mai_onsyn.open_rhythm.ui.utility.countWhiteKeys
-import mai_onsyn.open_rhythm.ui.utility.drawOctaveLines
-import mai_onsyn.open_rhythm.ui.utility.drawSectionLines
-import mai_onsyn.open_rhythm.ui.utility.drawTextCentered
-import mai_onsyn.open_rhythm.ui.utility.isBlackKey
-import mai_onsyn.open_rhythm.ui.utility.reMeasure
-import mai_onsyn.open_rhythm.ui.utility.rememberTextLayoutResult
-import kotlin.math.pow
+import mai_onsyn.open_rhythm.ui.utility.*
 import kotlin.math.roundToInt
-import kotlin.time.Duration.Companion.nanoseconds
 import kotlin.time.Duration.Companion.seconds
 
 @Composable
@@ -180,16 +166,18 @@ fun MidiWaterFall(
                 }
                 if (pack.note.tick <= currTick && pack.note.tick + pack.note.duration >= currTick) {
                     activeNoteOutput[pack.note.pitch] = pack.color
+                    activeNoteCount++
                 }
             }
 
+            activeNoteCount = 0
             for (pack in toDrawNotes) {
                 if (!isBlackKey(pack.note.pitch)) drawNote(pack, false)
             }
             for (pack in toDrawNotes) {
                 if (isBlackKey(pack.note.pitch)) drawNote(pack, true)
             }
-            activeNoteCount = activeNoteOutput.size
+//            activeNoteCount = activeNoteOutput.size
             val now = Time.millis
             frameTime = now - lastDrawTime
             lastDrawTime = now

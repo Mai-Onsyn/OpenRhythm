@@ -1,0 +1,18 @@
+# 忽略与 JavaCPP 相关的 Maven 插件和 OSGi 注解（这些只在构建时存在）
+-dontwarn org.bytedeco.javacpp.tools.**
+-dontwarn org.bytedeco.javacpp.annotation.**
+-dontwarn org.bytedeco.javacpp.indexer.**
+-dontwarn org.bytedeco.javacpp.presets.**
+
+# 忽略 DBus 库中与反射相关的警告（它们在不使用时无害）
+-dontwarn org.freedesktop.dbus.**
+
+# 忽略 Panama 绑定中的 MethodHandle 调用（这些是动态调用，运行时可用）
+-dontwarn dev.atsushieno.panama.libremidi.**
+
+# 忽略 Maven 和 OSGi 相关的所有类（应用程序中不会用到）
+-dontwarn org.apache.maven.**
+-dontwarn org.osgi.**
+
+# 如果还存在其他警告，可以添加通配符忽略所有未解析类（不推荐，但可作为临时方案）
+# -dontwarn **

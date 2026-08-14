@@ -4,21 +4,16 @@ import androidx.compose.ui.input.pointer.PointerIcon
 import com.russhwolf.settings.PropertiesSettings
 import com.russhwolf.settings.Settings
 import dev.atsushieno.ktmidi.JvmMidiAccess
-import dev.atsushieno.ktmidi.LibreMidiAccess
-import dev.atsushieno.ktmidi.LibreMidiAccess.API
 import dev.atsushieno.ktmidi.MidiAccess
 import dev.atsushieno.ktmidi.MidiOutput
 import io.github.vinceglb.filekit.FileKit
 import io.github.vinceglb.filekit.PlatformFile
 import io.github.vinceglb.filekit.dialogs.openDirectoryPicker
 import io.github.vinceglb.filekit.dialogs.openFilePicker
-import kotlinx.coroutines.runBlocking
 import mai_onsyn.open_rhythm.core.GlobalKeyEventDispatcher
 import java.awt.Cursor
-import java.awt.KeyEventDispatcher
 import java.io.File
 import java.util.*
-import javax.sound.midi.Synthesizer
 
 actual fun getMidiAccess(): MidiAccess {
 //    return LibreMidiAccess(API.Unspecified)

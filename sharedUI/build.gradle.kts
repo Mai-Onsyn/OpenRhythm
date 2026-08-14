@@ -67,7 +67,7 @@ kotlin {
         jvmMain.dependencies {
             implementation(compose.desktop.currentOs)
             implementation(libs.kotlinx.coroutines.swing)
-            api("dev.atsushieno:ktmidi-jvm-desktop:0.12.0")
+//            api("dev.atsushieno:ktmidi-jvm-desktop:0.12.0")
         }
     }
 

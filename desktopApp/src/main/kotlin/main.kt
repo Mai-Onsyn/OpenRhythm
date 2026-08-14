@@ -3,6 +3,7 @@ import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.type
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
@@ -11,6 +12,7 @@ import mai_onsyn.open_rhythm.bridge.keyEventDispatcher
 import mai_onsyn.open_rhythm.core.log.LogManager
 import java.awt.Dimension
 import mai_onsyn.open_rhythm.ui.App
+import org.jetbrains.compose.resources.painterResource
 import java.awt.event.KeyEvent
 
 fun main() = application {
@@ -20,6 +22,7 @@ fun main() = application {
         title = "OpenRhythm",
         state = rememberWindowState(width = 800.dp, height = 600.dp),
         onCloseRequest = ::exitApplication,
+        icon = painterResource("icons/OpenRhythm.png"),
         onPreviewKeyEvent = {
             if (it.type == KeyEventType.KeyDown) {
                 if (!pressedKey.contains(it.key)) {

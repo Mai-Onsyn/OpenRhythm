@@ -1,10 +1,21 @@
 package mai_onsyn.open_rhythm.ui.pages
 
+import androidx.compose.animation.AnimatedContentTransitionScope
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavBackStackEntry
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -33,6 +44,46 @@ import mai_onsyn.open_rhythm.ui.pages.setting.SettingsPage
 
 @Serializable object PlayScreen
 
+private val enterTransition:
+        AnimatedContentTransitionScope<NavBackStackEntry>.() -> EnterTransition = {
+
+    slideInHorizontally(
+        initialOffsetX = { (it * 0.08f).toInt() }
+    ) + fadeIn() + scaleIn(
+        initialScale = 0.96f
+    )
+}
+
+private val exitTransition:
+        AnimatedContentTransitionScope<NavBackStackEntry>.() -> ExitTransition = {
+
+    slideOutHorizontally(
+        targetOffsetX = { -(it * 0.04f).toInt() }
+    ) + fadeOut() + scaleOut(
+        targetScale = 0.98f
+    )
+}
+
+private val popEnterTransition:
+        AnimatedContentTransitionScope<NavBackStackEntry>.() -> EnterTransition = {
+
+    slideInHorizontally(
+        initialOffsetX = { -(it * 0.08f).toInt() }
+    ) + fadeIn() + scaleIn(
+        initialScale = 0.96f
+    )
+}
+
+private val popExitTransition:
+        AnimatedContentTransitionScope<NavBackStackEntry>.() -> ExitTransition = {
+
+    slideOutHorizontally(
+        targetOffsetX = { (it * 0.04f).toInt() }
+    ) + fadeOut() + scaleOut(
+        targetScale = 0.98f
+    )
+}
+
 @Composable
 fun AppNavigation(
     modifier: Modifier = Modifier
@@ -48,7 +99,12 @@ fun AppNavigation(
             navController = navController,
             startDestination = Setting
         ) {
-            composable<Home>() {
+            composable<Home>(
+                enterTransition = enterTransition,
+                exitTransition = exitTransition,
+                popEnterTransition = popEnterTransition,
+                popExitTransition = popExitTransition
+            ) {
                 HomePage(
                     maxWidth > 600.dp,
                     { navController.navigate(Library) },
@@ -62,7 +118,12 @@ fun AppNavigation(
                 if (!navController.popBackStack())
                     navController.navigate(Home)
             }
-            composable<Library> {
+            composable<Library>(
+                enterTransition = enterTransition,
+                exitTransition = exitTransition,
+                popEnterTransition = popEnterTransition,
+                popExitTransition = popExitTransition
+            ) {
                 LibraryPage(
                     maxWidth > 600.dp,
                     onBack,
@@ -78,21 +139,31 @@ fun AppNavigation(
                 )
             }
 
-            composable<PlayScreen> {
+            composable<PlayScreen>(
+                enterTransition = enterTransition,
+                exitTransition = exitTransition,
+                popEnterTransition = popEnterTransition,
+                popExitTransition = popExitTransition
+            ) {
                 PlayPage(currentPlayScreenMidi, onBack)
             }
 
-            composable<FreePlayScreen> {
-                FreePlayPage(
-                    onBack
-                )
+            composable<FreePlayScreen>(
+                enterTransition = enterTransition,
+                exitTransition = exitTransition,
+                popEnterTransition = popEnterTransition,
+                popExitTransition = popExitTransition
+            ) {
+                FreePlayPage(onBack)
             }
 
-            composable<Setting> {
-                SettingsPage(
-                    maxWidth > 600.dp,
-                    onBack
-                )
+            composable<Setting>(
+                enterTransition = enterTransition,
+                exitTransition = exitTransition,
+                popEnterTransition = popEnterTransition,
+                popExitTransition = popExitTransition
+            ) {
+                SettingsPage(maxWidth > 600.dp, onBack)
             }
         }
     }

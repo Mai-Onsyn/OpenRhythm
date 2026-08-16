@@ -19,6 +19,8 @@ import mai_onsyn.open_rhythm.ui.icons.ic_piano
 import mai_onsyn.open_rhythm.ui.modules.ColorSelector
 import mai_onsyn.open_rhythm.ui.modules.ContextDropDownMenuItem
 import mai_onsyn.open_rhythm.ui.modules.ContextDropdownMenu
+import mai_onsyn.open_rhythm.ui.modules.LabeledRangeSlider
+import mai_onsyn.open_rhythm.ui.modules.LabeledSliderWithPrefixSuffix
 import mai_onsyn.open_rhythm.ui.modules.SliderWithSuffix
 import mai_onsyn.open_rhythm.ui.pages.setting.SettingsCard
 
@@ -97,6 +99,19 @@ fun Body() {
                     )
                 }
             }
+        }
+
+        item("Default pitch range", verticalLayout = true) {
+//            var minPitch by remember { mutableStateOf(40) }
+//            var maxPitch by remember { mutableStateOf(80) }
+            LabeledSliderWithPrefixSuffix(
+                lValue = Global.settings.MinPitch,
+                rValue = Global.settings.MaxPitch,
+                range = 0..127,
+                onLValueChanged = { Global.settings.MinPitch = it },
+                onRValueChanged = { Global.settings.MaxPitch = it },
+                minLength = 12
+            )
         }
     }
 }

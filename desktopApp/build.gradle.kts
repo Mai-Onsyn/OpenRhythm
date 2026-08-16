@@ -77,7 +77,7 @@ tasks.register("cleanPackagedDir") {
 }
 
 tasks.configureEach {
-    if (name == "createReleaseDistributable") {
-        finalizedBy("cleanPackagedDir")
+    when (name) {
+        "createReleaseDistributable" -> finalizedBy("cleanPackagedDir")
     }
 }

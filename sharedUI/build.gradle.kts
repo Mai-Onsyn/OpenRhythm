@@ -92,10 +92,6 @@ dependencies {
 
 aboutLibraries {
     export {
-//        outputFile = project.layout.buildDirectory
-//            .dir("generated/compose/resourceGenerator/preparedResources/commonMain/composeResources/files")
-//            .map { it.file("aboutlibraries.json") }
-//            .get().asFile
-        outputFile = project.file("build/generated/compose/resourceGenerator/preparedResources/commonMain/composeResources/files/aboutlibraries.json")
+        outputFile = project.file("src/commonMain/composeResources/files/aboutlibraries.json")
     }
 }

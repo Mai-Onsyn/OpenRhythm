@@ -91,6 +91,8 @@ fun MidiUpRegion(
                 modifier = Modifier
                     .fillMaxSize(),
                 notes = notes,
+                minPitch = Global.settings.MinPitch,
+                maxPitch = Global.settings.MaxPitch,
                 color = Global.settings.KeyboardInteractionColor,
                 drawOctaveLine = Global.settings.DrawOctaveLines,
                 noteRoundPercent = Global.settings.NoteRoundConerPercent

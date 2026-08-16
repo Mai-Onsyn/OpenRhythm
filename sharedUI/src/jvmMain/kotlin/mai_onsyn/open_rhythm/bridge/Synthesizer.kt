@@ -1,5 +1,6 @@
 package mai_onsyn.open_rhythm.bridge
 
+import co.touchlab.kermit.Logger
 import dev.atsushieno.ktmidi.MidiOutput
 import java.io.File
 import javax.sound.midi.MidiSystem
@@ -33,7 +34,7 @@ fun loadSoundbankToKtmidiOutput(output: MidiOutput, sf2File: File): Boolean {
         }
 
         val success = device.loadAllInstruments(soundbank)
-        println("SF2 loaded: $success, internal instruments count: ${device.loadedInstruments.size}")
+        Logger.i { "SF2 loaded: $success, internal instruments count: ${device.loadedInstruments.size}" }
         return success
 
     } catch (e: Exception) {

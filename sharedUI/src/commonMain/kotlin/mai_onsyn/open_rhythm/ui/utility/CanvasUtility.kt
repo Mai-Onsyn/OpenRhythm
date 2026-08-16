@@ -5,6 +5,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.drawText
@@ -38,10 +39,11 @@ fun rememberTextLayoutResult(
     color: Color
 ): TextLayoutResult {
     val textMeasurer = rememberTextMeasurer()
-    return remember(text, fontSize, color) {
+    val density = LocalDensity.current
+    return remember(text, fontSize, color, density) {
         textMeasurer.measure(
             text = text,
-            style = TextStyle(fontSize = fontSize, color = color)
+            style = TextStyle(fontSize = fontSize / density.density, color = color)
         )
     }
 }
@@ -53,11 +55,12 @@ fun rememberTextLayoutResult(
     color: Color
 ): List<TextLayoutResult> {
     val textMeasurer = rememberTextMeasurer()
-    return remember(texts, fontSize, color) {
+    val density = LocalDensity.current
+    return remember(texts, fontSize, color, density) {
         texts.map {
             textMeasurer.measure(
                 text = it,
-                style = TextStyle(fontSize = fontSize, color = color)
+                style = TextStyle(fontSize = fontSize / density.density, color = color)
             )
         }
     }
@@ -70,11 +73,12 @@ fun <T> rememberTextLayoutResult(
     color: (Map.Entry<T, String>) -> Color
 ): Map<T, TextLayoutResult> {
     val textMeasurer = rememberTextMeasurer()
-    return remember(texts, fontSize, color) {
+    val density = LocalDensity.current
+    return remember(texts, fontSize, color, density) {
         texts.mapValues {
             textMeasurer.measure(
                 text = it.value,
-                style = TextStyle(fontSize = fontSize, color = color(it))
+                style = TextStyle(fontSize = fontSize / density.density, color = color(it))
             )
         }
     }

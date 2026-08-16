@@ -13,8 +13,8 @@ import mai_onsyn.open_rhythm.ui.utility.isBlackKey
 @Composable
 fun AppDefaultMidiKeyboard(
     modifier: Modifier = Modifier,
-    minPitch: Int = 21,
-    maxPitch: Int = 108,
+    minPitch: Int = Global.settings.MinPitch,
+    maxPitch: Int = Global.settings.MaxPitch,
     midiActiveKey: Map<Int, Color> = emptyMap(),
     userActiveKey: Map<Int, Color> = emptyMap(),
     blackVerticalPercentage: Float = 0.64f,

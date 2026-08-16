@@ -157,6 +157,8 @@ fun MidiDownRegion(
                     ),
                 trackColors = trackColors,
                 currTick = currentTick,
+                minPitch = Global.settings.MinPitch,
+                maxPitch = Global.settings.MaxPitch,
                 midi = midi,
                 hpb = hpb,
                 activeNoteOutput = midiActiveKeys,

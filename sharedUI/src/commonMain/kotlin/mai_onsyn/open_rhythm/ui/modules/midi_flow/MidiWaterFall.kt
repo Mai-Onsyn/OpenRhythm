@@ -16,6 +16,7 @@ import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.graphics.isSpecified
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.input.pointer.positionChanged
 import androidx.compose.ui.layout.onSizeChanged
@@ -185,8 +186,9 @@ fun MidiWaterFall(
         }
 
         Box(Modifier.matchParentSize()) {
+            val colorScheme = MaterialTheme.colorScheme
             val color by Global.settings.WaterfallBackgroundColor.let { remember(it) {
-                mutableStateOf(getContrastTextColor(it))
+                mutableStateOf(if (it.isSpecified) getContrastTextColor(it) else colorScheme.onSurface)
             } }
 
             Column(

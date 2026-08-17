@@ -14,6 +14,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
+import mai_onsyn.open_rhythm.bridge.Global
 import mai_onsyn.open_rhythm.core.midi.Midi
 import mai_onsyn.open_rhythm.ui.modules.midi_flow.findBarLines
 import kotlin.collections.mapValues
@@ -88,8 +89,8 @@ fun DrawScope.drawOctaveLines(
     minPitch: Int,          // A0 default
     maxPitch: Int,          // C8 default
     gridPos: Map<Int, Pair<Float, Float>>,
-    color: Color = Color.LightGray,
-    thickness: Dp = 0.7.dp
+    color: Color = Global.settings.OctaveLineColor,
+    thickness: Dp = Global.settings.OctaveLineThickness.dp
 ) {
     val thicknessPx = thickness.toPx()
     for (pitch in minPitch..maxPitch) {
@@ -119,8 +120,8 @@ fun DrawScope.drawSectionLines(
     loTick: Long,
     hiTick: Long,
     pxPerTick: Float,
-    color: Color = Color.LightGray,
-    thickness: Dp = 0.7.dp
+    color: Color = Global.settings.SectionLineColor,
+    thickness: Dp = Global.settings.SectionLineThickness.dp
 ) {
     val thicknessPx = thickness.toPx()
     val sectionTicks = findBarLines(midi.timeSignatureEvents, loTick, hiTick, midi.ppq)

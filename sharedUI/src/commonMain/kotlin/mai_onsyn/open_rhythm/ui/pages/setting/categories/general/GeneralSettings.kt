@@ -32,6 +32,7 @@ fun GeneralSettings() {
         ) {
             AppearanceSettings()
             InteractionSettings()
+            SecuritySettings()
         }
     }
 }
@@ -179,6 +180,22 @@ private fun InteractionSettings() {
             description = "This might be tricky to handle",
             initial = Global.settings.DoubleFingerTapToPlayPause,
             onToggled = { Global.settings.DoubleFingerTapToPlayPause = it }
+        )
+    }
+}
+
+@Composable
+fun SecuritySettings() {
+    SettingsCard(
+        title = "Security",
+        icon = ic_security,
+        modifier = Modifier.widthIn(400.dp, 800.dp)
+    ) {
+        itemWithSwitch(
+            name = "Show folder path in Library",
+            description = "Control the path display under each Folder on the left side of the Library Page",
+            initial = Global.settings.ShowFolderPathInLibrary,
+            onToggled = { Global.settings.ShowFolderPathInLibrary = it }
         )
     }
 }

@@ -25,7 +25,6 @@ import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -48,7 +47,7 @@ fun LabeledSlider(
     onValueChanged: (Int) -> Unit,
     onSlidStart: (Int) -> Unit = {},
     onSlidStop: () -> Unit = {},
-    valueMapping: (Int) -> Int = { it },
+    valueMapping: (Int) -> String = { it.toString() },
 ) {
     val colorScheme = MaterialTheme.colorScheme
     val totalTicks = (range.last - range.first).toFloat()
@@ -122,7 +121,7 @@ fun LabeledSlider(
             )
         }
         val textLayoutResult = rememberTextLayoutResult(
-            text = valueMapping(value).toString(),
+            text = valueMapping(value),
             fontSize = labelFontSize,
             color = colorScheme.onPrimaryContainer,
         )
@@ -170,7 +169,7 @@ fun SliderWithSuffix(
     onSlidStart: (Int) -> Unit = {},
     onSlidStop: () -> Unit = {},
     extraSuffix: String? = null,
-    valueMapping: (Int) -> Int = { it },
+    valueMapping: (Int) -> String = { it.toString() },
 ) {
     Row(
         modifier = modifier,
@@ -193,7 +192,8 @@ fun LabeledRangeSlider(
     minLength: Int = 0, // TODO("未重组时改变该值无效")
     modifier: Modifier = Modifier,
     onLValueChanged: (Int) -> Unit = {},
-    onRValueChanged: (Int) -> Unit = {}
+    onRValueChanged: (Int) -> Unit = {},
+    valueMapping: (Int) -> String = { it.toString() }
 ) {
     val colorScheme = MaterialTheme.colorScheme
     val totalTicks = (range.last - range.first).toFloat()
@@ -360,7 +360,7 @@ fun LabeledRangeSlider(
             )
         }
         val textLayoutResults = rememberTextLayoutResult(
-            texts = listOf(lValue.toString(), rValue.toString()),
+            texts = listOf(valueMapping(lValue), valueMapping(rValue)),
             fontSize = labelFontSize,
             color = colorScheme.onPrimaryContainer,
         )
@@ -432,26 +432,27 @@ fun LabeledSliderWithPrefixSuffix(
     onLValueChanged: (Int) -> Unit = {},
     onRValueChanged: (Int) -> Unit = {},
     extraPrefix: String? = null,
-    extraSuffix: String? = null
+    extraSuffix: String? = null,
+    valueMapping: (Int) -> String = { it.toString() }
 ) {
     Row(
         modifier = modifier,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        LabelRow(lValue, extraPrefix)
+        LabelRow(valueMapping(lValue), extraPrefix)
         Spacer(Modifier.width(10.dp))
-        LabeledRangeSlider(lValue, rValue, range, steps, minLength, Modifier.weight(1f), onLValueChanged, onRValueChanged)
+        LabeledRangeSlider(lValue, rValue, range, steps, minLength, Modifier.weight(1f), onLValueChanged, onRValueChanged, valueMapping)
 
         Spacer(Modifier.width(10.dp))
-        LabelRow(rValue, extraSuffix)
+        LabelRow(valueMapping(rValue), extraSuffix)
     }
 }
 
 @Composable
-private fun LabelRow(lValue: Int, extraSuffix: String?) {
+private fun LabelRow(value: String, extraSuffix: String?) {
     Row(Modifier.width(44.dp), horizontalArrangement = Arrangement.Center) {
         Text(
-            text = lValue.toString(),
+            text = value,
             style = MaterialTheme.typography.labelMedium
         )
         extraSuffix?.let {

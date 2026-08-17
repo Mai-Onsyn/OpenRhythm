@@ -15,6 +15,7 @@ import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.unit.dp
 import mai_onsyn.open_rhythm.bridge.Global
+import mai_onsyn.open_rhythm.core.midi.Note
 import mai_onsyn.open_rhythm.ui.icons.ic_piano
 import mai_onsyn.open_rhythm.ui.modules.ColorSelector
 import mai_onsyn.open_rhythm.ui.modules.ContextDropDownMenuItem
@@ -102,15 +103,14 @@ fun Body() {
         }
 
         item("Default pitch range", verticalLayout = true) {
-//            var minPitch by remember { mutableStateOf(40) }
-//            var maxPitch by remember { mutableStateOf(80) }
             LabeledSliderWithPrefixSuffix(
                 lValue = Global.settings.MinPitch,
                 rValue = Global.settings.MaxPitch,
                 range = 0..127,
                 onLValueChanged = { Global.settings.MinPitch = it },
                 onRValueChanged = { Global.settings.MaxPitch = it },
-                minLength = 12
+                minLength = 12,
+                valueMapping = { Note.toString(it) }
             )
         }
     }

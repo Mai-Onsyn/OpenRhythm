@@ -119,75 +119,123 @@ fun WaterfallBackground() {
         }
 
         val showBgImageSetting by derivedStateOf { !bgImageDir.isNullOrBlank() }
-        animatedSwitch(
-            visible = showBgImageSetting,
-            name = "Original image size",
-            description = "This can use a lot of memory for big images",  // 这得吃不少内存，先生
-            initial = Global.settings.OriginalBackgroundImageSize,
-            onToggled = { Global.settings.OriginalBackgroundImageSize = it }
-        )
-        animatedItem(showBgImageSetting, "Image opacity", verticalLayout = true) {
-            var value by remember { mutableStateOf((Global.settings.BackgroundImageOpacity * 100).toInt()) }
-            SliderWithSuffix(
-                value = value,
-                onValueChanged = {
-                    value = it
-                    Global.settings.BackgroundImageOpacity = value / 100f
-                },
-                range = 0..100,
-                steps = 1,
-                extraSuffix = "%"
+        animatedFold(showBgImageSetting, "Image Settings") {
+            itemWithSwitch(
+                name = "Original image size",
+                description = "This can use a lot of memory for big images",  // 这得吃不少内存，先生
+                initial = Global.settings.OriginalBackgroundImageSize,
+                onToggled = { Global.settings.OriginalBackgroundImageSize = it }
             )
-        }
-        animatedItem(showBgImageSetting, "Image blur", verticalLayout = true) {
-            val valueMappingList = remember {
-                val breakPoints = listOf(
-                    0 to 1,
-                    20 to 5,
-                    50 to 10,
-                    100 to 50,
-                    500 to 100,
+            item("Image opacity", verticalLayout = true) {
+                var value by remember { mutableStateOf((Global.settings.BackgroundImageOpacity * 100).toInt()) }
+                SliderWithSuffix(
+                    value = value,
+                    onValueChanged = {
+                        value = it
+                        Global.settings.BackgroundImageOpacity = value / 100f
+                    },
+                    range = 0..100,
+                    steps = 1,
+                    extraSuffix = "%"
                 )
-                val array = IntArray(41)
-                var currentStep = 0
-                var outputValue = 0
-                for (i in 0..40) {
-                    outputValue += currentStep
-                    array[i] = outputValue
-                    breakPoints.forEach { if (it.first == outputValue) currentStep = it.second }
-                }
-                array
             }
-            val valueMapping: (Int) -> Int = { x -> valueMappingList[x] }
-            var value by remember { mutableStateOf(
-                valueMappingList.indexOf(
-                    Global.settings.BackgroundImageBlurDp.toInt()
-                ).let { if (it != -1) it else 0 }
-            ) }
-            SliderWithSuffix(
-                value = value,
-                onValueChanged = {
-                    value = it
-                    Global.settings.BackgroundImageBlurDp = valueMapping(value).toFloat()
-//                    Logger.d { "Changed value: $value" }
-                },
-                range = 0..40,
-                steps = 1,
-                extraSuffix = "dp",
-                valueMapping = valueMapping
-            )
+            item("Image blur", verticalLayout = true) {
+                val valueMappingList = remember {
+                    val breakPoints = listOf(
+                        0 to 1,
+                        20 to 5,
+                        50 to 10,
+                        100 to 50,
+                        500 to 100,
+                    )
+                    val array = IntArray(41)
+                    var currentStep = 0
+                    var outputValue = 0
+                    for (i in 0..40) {
+                        outputValue += currentStep
+                        array[i] = outputValue
+                        breakPoints.forEach { if (it.first == outputValue) currentStep = it.second }
+                    }
+                    array
+                }
+                val valueMapping: (Int) -> String = { x -> valueMappingList[x].toString() }
+                var value by remember { mutableStateOf(
+                    valueMappingList.indexOf(
+                        Global.settings.BackgroundImageBlurDp.toInt()
+                    ).let { if (it != -1) it else 0 }
+                ) }
+                SliderWithSuffix(
+                    value = value,
+                    onValueChanged = {
+                        value = it
+                        Global.settings.BackgroundImageBlurDp = valueMapping(value).toFloat()
+                    },
+                    range = 0..40,
+                    steps = 1,
+                    extraSuffix = "dp",
+                    valueMapping = valueMapping
+                )
+            }
         }
 
-        itemWithSwitch(
-            name = "Draw octave lines",
-            initial = Global.settings.DrawOctaveLines,
-            onToggled = { Global.settings.DrawOctaveLines = it }
-        )
+        fold("Octave lines") {
+            itemWithSwitch(
+                name = "Enable",
+                initial = Global.settings.DrawOctaveLines,
+                onToggled = { Global.settings.DrawOctaveLines = it }
+            )
 
-        itemWithSwitch(
-            name = "Draw section lines",
-            initial = Global.settings.DrawSectionLines,
-            onToggled = { Global.settings.DrawSectionLines = it }
-        )
+            item("Color") {
+                ColorSelector(
+                    initialColor = Global.settings.OctaveLineColor,
+                    onColorSelected = { Global.settings.OctaveLineColor = it }
+                )
+            }
+
+            item("Thickness", verticalLayout = true) {
+                var mappedValue by remember { mutableStateOf((Global.settings.OctaveLineThickness * 10).toInt()) }
+                SliderWithSuffix(
+                    value = mappedValue,
+                    onValueChanged = {
+                        Global.settings.OctaveLineThickness = mappedValue / 10f
+                        mappedValue = it
+                    },
+                    steps = 1,
+                    range = 1..40,
+                    valueMapping = { "${it/10f}" },
+                    extraSuffix = "dp",
+                )
+            }
+        }
+
+        fold("Section lines") {
+            itemWithSwitch(
+                name = "Enable",
+                initial = Global.settings.DrawSectionLines,
+                onToggled = { Global.settings.DrawSectionLines = it }
+            )
+
+            item("Color") {
+                ColorSelector(
+                    initialColor = Global.settings.SectionLineColor,
+                    onColorSelected = { Global.settings.SectionLineColor = it }
+                )
+            }
+
+            item("Thickness", verticalLayout = true) {
+                var mappedValue by remember { mutableStateOf((Global.settings.SectionLineThickness * 10).toInt()) }
+                SliderWithSuffix(
+                    value = mappedValue,
+                    onValueChanged = {
+                        Global.settings.SectionLineThickness = mappedValue / 10f
+                        mappedValue = it
+                    },
+                    steps = 1,
+                    range = 1..40,
+                    valueMapping = { "${it/10f}" },
+                    extraSuffix = "dp",
+                )
+            }
+        }
     }
 }

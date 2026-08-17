@@ -74,7 +74,6 @@ class SettingsCardScope(
         }
     }
 
-
     @Composable
     fun fold(
         title: String,
@@ -90,6 +89,21 @@ class SettingsCardScope(
             title = title,
             content = content
         )
+    }
+
+    @Composable
+    fun animatedFold(
+        visible: Boolean,
+        title: String,
+        content: @Composable SettingsCardScope.() -> Unit
+    ) {
+        AnimatedVisibility(
+            visible = visible,
+            enter = expandVertically() + fadeIn(),
+            exit = shrinkVertically() + fadeOut()
+        ) {
+            fold(title, content)
+        }
     }
 
 

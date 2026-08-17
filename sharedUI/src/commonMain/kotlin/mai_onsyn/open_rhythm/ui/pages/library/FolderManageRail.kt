@@ -17,6 +17,7 @@ import io.github.vinceglb.filekit.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.withContext
+import mai_onsyn.open_rhythm.bridge.Global
 import mai_onsyn.open_rhythm.ui.icons.*
 import mai_onsyn.open_rhythm.ui.modules.ContextDropDownMenuItem
 import mai_onsyn.open_rhythm.ui.modules.ContextDropdownMenu
@@ -79,14 +80,14 @@ fun FolderManageRail(
                             text = item.name,
                             style = MaterialTheme.typography.titleMedium,
                             maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
+                            overflow = TextOverflow.MiddleEllipsis
                         )
-                        Text(
+                        if (Global.settings.ShowFolderPathInLibrary) Text(
                             text = item.dir,
                             style = MaterialTheme.typography.labelMedium,
                             color = colorScheme.onSurfaceVariant,
                             maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
+                            overflow = TextOverflow.MiddleEllipsis
                         )
                     }
                     var fileCount by remember { mutableStateOf(0) }

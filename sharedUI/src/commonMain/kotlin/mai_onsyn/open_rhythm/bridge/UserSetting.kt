@@ -30,6 +30,9 @@ class UserSetting(
     var DoubleClickToPlayPause      by st.observable("DoubleClickToPlayPause",      false)
     var DoubleFingerTapToPlayPause  by st.observable("DoubleFingerTapToPlayPause",  true)
 
+    // =====General Security=====
+    var ShowFolderPathInLibrary     by st.observable("ShowFolderPathInLibrary",     true)
+
     // =====MIDI Input=====
     val enabledMidiInputDeviceList  by st.list("EnabledMidiInputDeviceList",    mutableListOf("Virtual Keyboard"), String.serializer())
     var EnableInputMidiNoteEvent    by st.observable("EnableInputMidiNoteEvent",    true)
@@ -61,7 +64,11 @@ class UserSetting(
     var BackgroundImageBlurDp           by st.observable("BackgroundImageBlurDp",           0f)
     var OriginalBackgroundImageSize     by st.observable("OriginalBackgroundImageSize",     false)
     var DrawOctaveLines                 by st.observable("DrawOctaveLines",                 true)
+    var OctaveLineColor                 by st.observable("OctaveLineColor",                 Color.LightGray)
+    var OctaveLineThickness             by st.observable("OctaveLineThickness",             0.7f)
     var DrawSectionLines                by st.observable("DrawSectionLines",                true)
+    var SectionLineColor                by st.observable("SectionLineColor",                Color.LightGray)
+    var SectionLineThickness            by st.observable("SectionLineThickness",            0.7f)
 
     // =====Note Appearance=====
     var NoteRoundConerPercent   by st.observable("NoteRoundConerPercent",   0.5f)

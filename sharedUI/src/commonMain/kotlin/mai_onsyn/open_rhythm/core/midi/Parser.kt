@@ -1,8 +1,10 @@
 package mai_onsyn.open_rhythm.core.midi
 
+import co.touchlab.kermit.Logger
 import dev.atsushieno.ktmidi.Midi1CompoundMessage
 import dev.atsushieno.ktmidi.Midi1Music
 import dev.atsushieno.ktmidi.read
+import mai_onsyn.open_rhythm.core.util.Time
 
 class CCTimeline(
     val eventList: MutableList<SimpleCCEvent> = mutableListOf()
@@ -129,9 +131,10 @@ private data class NoteGroup(
 )
 
 fun parseMidi(name: String, bytes: List<Byte>): Midi {
-
+//    val KTMIDI_PARSE_START = Time.nanos
     val midiFile = Midi1Music()
     midiFile.read(bytes)
+//    val KTMIDI_PARSE_END__BUILD_TIMELINE_START = Time.nanos
 
     val tempoEvents = mutableListOf<TempoEvent>()
     val timeSignatureEvents = mutableListOf<TimeSignatureEvent>()
@@ -198,6 +201,8 @@ fun parseMidi(name: String, bytes: List<Byte>): Midi {
     pbTimeline.forEach { it.eventList.sortBy { event -> event.tick } }
     pcTimeline.forEach { it.eventList.sortBy { event -> event.tick } }
 
+//    val BUILD_TIMELINE_END_PARSE_NOTE_START = Time.nanos
+
     // 被<原始轨道-轨道上的多通道>拆分出来的音符组表
     val validTrackGroups = mutableListOf<NoteGroup>()
     midiFile.tracks.forEach { track ->
@@ -228,10 +233,14 @@ fun parseMidi(name: String, bytes: List<Byte>): Midi {
         }
     }
 
+//    val PARSE_NOTE_END_SIMPLIFY_START = Time.nanos
+
     for (i in 0 until 16) {
         pcTimeline[i].simplify(0)
         pbTimeline[i].simplify(8192)
     }
+
+//    val SIMPLIFY_END_BUILD_RESULT_START = Time.nanos
 
     val resultTrackList = mutableListOf<MidiTrack>()
     var firstTick = Int.MAX_VALUE
@@ -245,10 +254,15 @@ fun parseMidi(name: String, bytes: List<Byte>): Midi {
         val cpcLine = pcTimeline[group.channel]
         val cpbLine = pbTimeline[group.channel]
         val cccLine = ccTimeline[group.channel]
-        group.noteEvents.sortWith(compareBy({ it.tick }, { it.on }))
+
+//        val SOTR_START = Time.nanos
+//        group.noteEvents.sortWith(compareBy({ it.tick }, { it.on }))
+//        val SOTR_END_MERGE_START = Time.nanos
         val notes = mergeToNoteList(group)
+//        logDurations("build", listOf("sort", "merge"), SOTR_START, SOTR_END_MERGE_START, Time.nanos)
 
         fun detectInstTrack(inst: Int, range: IntRange) {
+//            val DETECT_INST_TRACK_START = Time.nanos
             val ccEvents = cccLine.getInterval(range)
             val pbEvents = cpbLine.getInterval(range)
 
@@ -270,6 +284,7 @@ fun parseMidi(name: String, bytes: List<Byte>): Midi {
                     visible = group.channel != 9
                 )
             )
+//            Logger.d { "Detect Inst Track cost ${(Time.nanos - DETECT_INST_TRACK_START) / 1000000f}ms" }
         }
         if (firstTick == Int.MAX_VALUE) firstTick = 0
 
@@ -290,6 +305,13 @@ fun parseMidi(name: String, bytes: List<Byte>): Midi {
         }
     }
 
+//    val BUILD_RESULT_END = Time.nanos
+//    logDurations(
+//        name,
+//        listOf("ktmidi parse", "build timeline", "parse note", "simplify", "build result"),
+//        KTMIDI_PARSE_START, KTMIDI_PARSE_END__BUILD_TIMELINE_START, BUILD_TIMELINE_END_PARSE_NOTE_START, PARSE_NOTE_END_SIMPLIFY_START, SIMPLIFY_END_BUILD_RESULT_START, BUILD_RESULT_END
+//        )
+
     return Midi(
         name = name,
         ppq = midiFile.deltaTimeSpec,
@@ -305,6 +327,17 @@ fun parseMidi(name: String, bytes: List<Byte>): Midi {
     ).apply {
         this.hasNoteTracks = this.tracks.size
     }
+}
+
+fun logDurations(title: String, labels: List<String>, vararg timestamps: Long) {
+    val sb = StringBuilder("$title: ")
+    for ((idx, label) in labels.withIndex()) {
+        sb.append("$label: ${(timestamps[idx + 1] - timestamps[idx]) / 1000000f}ms")
+        if (idx != labels.size - 1) {
+            sb.append(", ")
+        }
+    }
+    Logger.d { sb.toString() }
 }
 
 private fun mergeToNoteList(group: NoteGroup): MutableList<Note> {
@@ -385,17 +418,68 @@ fun <A, B, C, K : Comparable<K>> Iterable<A>.mergeWith(
     while (b != null) { yield(transformB(b)); b = itB.nextOrNull() }
 }.toMutableList()
 
+//fun MutableList<Note>.takeRange(range: IntRange): MutableList<Note> {
+//    if (this.isEmpty()) return this
+//    if (this.first().tick in range && this.last().tick in range) {
+//        return this
+//    }
+//
+//    val result = mutableListOf<Note>()
+//    for (i in this) {
+//        if (i.tick > range.last) break  // 提前退出
+//        if (i.tick < range.first) continue
+//        result.add(i)
+//    }
+//    return result
+//}
+
 fun MutableList<Note>.takeRange(range: IntRange): MutableList<Note> {
     if (this.isEmpty()) return this
-    if (this.first().tick in range && this.last().tick in range) {
+    if (this.first().tick >= range.first && this.last().tick <= range.last) {
         return this
     }
 
-    val result = mutableListOf<Note>()
-    for (i in this) {
-        if (i.tick > range.last) break  // 提前退出
-        if (i.tick < range.first) continue
-        result.add(i)
+    // 二分查找第一个 >= range.first 的索引
+    val start = binarySearchLower(range.first)
+    if (start >= size || this[start].tick > range.last) return mutableListOf()
+
+    // 二分查找最后一个 <= range.last 的索引
+    val end = binarySearchUpper(range.last)
+
+    if (start > end) return mutableListOf()
+
+    // 直接截取子列表，避免逐个遍历 compare
+    return this.subList(start, end + 1).toMutableList()
+}
+
+private fun List<Note>.binarySearchLower(targetTick: Int): Int {
+    var low = 0
+    var high = size - 1
+    var result = size
+    while (low <= high) {
+        val mid = (low + high) ushr 1
+        if (this[mid].tick >= targetTick) {
+            result = mid
+            high = mid - 1
+        } else {
+            low = mid + 1
+        }
+    }
+    return result
+}
+
+private fun List<Note>.binarySearchUpper(targetTick: Int): Int {
+    var low = 0
+    var high = size - 1
+    var result = -1
+    while (low <= high) {
+        val mid = (low + high) ushr 1
+        if (this[mid].tick <= targetTick) {
+            result = mid
+            low = mid + 1
+        } else {
+            high = mid - 1
+        }
     }
     return result
 }

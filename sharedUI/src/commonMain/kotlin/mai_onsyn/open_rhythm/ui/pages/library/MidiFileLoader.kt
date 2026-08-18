@@ -6,6 +6,7 @@ import mai_onsyn.open_rhythm.bridge.Global
 import mai_onsyn.open_rhythm.core.midi.Midi
 import mai_onsyn.open_rhythm.core.midi.msAtTick
 import mai_onsyn.open_rhythm.core.midi.parseMidi
+import mai_onsyn.open_rhythm.core.util.Time
 
 data class UIMidiData(
     val fileName: String,
@@ -70,12 +71,18 @@ suspend fun loadMidiFile(path: String): Midi? {
 }
 
 suspend fun loadMidiFile(file: PlatformFile): Midi {
-    if (cachedMidiFiles.containsKey(file.path)) {
-        return cachedMidiFiles[file.path]!!
-    }
-//    val midi = Midi.fromFile(file.nameWithoutExtension, file.readBytes().toList())
-    val midi = if (Global.settings.UseParserV1) Midi.fromFile(file.nameWithoutExtension, file.readBytes().toList())
-        else parseMidi(file.nameWithoutExtension, file.readBytes().toList())
+//    if (cachedMidiFiles.containsKey(file.path)) {
+//        return cachedMidiFiles[file.path]!!
+//    }
+//    val readStart = Time.nanos
+    val bytesArray = file.readBytes()
+//    val toListStartReadEnd = Time.nanos
+    val bytes = bytesArray.toList()
+//    val toListEntParseStart = Time.nanos
+    val midi = if (Global.settings.UseParserV1) Midi.fromFile(file.nameWithoutExtension, bytes)
+        else parseMidi(file.nameWithoutExtension, bytes)
+//    val parseEnd = Time.nanos
+//    Logger.d { "Parse ${file.name}, read: ${(toListStartReadEnd - readStart) / 1000000f}ms; toList: ${(toListEntParseStart - toListStartReadEnd) / 1000000f}ms; parse: ${(parseEnd - toListEntParseStart) / 1000000f}ms" }
 
     var noteCount = 0
     for (track in midi.tracks) {

@@ -13,6 +13,9 @@ import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.IO
+import kotlinx.coroutines.withContext
 import mai_onsyn.open_rhythm.bridge.Global
 import mai_onsyn.open_rhythm.core.util.Time
 import mai_onsyn.open_rhythm.ui.icons.ic_music_note
@@ -34,8 +37,11 @@ fun FileManageRail(
         initialValue = UiState.Loading,
         key1 = path
     ) {
+        value = UiState.Loading
         value = try {
-            val result = getFileInfosInFolder(path)
+            val result = withContext(Dispatchers.IO) {
+                getFileInfosInFolder(path)
+            }
             onFileCountAvailable(result.size)
             UiState.Success(result)
         } catch (e: Exception) {

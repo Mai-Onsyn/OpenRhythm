@@ -12,6 +12,7 @@ import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.text.toLowerCase
 import androidx.compose.ui.unit.dp
 import io.github.vinceglb.filekit.*
 import kotlinx.coroutines.Dispatchers
@@ -104,12 +105,11 @@ fun FolderManageRail(
                             return@withContext null
                         }
                         val midiFiles = folder.list()
-                        fileCount = midiFiles.count { it.isRegularFile() && it.extension == "mid" }
+                        fileCount = midiFiles.count { it.extension.lowercase() == "mid" }
                     }
                     LaunchedEffect(Unit) {
                         loadFileCount()
                     }
-
 
                     var showRenameDialog by remember { mutableStateOf(false) }
                     var showPathInfoDialog by remember { mutableStateOf(false) }

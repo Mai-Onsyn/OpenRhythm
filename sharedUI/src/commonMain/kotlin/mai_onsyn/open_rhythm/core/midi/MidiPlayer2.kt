@@ -191,12 +191,15 @@ class MidiPlayer2(
                     onCompletion?.invoke()
                     break
                 }
-
                 val event = eventList[playingIndex++]
+                val sameTickEvents: MutableList<MidiEvent>? = if (eventList[playingIndex].tick == event.tick) mutableListOf() else null
+                while (eventList[playingIndex].tick == event.tick) {
+                    sameTickEvents!!.add(eventList[playingIndex++])
+                }
+
                 val targetMidiDelta = midi.nanoAtTick(event.tick) - startMidiNanos
                 val targetRealDelta = (targetMidiDelta / speed).toLong()
 
-                // 2. 算【绝对剩余等待纳秒】（自动吸收协程唤醒和调度误差）
                 val remainingNanos = targetRealDelta - (Time.nanos - startNanos)
 
                 if (remainingNanos > 0 && !wait(remainingNanos)) {
@@ -204,6 +207,9 @@ class MidiPlayer2(
                 }
 
                 eventChannel.send(event.event)
+                sameTickEvents?.forEach {
+                    eventChannel.send(it.event)
+                }
                 offsetTick = event.tick
                 offsetNanos = Time.nanos
             }

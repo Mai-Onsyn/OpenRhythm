@@ -93,6 +93,7 @@ fun FileManageRail(
                 if (isPlaying) {
                     loadMidiFile(midiFiles[playingIdx].path)?.let {
                         Global.player.stop()
+                        Global.player.seek(it.startTick.toLong())
                         Global.player.setMidi(it)
                         Global.player.play()
                         Global.player.onCompletion = { isPlaying = false }
@@ -122,7 +123,7 @@ fun FileManageRail(
                             } else {
                                 isPlaying = false
                             }
-                            println(it.toString())
+//                            println(it.toString())
                         },
                         onConfirm = onConfirm
                     )

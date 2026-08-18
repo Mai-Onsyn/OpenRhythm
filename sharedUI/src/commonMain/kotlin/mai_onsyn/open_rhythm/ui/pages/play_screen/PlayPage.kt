@@ -54,6 +54,7 @@ fun PlayPage(
     midi: Midi?,
     onBack: () -> Unit,
     drawStatusBar: Boolean = true,
+    stack: Boolean = false,
 ) {
     if (drawStatusBar) BackHandler { onBack() }
     val trackColors = remember { _testOnly_GenerateTrackColors() }

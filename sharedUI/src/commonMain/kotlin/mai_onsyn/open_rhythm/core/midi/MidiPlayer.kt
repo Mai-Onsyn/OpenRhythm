@@ -6,6 +6,8 @@ import dev.atsushieno.ktmidi.MidiOutput
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
 import mai_onsyn.open_rhythm.core.util.Time
+import mai_onsyn.open_rhythm.core.util.nanoAtTick
+import mai_onsyn.open_rhythm.core.util.tickAtNanoOffset
 
 class MidiPlayer(var deviceOutput: MidiOutput?) {
     enum class State { PLAYING, STOPPED, PAUSED }

@@ -13,7 +13,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Button
+import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
@@ -41,7 +41,7 @@ import co.touchlab.kermit.Logger
 import kotlinx.coroutines.delay
 import mai_onsyn.open_rhythm.bridge.Global
 import mai_onsyn.open_rhythm.core.midi.Midi
-import mai_onsyn.open_rhythm.core.midi.bpmAtTick
+import mai_onsyn.open_rhythm.core.util.bpmAtTick
 import mai_onsyn.open_rhythm.ui.icons.ic_arrow_warm_up
 import mai_onsyn.open_rhythm.ui.modules.midi_flow.MidiDownRegion
 import kotlin.math.roundToInt
@@ -53,8 +53,7 @@ import kotlin.time.Duration.Companion.seconds
 fun PlayPage(
     midi: Midi?,
     onBack: () -> Unit,
-    drawStatusBar: Boolean = true,
-    stack: Boolean = false,
+    drawStatusBar: Boolean = true
 ) {
     if (drawStatusBar) BackHandler { onBack() }
     val trackColors = remember { _testOnly_GenerateTrackColors() }
@@ -64,6 +63,12 @@ fun PlayPage(
 
     var playProgress by remember { mutableStateOf(0.0f) }
     val focusRequester = remember { FocusRequester() }
+
+    DisposableEffect(Unit) {
+        onDispose {
+            Global.player.practiceMode = false
+        }
+    }
 
     var statusBarVisible by remember { mutableStateOf(true) }
     var dropdownButtonVisible by remember { mutableStateOf(false) }
@@ -101,6 +106,7 @@ fun PlayPage(
                 visible = dropdownButtonVisible,
                 modifier = Modifier
                     .align(Alignment.TopEnd)
+                    .safeDrawingPadding()
                     .padding(top = 16.dp, end = 16.dp),
                 enter = slideInVertically() + fadeIn(),
                 exit = slideOutVertically() + fadeOut()
@@ -169,7 +175,7 @@ fun PlayPage(
                     playSpeed = it
                     Global.player.setSpeed(it / 100f)
                 },
-                bpm = ((midi?.tempoEvents?.bpmAtTick(Global.player.preciseTick) ?: 120.0) * Global.player.getSpeed()).roundToInt(),
+                bpm = ((midi?.tempoEvents?.bpmAtTick(Global.player.preciseTick.toLong()) ?: 120.0) * Global.player.getSpeed()).roundToInt(),
                 focusRequester = focusRequester
             )
         }

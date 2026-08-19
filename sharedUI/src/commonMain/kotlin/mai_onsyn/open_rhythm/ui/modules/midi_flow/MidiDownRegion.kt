@@ -86,7 +86,7 @@ fun MidiDownRegion(
                 false
             }
     ) {
-        var currentTick by remember { mutableStateOf(0L) }
+        var currentTick by remember { mutableStateOf(0.0) }
 
         val hpb by remember(Global.settings.QuarterNoteDpHeight) { mutableStateOf(Global.settings.QuarterNoteDpHeight.dp) }
         var deltaYpx by remember { mutableStateOf(0f) }
@@ -182,12 +182,12 @@ fun MidiDownRegion(
             while (true) {
                 withFrameMillis {
                     if (deltaYpx != 0f && !isPlaying) {
-                        val deltaTick = (deltaYpx * midi.ppq / with(density) { hpb.toPx() }).toLong()
+                        val deltaTick = deltaYpx * midi.ppq / with(density) { hpb.toPx() }
                         currentTick = Global.player.preciseTick + deltaTick
-                        Global.player.seek(currentTick)
+                        Global.player.seek(currentTick, false)
                     }
                     else currentTick = Global.player.preciseTick
-                    onProgressChange(currentTick / midi.totalTicks.toFloat())
+                    onProgressChange((currentTick / midi.totalTicks).toFloat())
                     deltaYpx = 0f
 //                    if (Singleton.settings.AlwaysFocusMidiRegion) focusRequester.requestFocus()
                 }
@@ -227,10 +227,16 @@ fun MidiDownRegion(
             onPress = { key, velocity ->
                 userActiveKeys[key] = Global.settings.KeyboardInteractionColor
                 Global.player.noteOn(key, velocity)
+                if (Global.player.practiceMode) {
+                    Global.player.blocker.press(key)
+                }
             },
             onRelease = { key ->
                 userActiveKeys.remove(key)
                 Global.player.noteOff(key)
+                if (Global.player.practiceMode) {
+                    Global.player.blocker.release(key)
+                }
             },
             onVerticalDragged = {
                 keyboardHeight = max(64.dp, with(density) { keyboardHeight - it.toDp() })

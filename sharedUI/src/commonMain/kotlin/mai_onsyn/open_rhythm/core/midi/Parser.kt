@@ -324,9 +324,7 @@ fun parseMidi(name: String, bytes: List<Byte>): Midi {
         ccChangeTimeline = ccTimeline,
         pcChangeTimeline = pcTimeline,
         pbChangeTimeline = pbTimeline
-    ).apply {
-        this.hasNoteTracks = this.tracks.size
-    }
+    )
 }
 
 fun logDurations(title: String, labels: List<String>, vararg timestamps: Long) {

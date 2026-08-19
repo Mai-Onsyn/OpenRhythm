@@ -17,7 +17,7 @@ class Midi(
     val pcChangeTimeline: Array<SingleChangeTimeline> = Array(16) { SingleChangeTimeline() },
     val pbChangeTimeline: Array<SingleChangeTimeline> = Array(16) { SingleChangeTimeline() }
 ) {
-    var hasNoteTracks: Int = 0
+    val tempoMap = TempoMap(ppq, tempoEvents)
 
     companion object {
         private const val META_TRACK_NAME = 0x03
@@ -144,28 +144,21 @@ class Midi(
                 name, ppq,
                 midiFile.getTotalTicks(),
                 tracks, tempoEvents, timeSignatureEvents
-            ).apply {
-                this.hasNoteTracks = tracks.size
-//                var idx = 0
-//                while (idx < this.tracks.size) {
-//                    val splitTracks = this.tracks[idx].splitTrackByPC()
-//                    if (splitTracks.isEmpty()) {
-//                        this.tracks.removeAt(idx)
-//                        continue
-//                    }
-//                    this.tracks[idx] = splitTracks[0]
-//                    for (j in 1 until splitTracks.size) {
-//                        this.tracks.add(splitTracks[j])
-//                        Logger.d { "Added track ${this.tracks.size - 1} from track ${splitTracks[j].name}" }
-//                    }
-//                    idx++
-//                }
-//
-//                val (nonEmpty, empty) = this.tracks.partition { it.notes.isNotEmpty() }
-//                this.tracks.clear()
-//                this.tracks.addAll(nonEmpty + empty)
-//                this.hasNoteTracks = nonEmpty.size
-            }
+            )
         }
     }
+}
+
+fun Midi.take(trackNumber: Int): Midi {
+    return if (trackNumber !in this.tracks.indices) Midi(
+        name, ppq, 4 * ppq, mutableListOf(), tempoEvents, timeSignatureEvents,
+        ccChangeTimeline = ccChangeTimeline,
+        pcChangeTimeline = pcChangeTimeline,
+        pbChangeTimeline = pbChangeTimeline
+    ) else Midi(
+        name, ppq, totalTicks, mutableListOf(tracks[trackNumber]), tempoEvents, timeSignatureEvents,
+        ccChangeTimeline = ccChangeTimeline,
+        pcChangeTimeline = pcChangeTimeline,
+        pbChangeTimeline = pbChangeTimeline
+    )
 }

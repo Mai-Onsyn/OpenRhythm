@@ -24,6 +24,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import co.touchlab.kermit.Logger
 import com.materialkolor.ktx.darken
 import kotlinx.coroutines.delay
 import mai_onsyn.open_rhythm.bridge.Global
@@ -34,12 +35,13 @@ import mai_onsyn.open_rhythm.core.util.Time
 import mai_onsyn.open_rhythm.ui.modules.getContrastTextColor
 import mai_onsyn.open_rhythm.ui.utility.*
 import kotlin.math.roundToInt
+import kotlin.math.roundToLong
 import kotlin.time.Duration.Companion.seconds
 
 @Composable
 fun MidiWaterFall(
     modifier: Modifier = Modifier,
-    currTick: Long = 0,
+    currTick: Double = 0.0,
     midi: Midi,
     minPitch: Int = 21,     // A0 default
     maxPitch: Int = 108,    // C8 default
@@ -133,13 +135,13 @@ fun MidiWaterFall(
             if (drawSectionLine) drawSectionLines(midi, currTick, currTick + visibleTickCount, pxPerTick)
 
             val toDrawNotes = mutableListOf<DrawableNote>()
-            for (i in 0 until midi.hasNoteTracks) {
-                if (!midi.tracks[i].visible || !midi.tracks[i].enable) continue
+            for ((i, track) in midi.tracks.withIndex()) {
+                if (!track.visible || !track.enable) continue
                 findVisibleNotes(
-                    currTick,
-                    currTick + visibleTickCount,
+                    currTick.toLong(),
+                    (currTick + visibleTickCount).toLong(),
                     maxNoteDurationList[i],
-                    midi.tracks[i].notes
+                    track.notes
                 ).forEach {
                     toDrawNotes.add(DrawableNote(it, trackColors[i % trackColors.size], i))
                 }
@@ -152,7 +154,7 @@ fun MidiWaterFall(
                 val (x, w) = gridPos[pack.note.pitch] ?: return
                 val pixelPos = (pack.note.tick - currTick) * pxPerTick
                 val durationPx = pack.note.duration * pxPerTick
-                val noteRect = Rect(Offset(x, (height - pixelPos - durationPx)), Size(w, durationPx))
+                val noteRect = Rect(Offset(x, ((height - pixelPos - durationPx).toFloat())), Size(w, durationPx))
                 drawNoteGraphics(
                     if (blackKey) pack.color.darken(1.5f) else pack.color,
                     noteRect,
@@ -206,7 +208,7 @@ fun MidiWaterFall(
                     )
                 }
                 if (Global.settings.ShowCurrentTick)
-                    ShowText("Tick=${currTick}")
+                    ShowText("Tick=${currTick.roundToLong()}")
                 if (Global.settings.ShowFps)
                     ShowText("FPS=${fps}")
                 if (Global.settings.ShowFrameTime)
@@ -285,81 +287,5 @@ private fun binarySearchFirstGt(notes: List<Note>, target: Long): Int {
             low = mid + 1
         }
     }
-    return result
-}
-
-fun findBarLines(
-    events: List<TimeSignatureEvent>,
-    startTick: Long,
-    endTick: Long,
-    ppq: Int
-): List<Long> {
-    if (startTick > endTick) return emptyList()
-
-    // ---------- 1. 预分配容量（消除扩容 GC） ----------
-    // 最小 barTicks = 1 * ppq * 4 / 256 = ppq / 64
-    val minBarTicks = (ppq / 64L).coerceAtLeast(1)
-    val estimatedSize = ((endTick - startTick) / minBarTicks + 1).toInt()
-    // 防止极端异常值撑爆内存，加个合理上限（比如 200 万）
-    val capacity = estimatedSize.coerceAtMost(2_000_000)
-    val result = ArrayList<Long>(capacity)
-
-    // ---------- 2. 找到 startTick 时刻的有效拍号 ----------
-    // 二分查找最后一个 tick <= startTick 的事件
-    var searchIdx = events.binarySearchBy(startTick) { it.tick }
-    val activeIdx = if (searchIdx >= 0) searchIdx else -searchIdx - 2
-
-    var num: Int
-    var den: Int
-    var anchor: Long
-
-    if (activeIdx < 0) {
-        // 默认 4/4，起始锚点在第 0 tick
-        num = 4
-        den = 4
-        anchor = 0L
-    } else {
-        val ev = events[activeIdx]
-        num = ev.numerator
-        den = ev.denominator
-        anchor = ev.tick
-    }
-
-    // ---------- 3. 分段处理 [anchor, nextEventTick) ----------
-    var eventPtr = activeIdx + 1
-    // 当前片段的结束边界（不包含），若没有下一个事件则设为 Long.MAX_VALUE
-    var limit = if (eventPtr < events.size) events[eventPtr].tick else Long.MAX_VALUE
-
-    while (true) {
-        val barTicks = num * ppq * 4L / den
-
-        // 计算本片段内第一个 >= startTick 的小节线
-        val segmentStart = if (anchor > startTick) anchor else startTick
-        val diff = segmentStart - anchor
-        // 整数除法向下取整，定位到锚点之后的第几个小节
-        var bar = anchor + (diff / barTicks) * barTicks
-        if (bar < segmentStart) bar += barTicks
-
-        // 循环添加小节线（直到达到片段边界或 endTick）
-        while (bar < limit && bar <= endTick) {
-            result.add(bar)
-            bar += barTicks
-        }
-
-        // 如果已经超出 endTick 或没有更多事件，结束
-        if (bar > endTick || eventPtr >= events.size) break
-
-        // ---------- 切换下一个拍号 ----------
-        val nextEv = events[eventPtr]
-        num = nextEv.numerator
-        den = nextEv.denominator
-        anchor = nextEv.tick          // 事件 tick 即新锚点
-        eventPtr++
-        limit = if (eventPtr < events.size) events[eventPtr].tick else Long.MAX_VALUE
-
-        // 如果锚点已经超出 endTick，后续不可能有结果，提前退出
-        if (anchor > endTick) break
-    }
-
     return result
 }

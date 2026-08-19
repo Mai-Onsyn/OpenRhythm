@@ -24,11 +24,14 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
+import mai_onsyn.open_rhythm.bridge.Global
 import mai_onsyn.open_rhythm.core.midi.Midi
+import mai_onsyn.open_rhythm.core.midi.take
 import mai_onsyn.open_rhythm.ui.pages.free_play_screen.FreePlayPage
 import mai_onsyn.open_rhythm.ui.pages.home.HomePage
 import mai_onsyn.open_rhythm.ui.pages.library.LibraryPage
 import mai_onsyn.open_rhythm.ui.pages.library.MidiPlayMethod
+import mai_onsyn.open_rhythm.ui.pages.library.MidiPlayMethod.PlayMode.*
 import mai_onsyn.open_rhythm.ui.pages.library.loadMidiFile
 import mai_onsyn.open_rhythm.ui.pages.play_screen.PlayPage
 import mai_onsyn.open_rhythm.ui.pages.setting.SettingsPage
@@ -97,7 +100,7 @@ fun AppNavigation(
         NavHost(
             modifier = Modifier.fillMaxSize(),
             navController = navController,
-            startDestination = Setting
+            startDestination = Home
         ) {
             composable<Home>(
                 enterTransition = enterTransition,
@@ -130,10 +133,18 @@ fun AppNavigation(
                     {
                         scope.launch(Dispatchers.IO) {
                             currentPlayScreenMidi = loadMidiFile(it.data.path)
+                            when (it.playMode) {
+                                AUTO -> {}
+                                PRACTICE -> {
+                                    Global.player.practiceMode = true
+                                }
+                                PRACTICE_SINGLE -> {
+                                    Global.player.practiceMode = true
+                                    currentPlayScreenMidi = currentPlayScreenMidi!!.take(it.trackNum)
+                                }
+                            }
                         }
-                        if (it.playMode == MidiPlayMethod.PlayMode.AUTO) {
-                            navController.navigate(PlayScreen)
-                        }
+                        navController.navigate(PlayScreen)
                         Logger.i { "Enter Play Screen $it" }
                     }
                 )

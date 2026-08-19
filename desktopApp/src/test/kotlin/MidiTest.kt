@@ -1,20 +1,13 @@
 import co.touchlab.kermit.Logger
 import dev.atsushieno.ktmidi.JvmMidiAccess
 import dev.atsushieno.ktmidi.MidiChannelStatus
-import dev.atsushieno.ktmidi.MidiOutput
 import dev.zwander.kotlin.file.FileUtils
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.io.readByteArray
 import mai_onsyn.open_rhythm.core.midi.Midi
 import mai_onsyn.open_rhythm.core.midi.Note
-import mai_onsyn.open_rhythm.core.midi.bpmAtTick
-import mai_onsyn.open_rhythm.core.midi.msAtTick
+import mai_onsyn.open_rhythm.core.util.msAtTick
 import mai_onsyn.open_rhythm.core.midi.parseMidi
-import java.util.Arrays
-import java.util.concurrent.CountDownLatch
 import kotlin.test.Test
 
 class MidiTest {

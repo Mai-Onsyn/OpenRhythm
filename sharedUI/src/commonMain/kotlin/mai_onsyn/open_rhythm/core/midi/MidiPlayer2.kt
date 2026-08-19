@@ -4,12 +4,15 @@ import co.touchlab.kermit.Logger
 import dev.atsushieno.ktmidi.MidiOutput
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
+import mai_onsyn.open_rhythm.core.util.NoteBlocker
 import mai_onsyn.open_rhythm.core.util.Time
+import mai_onsyn.open_rhythm.core.util.nanoAtTick
+import mai_onsyn.open_rhythm.core.util.tickAtNanoOffset
 
 class MidiPlayer2(
     var midiOutput: MidiOutput? = null
 ) {
-    enum class State { PLAYING, STOPPED, PAUSED }
+    enum class State { PLAYING, STOPPED, PAUSED, WAITING }
 
     private val scope = CoroutineScope(Dispatchers.IO)
     private var senderThread: Job? = null
@@ -20,9 +23,13 @@ class MidiPlayer2(
     private var state: State = State.STOPPED
     private val eventList = mutableListOf<MidiEvent>()
     private var playingIndex = 0
-    private var offsetTick = 0L
+    private var offsetTick = 0.0
     private var offsetNanos = 0L
     private var speed = 1.0f
+
+    var practiceMode = false
+    var blocker = NoteBlocker()
+        private set
 
     var onCompletion: (() -> Unit)? = null
 
@@ -41,10 +48,10 @@ class MidiPlayer2(
         buildEventSequence(midi)
     }
 
-    val preciseTick: Long
+    val preciseTick: Double
         get() = when (state) {
             State.PLAYING -> lerpTick()
-            State.STOPPED, State.PAUSED -> offsetTick
+            State.STOPPED, State.PAUSED, State.WAITING -> offsetTick
         }
 
     fun play() {
@@ -71,9 +78,21 @@ class MidiPlayer2(
         Logger.i { "Player Stopped" }
     }
 
-    fun seek(percent: Double) {
-        val totalTicks = midi?.totalTicks ?: return
-        seek((totalTicks * percent.coerceIn(0.0, 1.0)).toLong())
+    fun seek(value: Double, percentage: Boolean = true) {
+        if (percentage) {
+            val totalTicks = midi?.totalTicks ?: return
+            seek((totalTicks * value.coerceIn(0.0, 1.0)).toLong())
+        } else {
+            if (midi == null) return
+
+            var shouldReplay = false
+            if (state == State.PLAYING) {
+                shouldReplay = true
+                pause()
+            }
+            this.offsetTick = value
+            if (shouldReplay) play()
+        }
     }
 
     fun seek(tick: Long) {
@@ -84,7 +103,7 @@ class MidiPlayer2(
             shouldReplay = true
             pause()
         }
-        this.offsetTick = tick
+        this.offsetTick = tick.toDouble()
         if (shouldReplay) play()
     }
 
@@ -121,15 +140,15 @@ class MidiPlayer2(
         eventChannel.trySend(bytes)
     }
 
-    private fun lerpTick(): Long {
-        if (midi == null) return 0L
+    private fun lerpTick(): Double {
+        if (midi == null) return 0.0
 
         // 在offsetTick时 从tick0开始已经过的播放器内纳秒为
         val baseNano = midi!!.nanoAtTick(offsetTick)
         // 从记录时刻到当前时刻 现实时间差为
         val realDelta = Time.nanos - offsetNanos
         // speed为时间倍率 意味着播放器内时间流逝速度是现实的speed倍 因此这段时间内播放器内增加的纳秒为
-        val gameDelta = (speed * realDelta).toLong()
+        val gameDelta = (speed * realDelta).toDouble()
         // 当前时刻 从tick0起总共经过的播放器内纳秒为
         val totalNano = baseNano + gameDelta
         // 用nanoAtTick的反函数tickAtNanoOffset即可得到当前tick
@@ -178,12 +197,13 @@ class MidiPlayer2(
             if (doClearTask) sendPreplayStatus(midi, offsetTick)
             state = State.PLAYING
 
-            val startNanos = Time.nanos
-            val startMidiNanos = midi.nanoAtTick(offsetTick)
+            var startNanos = Time.nanos
+            var startMidiNanos = midi.nanoAtTick(offsetTick)
 
             offsetNanos = startNanos
             playingIndex = eventList.indexOfFirst { it.tick >= offsetTick }.coerceAtLeast(0)
 
+            val currTickEvents = mutableListOf<MidiEvent>()
             while (isActive && state == State.PLAYING) {
                 ensureActive()
                 if (playingIndex >= eventList.size) {
@@ -191,13 +211,14 @@ class MidiPlayer2(
                     onCompletion?.invoke()
                     break
                 }
-                val event = eventList[playingIndex++]
-                val sameTickEvents: MutableList<MidiEvent>? = if (eventList[playingIndex].tick == event.tick) mutableListOf() else null
-                while (eventList[playingIndex].tick == event.tick) {
-                    sameTickEvents!!.add(eventList[playingIndex++])
+                currTickEvents.clear()
+                currTickEvents.add(eventList[playingIndex])
+                val eventTick = currTickEvents.first().tick
+                while (++playingIndex < eventList.size && eventList[playingIndex].tick == eventTick) {
+                    currTickEvents.add(eventList[playingIndex])
                 }
 
-                val targetMidiDelta = midi.nanoAtTick(event.tick) - startMidiNanos
+                val targetMidiDelta = midi.nanoAtTick(eventTick) - startMidiNanos
                 val targetRealDelta = (targetMidiDelta / speed).toLong()
 
                 val remainingNanos = targetRealDelta - (Time.nanos - startNanos)
@@ -206,18 +227,26 @@ class MidiPlayer2(
                     break
                 }
 
-                eventChannel.send(event.event)
-                sameTickEvents?.forEach {
+                offsetTick = eventTick.toDouble()
+                offsetNanos = Time.nanos
+                if (practiceMode) {
+                    val notes = currTickEvents.filter { it is NoteEvent && it.on }
+                    if (notes.isNotEmpty()) {
+                        offsetTick++
+                        state = State.WAITING
+                        blocker.await(notes.mapTo(mutableSetOf()) { (it as NoteEvent).pitch })
+
+                        startNanos = Time.nanos
+                        startMidiNanos = midi.nanoAtTick(offsetTick)
+                        offsetNanos = Time.nanos
+                        state = State.PLAYING
+                        blocker.clear()
+                    }
+                } else currTickEvents.forEach {
                     eventChannel.send(it.event)
                 }
-                offsetTick = event.tick
-                offsetNanos = Time.nanos
             }
         }
-    }
-
-    private fun getDurationNanos(midi: Midi, current: Long, target: Long): Long {
-        return midi.nanoAtTick(target) - midi.nanoAtTick(current)
     }
 
     private suspend fun wait(nanos: Long): Boolean {
@@ -260,7 +289,7 @@ class MidiPlayer2(
         }
     }
 
-    private fun sendPreplayStatus(midi: Midi, tick: Long) {
+    private fun sendPreplayStatus(midi: Midi, tick: Double) {
         val range = tick.toInt()..tick.toInt()
         reset()
         for (i in 0..15) {

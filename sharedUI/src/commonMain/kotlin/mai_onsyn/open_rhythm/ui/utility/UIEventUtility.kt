@@ -32,6 +32,7 @@ fun BindInputDeviceEvents(
 
     suspend fun CoroutineScope.threadBody(device: MidiInputDevice) {
         aliveDevices.add(device)
+        Global.player.blocker.clear()
         while (true) {
             ensureActive()
             try {
@@ -41,9 +42,15 @@ fun BindInputDeviceEvents(
                             if (Global.settings.EnableInputMidiNoteEvent) {
                                 if (it.on) {
                                     userActiveKeys[it.pitch] = Global.settings.KeyboardInteractionColor
+                                    if (Global.player.practiceMode) {
+                                        Global.player.blocker.press(it.pitch)
+                                    }
                                     noteOn(it.pitch, it.velocity)
                                 } else {
                                     userActiveKeys.remove(it.pitch)
+                                    if (Global.player.practiceMode) {
+                                        Global.player.blocker.release(it.pitch)
+                                    }
                                     noteOff(it.pitch)
                                 }
                                 Global.player.sendShortEvent(it.event)
@@ -76,10 +83,14 @@ fun BindInputDeviceEvents(
         aliveDevices.remove(device)
     }
     LaunchedEffect(Unit) {
-        Global.midiInputDevices.values.forEach { it.clearEvents() }
+        Global.midiInputDevices.values.forEach { device ->
+            device.clearEvents()
+            scope.launch { threadBody(device) }
+        }
 
         while (true) {
             ensureActive()
+            delay(1.seconds)
             Global.midiInputDevices.values.forEach { device ->
                 if (!aliveDevices.contains(device)) {
                     scope.launch {
@@ -87,13 +98,6 @@ fun BindInputDeviceEvents(
                     }
                 }
             }
-            delay(1.seconds)
-        }
-    }
-
-    for (device in Global.midiInputDevices.values) {
-        LaunchedEffect(Unit) {
-            threadBody(device)
         }
     }
 }

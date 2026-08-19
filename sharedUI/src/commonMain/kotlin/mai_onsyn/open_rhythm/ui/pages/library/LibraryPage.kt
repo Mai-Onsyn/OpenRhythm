@@ -47,7 +47,7 @@ fun LibraryPage(
                 modifier = Modifier
                     .padding(start = 16.dp)
             ) {
-                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Column {
                     Text(
                         text = "MIDI Library",
                         style = MaterialTheme.typography.headlineMedium
@@ -105,7 +105,7 @@ fun LibraryPage(
                     }
                 )
             }
-            HorizontalDivider(Modifier.padding(vertical = 24.dp))
+            HorizontalDivider(Modifier.padding(vertical = 16.dp))
 
             if (useWideLayout) {
                 WideLayout(onEnterPlayMidiScreen, selectedFolderIndex) { selectedFolderIndex = it }

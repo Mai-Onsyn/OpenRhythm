@@ -4,7 +4,6 @@ import co.touchlab.kermit.Logger
 import dev.atsushieno.ktmidi.Midi1CompoundMessage
 import dev.atsushieno.ktmidi.Midi1Music
 import dev.atsushieno.ktmidi.read
-import mai_onsyn.open_rhythm.core.util.Time
 
 class CCTimeline(
     val eventList: MutableList<SimpleCCEvent> = mutableListOf()
@@ -281,7 +280,7 @@ fun parseMidi(name: String, bytes: List<Byte>): Midi {
                     tickRange = range,
                     trackInst = inst,
                     enable = true,
-                    visible = group.channel != 9
+                    visible = true//group.channel != 9
                 )
             )
 //            Logger.d { "Detect Inst Track cost ${(Time.nanos - DETECT_INST_TRACK_START) / 1000000f}ms" }

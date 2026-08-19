@@ -33,9 +33,11 @@ class MidiTrack(
         return try {
             controllerEvents.first { it is MidiPCEvent } as MidiPCEvent
         } catch (_: NoSuchElementException) {
-            MidiPCEvent.of(0, 0, 0)
+            MidiPCEvent.of(0, trackChannel, 0)
         }
     }
+
+    val trackChannel: Int get() = controllerEvents.firstOrNull()?.channel ?: 0
 
     private enum class EventType { PC, CC_PB, NOTE }
     fun splitTrackByPC(): List<MidiTrack> {

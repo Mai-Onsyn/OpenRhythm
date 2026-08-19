@@ -12,9 +12,15 @@ import com.russhwolf.settings.string
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.builtins.ListSerializer
 import kotlinx.serialization.builtins.serializer
+import kotlinx.serialization.descriptors.PrimitiveKind
+import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
+import kotlinx.serialization.descriptors.SerialDescriptor
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
 import kotlinx.serialization.json.Json
 import mai_onsyn.open_rhythm.ui.pages.library.UILibraryFolder
 import mai_onsyn.open_rhythm.ui.pages.setting.categories.key_map.KeyMidiMapping
+import mai_onsyn.open_rhythm.ui.theme.TrackColorDefaults
 import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KProperty
 
@@ -50,6 +56,12 @@ class UserSetting(
     var EnableOutputOtherMidiEvent  by st.observable("EnableOutputOtherMidiEvent",  true)
     var GervillSF2Path              by st.observable("GervillSF2Path",              "")
 
+    // =====MIDI Track=====
+    val trackColors             by st.list("TrackColors",                   TrackColorDefaults.colors(), ColorSerializer())
+    var MidiInteractionColor    by st.observable("MidiInteractionColor",    Color(138, 226, 52))
+    var MidiInteractionChannel  by st.observable("MidiInteractionChannel",  0)
+    var DrumKitHiddenByDefault  by st.observable("DrumKitHiddenByDefault",  true)
+
     // =====MIDI File=====
     var UseParserV1 by st.observable("UseParserV1", false)
 
@@ -79,7 +91,6 @@ class UserSetting(
     // =====Keyboard Appearance=====
     var KeyboardAutoAspect              by st.observable("KeyBoardAutoAspect",          true)
     var KeyboardAspectRatio             by st.observable("KeyBoardAspectRatio",         8f)
-    var KeyboardInteractionColor        by st.observable("KeyboardInteractionColor",    Color(138, 226, 52))
     var EnableKeyboardDragArea          by st.observable("EnableKeyboardDragArea",      true)
     var KeyboardDragAreaColor           by st.observable("KeyboardDragAreaColor",       Color.Unspecified)
     var CustomKeyboardDragAreaColor     by st.observable("CustomKeyboardDragAreaColor", Color(0xFF404040))
@@ -159,6 +170,12 @@ fun unpackColor(packed: Long): Color {
     } else {
         Color(packed.toInt())
     }
+}
+
+class ColorSerializer: KSerializer<Color> {
+    override val descriptor: SerialDescriptor = PrimitiveSerialDescriptor("Color", PrimitiveKind.LONG)
+    override fun serialize(encoder: Encoder, value: Color) = encoder.encodeLong(value.value.toLong())
+    override fun deserialize(decoder: Decoder): Color = Color(decoder.decodeLong().toULong())
 }
 
 inline fun <reified T> Settings.list(

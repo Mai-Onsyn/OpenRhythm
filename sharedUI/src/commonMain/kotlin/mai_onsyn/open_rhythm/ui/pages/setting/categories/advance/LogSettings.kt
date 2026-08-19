@@ -106,7 +106,7 @@ fun LogSettings() {
 
         ConfirmDialog(
             visible = showResultDialog,
-            onDismiss = { showResultDialog = false },
+            onDismissRequest = { showResultDialog = false },
             onConfirm = { showResultDialog = false },
             title = "Result",
             message = dialogMessage

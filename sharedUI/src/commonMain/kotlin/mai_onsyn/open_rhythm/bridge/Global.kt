@@ -29,7 +29,7 @@ object Global {
             if (name == "Virtual Keyboard") midiInputDevices["Virtual Keyboard"] = KeyboardVirtualMidiInputDevice(
                 globalKeyEventDispatcher,
                 settings.userKeyMappings.toMappingMap()
-            )
+            ).apply { targetChannel = settings.MidiInteractionChannel }
             else try {
                 portList.find { it.name == name }?.let {
                     midiInputDevices[it.id] = KtMidiInputDevice(it, midiAccess)
@@ -53,7 +53,7 @@ private fun createMidiPlayer(access: MidiAccess): MidiPlayer2 {
     val outputs = access.outputs.toList()
     if (outputs.isEmpty()) {
         println("没有找到可用的 MIDI 输出设备。")
-        return MidiPlayer2(null)
+        return MidiPlayer2(null).apply { interactChannel = Global.settings.MidiInteractionChannel }
     }
 
     val userSpecified = Global.settings.SelectedOutputDeviceName
@@ -82,5 +82,5 @@ private fun createMidiPlayer(access: MidiAccess): MidiPlayer2 {
             Logger.e(e) { "Cannot Open Output: ${selected.id}" }
             null
         }
-    })
+    }).apply { interactChannel = Global.settings.MidiInteractionChannel }
 }

@@ -19,7 +19,7 @@ fun ConfirmDialog(
     visible: Boolean,
     title: String,
     message: String,
-    onDismiss: () -> Unit,
+    onDismissRequest: () -> Unit,
     onConfirm: () -> Unit = {},
     icon: ImageVector? = null,
     isDangerous: Boolean = false,
@@ -27,7 +27,7 @@ fun ConfirmDialog(
 ) {
     DialogPopup(
         visible = visible,
-        onDismissRequest = onDismiss,
+        onDismissRequest = onDismissRequest,
     ) {
         Box(
             contentAlignment = Alignment.Center,
@@ -67,7 +67,7 @@ fun ConfirmDialog(
                 Spacer(Modifier.height(24.dp))
                 Row(horizontalArrangement = Arrangement.spacedBy(24.dp)) {
                     PrimaryOperationButton("Confirm", onConfirm)
-                    if (showCancel) PrimaryOperationButton("Cancel", onDismiss)
+                    if (showCancel) PrimaryOperationButton("Cancel", onDismissRequest)
                 }
             }
         }

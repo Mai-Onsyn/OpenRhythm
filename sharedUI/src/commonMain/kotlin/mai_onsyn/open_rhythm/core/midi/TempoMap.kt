@@ -17,9 +17,10 @@ class TempoMap(
 
     init {
         require(ppq > 0)
-        require(tempoEvents.isNotEmpty())
 
-        val events = tempoEvents.sortedBy { it.tick }
+        val events = if (tempoEvents.isEmpty()) {
+            listOf(TempoEvent(0, 120.0))
+        } else tempoEvents.sortedBy { it.tick }
 
         entries = buildList(events.size) {
             var nanoAtTick = events[0].tick *

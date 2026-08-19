@@ -12,7 +12,6 @@ import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.text.toLowerCase
 import androidx.compose.ui.unit.dp
 import io.github.vinceglb.filekit.*
 import kotlinx.coroutines.Dispatchers
@@ -167,7 +166,7 @@ fun FolderManageRail(
 
                     ConfirmDialog(
                         visible = showPathInfoDialog,
-                        onDismiss = { showPathInfoDialog = false },
+                        onDismissRequest = { showPathInfoDialog = false },
                         onConfirm = { showPathInfoDialog = false },
                         title = "Path of ${item.name}",
                         message = item.dir
@@ -175,7 +174,7 @@ fun FolderManageRail(
 
                     ConfirmDialog(
                         visible = showDeleteConfirmDialog,
-                        onDismiss = { showDeleteConfirmDialog = false },
+                        onDismissRequest = { showDeleteConfirmDialog = false },
                         onConfirm = {
                             showDeleteConfirmDialog = false
                             onDelete(index)

@@ -107,7 +107,7 @@ fun MidiOutputSettings() {
 
             ConfirmDialog(
                 visible = showErrorDialog,
-                onDismiss = { showErrorDialog = false },
+                onDismissRequest = { showErrorDialog = false },
                 title = "Error",
                 message = errorMessage,
                 isDangerous = true,

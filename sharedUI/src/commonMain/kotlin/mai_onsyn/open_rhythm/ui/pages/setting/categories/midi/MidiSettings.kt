@@ -8,6 +8,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -38,6 +39,7 @@ fun MidiSettings() {
         ) {
             MidiInputSettings()
             MidiOutputSettings()
+            TrackAndChannel()
 
             TestKeyboard()
         }
@@ -75,10 +77,12 @@ fun RefreshDeviceButton(
 
 @Composable
 private fun TestKeyboard() {
-    Box(
+    Surface(
         modifier = Modifier
+            .padding(bottom = 4.dp)
             .fillMaxWidth()
-            .aspectRatio(Global.settings.KeyboardAspectRatio)
+            .aspectRatio(Global.settings.KeyboardAspectRatio),
+        shadowElevation = 4.dp
     ) {
         val userActiveKeys = remember { mutableStateMapOf<Int, Color>() }
         AppDefaultMidiKeyboard(
@@ -88,7 +92,7 @@ private fun TestKeyboard() {
             maxPitch = 108,
             userActiveKey = userActiveKeys,
             onPress = { pitch, velocity ->
-                userActiveKeys[pitch] = Global.settings.KeyboardInteractionColor
+                userActiveKeys[pitch] = Global.settings.MidiInteractionColor
                 Global.player.noteOn(pitch, velocity)
             },
             onRelease = {

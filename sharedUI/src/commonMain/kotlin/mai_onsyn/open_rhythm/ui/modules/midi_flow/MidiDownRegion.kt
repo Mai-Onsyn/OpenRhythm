@@ -225,7 +225,7 @@ fun MidiDownRegion(
             midiActiveKey = midiActiveKeys,
             userActiveKey = userActiveKeys,
             onPress = { key, velocity ->
-                userActiveKeys[key] = Global.settings.KeyboardInteractionColor
+                userActiveKeys[key] = Global.settings.MidiInteractionColor
                 Global.player.noteOn(key, velocity)
                 if (Global.player.practiceMode) {
                     Global.player.blocker.press(key)

@@ -54,7 +54,7 @@ fun SettingSettings() { // 设置设置的设置
 
         ConfirmDialog(
             visible = showDialog,
-            onDismiss = { showDialog = false },
+            onDismissRequest = { showDialog = false },
             onConfirm = {
                 executed = true
                 Global.settings.resetAllSettings()

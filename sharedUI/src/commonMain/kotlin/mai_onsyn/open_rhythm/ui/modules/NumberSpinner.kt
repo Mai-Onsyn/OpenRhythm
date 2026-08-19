@@ -25,7 +25,7 @@ fun NumberSpinner(
     onValueChange: (Int) -> Unit,
     range: IntRange, // 指定范围，例如 1..100
     step: Int = 1,
-    label: String,
+    label: String? = null,
     onAddClick: () -> Unit = {},
     onSubClick: () -> Unit = {},
     modifier: Modifier = Modifier
@@ -83,7 +83,7 @@ fun NumberSpinner(
                 imeAction = ImeAction.Done
             ),
             keyboardActions = KeyboardActions(onDone = { clampAndSettle() }),
-            label = { Text(label) },
+            label = label?.let { { Text(label) } },
             contentPadding = PaddingValues(horizontal = 4.dp, vertical = 4.dp)
         )
 

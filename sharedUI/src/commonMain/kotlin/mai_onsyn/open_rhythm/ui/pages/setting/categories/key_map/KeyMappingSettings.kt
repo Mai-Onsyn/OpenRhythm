@@ -2,6 +2,7 @@ package mai_onsyn.open_rhythm.ui.pages.setting.categories.key_map
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -36,10 +37,12 @@ fun KeyMappingSettings() {
 
         val userActiveMidiKeys = remember { mutableStateMapOf<Int, Color>() }
         var selectedKeyCode by remember { mutableStateOf<Long?>(null) }
-        Box(
+        Surface(
             modifier = Modifier
+                .padding(bottom = 4.dp)
                 .fillMaxWidth()
-                .aspectRatio(Global.settings.KeyboardAspectRatio)
+                .aspectRatio(Global.settings.KeyboardAspectRatio),
+            shadowElevation = 4.dp
         ) {
             val appendTexts = mutableMapOf<Int, String>().apply {
                 for (mapping in Global.settings.userKeyMappings) {
@@ -51,7 +54,7 @@ fun KeyMappingSettings() {
                 userActiveKey = userActiveMidiKeys,
                 appendTexts = appendTexts,
                 onPress = { pitch, velocity ->
-                    userActiveMidiKeys[pitch] = Global.settings.KeyboardInteractionColor
+                    userActiveMidiKeys[pitch] = Global.settings.MidiInteractionColor
                     Global.player.noteOn(pitch, velocity)
 
                     selectedKeyCode?.let { code ->

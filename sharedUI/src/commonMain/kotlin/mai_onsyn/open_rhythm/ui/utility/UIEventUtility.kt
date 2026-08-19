@@ -41,7 +41,7 @@ fun BindInputDeviceEvents(
                         is NoteEvent -> {
                             if (Global.settings.EnableInputMidiNoteEvent) {
                                 if (it.on) {
-                                    userActiveKeys[it.pitch] = Global.settings.KeyboardInteractionColor
+                                    userActiveKeys[it.pitch] = Global.settings.MidiInteractionColor
                                     if (Global.player.practiceMode) {
                                         Global.player.blocker.press(it.pitch)
                                     }

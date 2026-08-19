@@ -15,18 +15,16 @@ class KeyboardVirtualMidiInputDevice(
     private var mappings: Map<Long, Int>
 ) : MidiInputDevice {
     private val eventChannel = Channel<MidiEvent>(128, BufferOverflow.DROP_OLDEST)
-//    private val userKeys = arrayOf(Key.A, Key.W, Key.S, Key.E, Key.D, Key.F, Key.T, Key.G, Key.Y, Key.H, Key.U, Key.J, Key.K, Key.O, Key.L, Key.P, Key.Semicolon, Key.Apostrophe)
 
-//    private var mappings = KeyMidiMapping.default().toMappingMap()
+    var targetChannel = 0
 
     private val handler: suspend (KeyEvent) -> Boolean = { keyEvent ->
-//        val idx = userKeys.indexOf(keyEvent.key)
         if (mappings.containsKey(keyEvent.key.keyCode)) {
             val midiKey = mappings[keyEvent.key.keyCode]!!
             if (keyEvent.type == KeyEventType.KeyDown) {
-                eventChannel.send(NoteEvent.noteOn(0, midiKey, 100, 0))
+                eventChannel.send(NoteEvent.noteOn(0, midiKey, 100, targetChannel))
             } else {
-                eventChannel.send(NoteEvent.noteOff(0, midiKey, 0, 0))
+                eventChannel.send(NoteEvent.noteOff(0, midiKey, 0, targetChannel))
             }
             false
         } else false

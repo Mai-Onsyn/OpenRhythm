@@ -26,6 +26,7 @@ class MidiPlayer2(
     private var offsetTick = 0.0
     private var offsetNanos = 0L
     private var speed = 1.0f
+    var interactChannel = 0
 
     var practiceMode = false
     var blocker = NoteBlocker()
@@ -121,19 +122,19 @@ class MidiPlayer2(
 
     fun getSpeed(): Float = speed
 
-    fun noteOn(key: Int, velocity: Int, channel: Int = 0) =
+    fun noteOn(key: Int, velocity: Int, channel: Int = interactChannel) =
         eventChannel.trySend(createMidiMessage(0x90, channel, key, velocity))
 
-    fun noteOff(key: Int, channel: Int = 0) =
+    fun noteOff(key: Int, channel: Int = interactChannel) =
         eventChannel.trySend(createMidiMessage(0x80, channel, key))
 
-    fun cc(controller: Int, value: Int, channel: Int = 0) =
+    fun cc(controller: Int, value: Int, channel: Int = interactChannel) =
         eventChannel.trySend(createMidiMessage(0xB0, channel, controller, value))
 
-    fun pc(value: Int, channel: Int = 0) =
+    fun pc(value: Int, channel: Int = interactChannel) =
         eventChannel.trySend(createMidiMessage(0xC0, channel, value))
 
-    fun pb(value: Int, channel: Int = 0) =
+    fun pb(value: Int, channel: Int = interactChannel) =
         eventChannel.trySend(createMidiMessage(0xE0, channel, (value and 0x7F), (value shr 7 and 0x7F)))
 
     fun sendShortEvent(bytes: ByteArray) {

@@ -93,7 +93,7 @@ fun MidiUpRegion(
                 notes = notes,
                 minPitch = Global.settings.MinPitch,
                 maxPitch = Global.settings.MaxPitch,
-                color = Global.settings.KeyboardInteractionColor,
+                color = Global.settings.MidiInteractionColor,
                 drawOctaveLine = Global.settings.DrawOctaveLines,
                 noteRoundPercent = Global.settings.NoteRoundConerPercent
             )
@@ -107,7 +107,7 @@ fun MidiUpRegion(
                 .height(keyboardHeight),
             userActiveKey = activeKeys,
             onPress = { key, velocity ->
-                activeKeys[key] = Global.settings.KeyboardInteractionColor
+                activeKeys[key] = Global.settings.MidiInteractionColor
                 Global.player.noteOn(key, velocity)
 
                 notes.add(LiveNote(key, Time.nanos))

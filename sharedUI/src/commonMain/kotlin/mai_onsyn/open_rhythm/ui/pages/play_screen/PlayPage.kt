@@ -44,6 +44,7 @@ import mai_onsyn.open_rhythm.core.midi.Midi
 import mai_onsyn.open_rhythm.core.util.bpmAtTick
 import mai_onsyn.open_rhythm.ui.icons.ic_arrow_warm_up
 import mai_onsyn.open_rhythm.ui.modules.midi_flow.MidiDownRegion
+import mai_onsyn.open_rhythm.ui.theme.TrackColorDefaults
 import kotlin.math.roundToInt
 import kotlin.random.Random
 import kotlin.time.Duration.Companion.seconds
@@ -56,10 +57,18 @@ fun PlayPage(
     drawStatusBar: Boolean = true
 ) {
     if (drawStatusBar) BackHandler { onBack() }
-    val trackColors = remember { _testOnly_GenerateTrackColors() }
+//    val trackColors = remember { _testOnly_GenerateTrackColors() }
 
     var isPlaying by remember { mutableStateOf(false) }
-    val displayMidi by rememberUpdatedState(midi ?: Midi("Empty MIDI", 480, 4800))
+    val displayMidi by rememberUpdatedState(
+        (midi ?: Midi("Empty MIDI", 480, 4800)).apply {
+            tracks.forEach { track ->
+                if (track.trackChannel == 9) {
+                    track.visible = !Global.settings.DrumKitHiddenByDefault
+                }
+            }
+        }
+    )
 
     var playProgress by remember { mutableStateOf(0.0f) }
     val focusRequester = remember { FocusRequester() }
@@ -92,13 +101,12 @@ fun PlayPage(
                     }
                 },
             midi = displayMidi,
-            trackColors = trackColors,
+            trackColors = Global.settings.trackColors.let { if (it.isEmpty()) TrackColorDefaults.colors() else it },
             isPlaying = isPlaying,
             keyboardRatio = if (Global.settings.KeyboardAutoAspect) Global.settings.KeyboardAspectRatio else 0f,
             onPlayStateChange = { isPlaying = it; Logger.d { isPlaying.toString() } },
             onProgressChange = { playProgress = it },
-            focusRequester = focusRequester,
-//            midiInputDevice = Singleton.midiInputDevices.entries.firstOrNull()?.value
+            focusRequester = focusRequester
         )
 
         if (drawStatusBar) {
@@ -180,30 +188,4 @@ fun PlayPage(
             )
         }
     }
-}
-
-private fun _testOnly_GenerateTrackColors(): List<Color> = mutableListOf(
-    Color(255, 182, 193),
-    Color(220, 20, 60),
-    Color(255, 105, 180),
-    Color(218, 112, 214),
-    Color(238, 130, 238),
-    Color(255, 0, 255),
-    Color(65, 105, 225),
-    Color(176, 196, 222),
-    Color(240, 248, 255),
-    Color(0, 191, 255),
-    Color(95, 158, 160),
-    Color(0, 206, 209),
-    Color(47, 79, 79),
-    Color(0, 255, 127),
-    Color(0, 128, 0),
-    Color(173, 255, 47),
-    Color(255, 255, 0),
-    Color(128, 128, 0),
-    Color(255, 165, 0),
-    Color(205, 92, 92),
-    Color(128, 0, 0),
-).apply {
-    this.shuffle(Random(114514))
 }

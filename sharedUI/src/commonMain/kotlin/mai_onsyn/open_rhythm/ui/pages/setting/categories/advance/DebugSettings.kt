@@ -6,7 +6,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import mai_onsyn.open_rhythm.bridge.Global
 import mai_onsyn.open_rhythm.ui.icons.ic_bug_report
-import mai_onsyn.open_rhythm.ui.pages.library.cachedMidiFiles
 import mai_onsyn.open_rhythm.ui.pages.setting.SettingsCard
 
 @Composable
@@ -22,7 +21,7 @@ fun DebugSettings() {
             initial = Global.settings.UseParserV1,
             onToggled = {
                 Global.settings.UseParserV1 = it
-                cachedMidiFiles.clear()
+                Global.fileLoader.clearCache()
             }
         )
 

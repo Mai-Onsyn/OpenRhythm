@@ -24,12 +24,12 @@ fun SingleLineInputDialog(
     placeholderText: String? = null,
     errorHolderText: String? = null,
     icon: ImageVector? = null,
-    onDismiss: () -> Unit,
+    onDismissRequest: () -> Unit,
     onConfirm: (String) -> Unit
 ) {
     DialogPopup(
         visible = visible,
-        onDismissRequest = onDismiss
+        onDismissRequest = onDismissRequest
     ) {
         Box(
             modifier = Modifier
@@ -103,7 +103,7 @@ fun SingleLineInputDialog(
                             onConfirm(inputText)
                         } else isError = true
                     }
-                    PrimaryOperationButton("Cancel", onDismiss)
+                    PrimaryOperationButton("Cancel", onDismissRequest)
                 }
             }
         }

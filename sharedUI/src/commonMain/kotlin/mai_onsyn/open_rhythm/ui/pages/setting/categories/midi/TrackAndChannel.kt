@@ -26,6 +26,7 @@ import mai_onsyn.open_rhythm.core.midi.device.KeyboardVirtualMidiInputDevice
 import mai_onsyn.open_rhythm.ui.icons.ic_add
 import mai_onsyn.open_rhythm.ui.icons.ic_delete
 import mai_onsyn.open_rhythm.ui.icons.ic_flowchart
+import mai_onsyn.open_rhythm.ui.icons.ic_reorder
 import mai_onsyn.open_rhythm.ui.icons.ic_sort
 import mai_onsyn.open_rhythm.ui.modules.ColorPickerDialog
 import mai_onsyn.open_rhythm.ui.modules.ColorSelector
@@ -122,12 +123,8 @@ private fun ColumnScope.DefaultTrackColorDialogContent() {
     }
 
     val reorderableLazyListState = rememberReorderableLazyListState(lazyListState) { from, to ->
-        list.apply {
-            add(to.index, removeAt(from.index))
-            Global.settings.trackColors.let {
-                it.add(to.index, it.removeAt(from.index))
-            }
-        }
+        list.add(to.index, list.removeAt(from.index))
+        Global.settings.trackColors.let { it.add(to.index, it.removeAt(from.index)) }
         hapticFeedback.performHapticFeedback(HapticFeedbackType.SegmentFrequentTick)
     }
 
@@ -219,8 +216,9 @@ private fun ReorderableCollectionItemScope.TrackColorRow(
             ) {
                 Box(Modifier.draggableHandle().size(40.dp)) {
                     Icon(
-                        imageVector = ic_sort,
-                        contentDescription = "sort",
+                        imageVector = ic_reorder,
+                        contentDescription = "reorder",
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier
                             .fillMaxSize(0.5f)
                             .align(Alignment.Center)

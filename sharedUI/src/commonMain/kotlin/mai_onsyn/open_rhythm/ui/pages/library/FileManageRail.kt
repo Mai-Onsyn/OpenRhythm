@@ -13,10 +13,10 @@ import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.IO
-import kotlinx.coroutines.withContext
+import co.touchlab.kermit.Logger
+import kotlinx.coroutines.ensureActive
 import mai_onsyn.open_rhythm.bridge.Global
+import mai_onsyn.open_rhythm.core.midi.UIMidiData
 import mai_onsyn.open_rhythm.core.util.Time
 import mai_onsyn.open_rhythm.ui.icons.ic_music_note
 import mai_onsyn.open_rhythm.ui.modules.MorphingPlayPauseButton
@@ -39,14 +39,13 @@ fun FileManageRail(
     ) {
         value = UiState.Loading
         value = try {
-            val result = withContext(Dispatchers.IO) {
-                getFileInfosInFolder(path)
-            }
+            val result = Global.fileLoader.loadFolder(path)
+            ensureActive()
             onFileCountAvailable(result.size)
             UiState.Success(result)
         } catch (e: Exception) {
             e.printStackTrace()
-            UiState.Error(e.message ?: "加载失败")
+            UiState.Error(e.message ?: "Failed to load files")
         }
     }
 
@@ -91,12 +90,16 @@ fun FileManageRail(
                 }
 
                 if (isPlaying) {
-                    loadMidiFile(midiFiles[playingIdx].path)?.let {
-                        Global.player.stop()
-                        Global.player.seek(it.startTick.toLong())
-                        Global.player.setMidi(it)
-                        Global.player.play()
-                        Global.player.onCompletion = { isPlaying = false }
+                    try {
+                        Global.fileLoader.loadFile(midiFiles[playingIdx].path).let {
+                            Global.player.stop()
+                            Global.player.seek(it.startTick.toLong())
+                            Global.player.setMidi(it)
+                            Global.player.play()
+                            Global.player.onCompletion = { isPlaying = false }
+                        }
+                    } catch (e: Exception) {
+                        Logger.e(e) { "Error loading midi from $path" }
                     }
                 } else {
                     Global.player.stop()

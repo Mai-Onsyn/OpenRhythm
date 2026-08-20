@@ -1,15 +1,6 @@
 package mai_onsyn.open_rhythm.ui.pages
 
-import androidx.compose.animation.AnimatedContentTransitionScope
-import androidx.compose.animation.EnterTransition
-import androidx.compose.animation.ExitTransition
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.scaleIn
-import androidx.compose.animation.scaleOut
-import androidx.compose.animation.slideInHorizontally
-import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.*
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.*
@@ -30,9 +21,7 @@ import mai_onsyn.open_rhythm.core.midi.take
 import mai_onsyn.open_rhythm.ui.pages.free_play_screen.FreePlayPage
 import mai_onsyn.open_rhythm.ui.pages.home.HomePage
 import mai_onsyn.open_rhythm.ui.pages.library.LibraryPage
-import mai_onsyn.open_rhythm.ui.pages.library.MidiPlayMethod
 import mai_onsyn.open_rhythm.ui.pages.library.MidiPlayMethod.PlayMode.*
-import mai_onsyn.open_rhythm.ui.pages.library.loadMidiFile
 import mai_onsyn.open_rhythm.ui.pages.play_screen.PlayPage
 import mai_onsyn.open_rhythm.ui.pages.setting.SettingsPage
 
@@ -132,7 +121,7 @@ fun AppNavigation(
                     onBack,
                     {
                         scope.launch(Dispatchers.IO) {
-                            currentPlayScreenMidi = loadMidiFile(it.data.path)
+                            currentPlayScreenMidi = Global.fileLoader.loadFile(it.data.path)
                             when (it.playMode) {
                                 AUTO -> {}
                                 PRACTICE -> {

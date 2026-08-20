@@ -8,6 +8,7 @@ import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
@@ -64,6 +65,7 @@ fun DialogPopup(
                 .focusRequester(focusRequester)
                 .fillMaxSize()
                 .background(MaterialTheme.colorScheme.scrim.copy(alpha = 0.32f * showProgress))
+                .safeDrawingPadding()
                 .pointerInput(Unit) {
                     detectTapGestures { onDismissRequest() }
                 }
@@ -72,7 +74,7 @@ fun DialogPopup(
                         onDismissRequest()
                         true
                     }
-                    false
+                    else false
                 }
         ) {
             LaunchedEffect(Unit) {

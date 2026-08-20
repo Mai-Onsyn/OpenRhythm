@@ -31,11 +31,13 @@ fun FileManageRail(
     modifier: Modifier = Modifier,
     path: String,
     onFileCountAvailable: (Int) -> Unit,
-    onConfirm: (MidiPlayMethod) -> Unit
+    onConfirm: (MidiPlayMethod) -> Unit,
+    refresher: Int
 ) {
     val uiState by produceState<UiState<List<UIMidiData>>>(
         initialValue = UiState.Loading,
-        key1 = path
+        key1 = path,
+        key2 = refresher
     ) {
         value = UiState.Loading
         value = try {
@@ -193,7 +195,19 @@ fun FileRailItem(
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Text(
-                        text = if (target.pianoOnly) "Piano Only" else "Multiple Instruments",
+                        text = "${target.noteCount} notes",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                    Text(
+                        text = "•",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Text(
+                        text = if (target.pianoOnly) "Piano" else "Ensemble",
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.primary,
                         fontWeight = FontWeight.Bold,

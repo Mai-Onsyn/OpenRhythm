@@ -55,7 +55,7 @@ private fun createMidiPlayer(access: MidiAccess): MidiPlayer2 {
     val outputs = access.outputs.toList()
     if (outputs.isEmpty()) {
         println("没有找到可用的 MIDI 输出设备。")
-        return MidiPlayer2(null).apply { interactChannel = Global.settings.MidiInteractionChannel }
+        return MidiPlayer2(null).also { it.init() }
     }
 
     val userSpecified = Global.settings.SelectedOutputDeviceName
@@ -84,5 +84,13 @@ private fun createMidiPlayer(access: MidiAccess): MidiPlayer2 {
             Logger.e(e) { "Cannot Open Output: ${selected.id}" }
             null
         }
-    }).apply { interactChannel = Global.settings.MidiInteractionChannel }
+    }).also { it.init() }
+}
+
+private fun MidiPlayer2.init() {
+    interactChannel = Global.settings.MidiInteractionChannel
+    enableNote = Global.settings.EnableOutputMidiNoteEvent
+    enableCC = Global.settings.EnableOutputMidiCCEvent
+    enablePC = Global.settings.EnableOutputMidiPCEvent
+    enablePB = Global.settings.EnableOutputMidiPBEvent
 }

@@ -26,6 +26,10 @@ class MidiPlayer2(
     private var offsetTick = 0.0
     private var offsetNanos = 0L
     private var speed = 1.0f
+    var enableNote = true
+    var enableCC = true
+    var enablePC = true
+    var enablePB = true
     var interactChannel = 0
 
     var practiceMode = false
@@ -59,7 +63,7 @@ class MidiPlayer2(
         val pMidi = midi ?: return
         playbackThread?.cancel()
         launchPlaybackThread(pMidi)
-        Logger.i { "Player Playing" }
+//        Logger.i { "Player Playing" }
     }
 
     fun pause() {
@@ -69,14 +73,14 @@ class MidiPlayer2(
         }
         releaseAllNotes()
         state = State.PAUSED
-        Logger.i { "Player Paused" }
+//        Logger.i { "Player Paused" }
     }
 
     fun stop() {
         stopPlayback()
         reset()
         state = State.STOPPED
-        Logger.i { "Player Stopped" }
+//        Logger.i { "Player Stopped" }
     }
 
     fun seek(value: Double, percentage: Boolean = true) {
@@ -113,7 +117,6 @@ class MidiPlayer2(
         if (state == State.PLAYING) {
             offsetTick = lerpTick()
             offsetNanos = Time.nanos
-            // 随后重启播放线程（重新以新的 offsetTick 和新的 speed 建立内部锚点）
             stopPlayback()
             midi?.let { launchPlaybackThread(it, false) }
         }
@@ -122,20 +125,25 @@ class MidiPlayer2(
 
     fun getSpeed(): Float = speed
 
-    fun noteOn(key: Int, velocity: Int, channel: Int = interactChannel) =
-        eventChannel.trySend(createMidiMessage(0x90, channel, key, velocity))
+    fun noteOn(key: Int, velocity: Int, channel: Int = interactChannel) {
+        if (enableNote) eventChannel.trySend(createMidiMessage(0x90, channel, key, velocity))
+    }
 
-    fun noteOff(key: Int, channel: Int = interactChannel) =
-        eventChannel.trySend(createMidiMessage(0x80, channel, key))
+    fun noteOff(key: Int, channel: Int = interactChannel) {
+        if (enableNote) eventChannel.trySend(createMidiMessage(0x80, channel, key))
+    }
 
-    fun cc(controller: Int, value: Int, channel: Int = interactChannel) =
-        eventChannel.trySend(createMidiMessage(0xB0, channel, controller, value))
+    fun cc(controller: Int, value: Int, channel: Int = interactChannel) {
+        if (enableCC) eventChannel.trySend(createMidiMessage(0xB0, channel, controller, value))
+    }
 
-    fun pc(value: Int, channel: Int = interactChannel) =
-        eventChannel.trySend(createMidiMessage(0xC0, channel, value))
+    fun pc(value: Int, channel: Int = interactChannel) {
+        if (enablePC) eventChannel.trySend(createMidiMessage(0xC0, channel, value))
+    }
 
-    fun pb(value: Int, channel: Int = interactChannel) =
-        eventChannel.trySend(createMidiMessage(0xE0, channel, (value and 0x7F), (value shr 7 and 0x7F)))
+    fun pb(value: Int, channel: Int = interactChannel) {
+        if (enablePB) eventChannel.trySend(createMidiMessage(0xE0, channel, (value and 0x7F), (value shr 7 and 0x7F)))
+    }
 
     fun sendShortEvent(bytes: ByteArray) {
         eventChannel.trySend(bytes)
@@ -144,15 +152,15 @@ class MidiPlayer2(
     private fun lerpTick(): Double {
         if (midi == null) return 0.0
 
-        // 在offsetTick时 从tick0开始已经过的播放器内纳秒为
+        // 在offsetTick时 从tick0开始已经过的播放器内时间为
         val baseNano = midi!!.nanoAtTick(offsetTick)
         // 从记录时刻到当前时刻 现实时间差为
         val realDelta = Time.nanos - offsetNanos
-        // speed为时间倍率 意味着播放器内时间流逝速度是现实的speed倍 因此这段时间内播放器内增加的纳秒为
+        // speed为时间倍率 意味着播放器内时间流逝速度是现实的speed倍 因此这段时间内播放器内增加的时间为
         val gameDelta = (speed * realDelta).toDouble()
-        // 当前时刻 从tick0起总共经过的播放器内纳秒为
+        // 当前时刻 从tick0起总共经过的播放器内时间为
         val totalNano = baseNano + gameDelta
-        // 用nanoAtTick的反函数tickAtNanoOffset即可得到当前tick
+        // 用nanoAtTick的反函数tickAtNanoOffset得到当前tick
         val currentTick = midi!!.tickAtNanoOffset(totalNano)
 
         return currentTick
@@ -166,11 +174,11 @@ class MidiPlayer2(
         eventList.clear()
 
         for (track in midi.tracks) {
-            for (note in track.notes) {
+            if (enableNote) for (note in track.notes) {
                 eventList.add(NoteEvent.noteOn(note.tick, note.pitch, note.velocity, note.channel))
                 eventList.add(NoteEvent.noteOff(note.tick + note.duration, note.pitch, note.velocity, note.channel))
             }
-            for (event in track.controllerEvents) {
+            if (enableCC) for (event in track.controllerEvents) {
                 eventList.add(event)
             }
         }

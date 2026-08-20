@@ -18,6 +18,12 @@ class Midi(
     val pbChangeTimeline: Array<SingleChangeTimeline> = Array(16) { SingleChangeTimeline() }
 ) {
     val tempoMap = TempoMap(ppq, tempoEvents)
+    val totalNotes: Int
+        get() {
+            var sum = 0
+            tracks.forEach { sum += it.notes.size }
+            return sum
+        }
 
     companion object {
         private const val META_TRACK_NAME = 0x03

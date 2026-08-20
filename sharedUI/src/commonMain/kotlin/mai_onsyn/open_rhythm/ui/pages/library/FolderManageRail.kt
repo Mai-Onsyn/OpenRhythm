@@ -43,7 +43,8 @@ fun FolderManageRail(
     selectedIndex: Int,
     onSelect: (Int) -> Unit,
     onChange: (Int, UILibraryFolder) -> Unit,
-    onDelete: (Int) -> Unit
+    onDelete: (Int) -> Unit,
+    refresher: Int
 ) {
     val hapticFeedback = LocalHapticFeedback.current
     val listState = rememberLazyListState()
@@ -72,7 +73,8 @@ fun FolderManageRail(
                     onDelete = { onDelete(index) },
                     item = item,
                     onChanged = { onChange(index, it) },
-                    isDragging = isDragging
+                    isDragging = isDragging,
+                    refresher = refresher
                 )
             }
         }
@@ -86,7 +88,8 @@ private fun ReorderableCollectionItemScope.FolderRow(
     onDelete: () -> Unit,
     item: UILibraryFolder,
     onChanged: (UILibraryFolder) -> Unit,
-    isDragging: Boolean = false
+    isDragging: Boolean = false,
+    refresher: Int
 ) {
     val colorScheme = MaterialTheme.colorScheme
     val interactionSource = remember { MutableInteractionSource() }
@@ -158,7 +161,7 @@ private fun ReorderableCollectionItemScope.FolderRow(
                 color = colorScheme.primary,
                 fontWeight = FontWeight.Bold
             )
-            LaunchedEffect(Unit) {
+            LaunchedEffect(refresher) {
                 fileCount = if (Global.fileLoader.isFolderLoaded(item.dir)) Global.fileLoader.loadFolder(item.dir).count()
                 else withContext(Dispatchers.IO) {
                     val folder = PlatformFile(item.dir)

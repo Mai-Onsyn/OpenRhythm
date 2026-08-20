@@ -1,5 +1,7 @@
 package mai_onsyn.open_rhythm.ui.pages.library
 
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -8,7 +10,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.backhandler.BackHandler
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.text.style.TextOverflow
@@ -151,13 +153,15 @@ private fun WideLayout(
     selectedFolderIndex: Int,
     onSelect: (Int) -> Unit
 ) {
+    var version by remember { mutableStateOf(0) }
     Row {
         FolderRail(
             modifier = Modifier
                 .fillMaxHeight()
                 .weight(0.4f),
-            selectedFolderIndex,
-            onSelect = onSelect
+            selectedFolderIndex = selectedFolderIndex,
+            onSelect = onSelect,
+            onRefresh = { version++ }
         )
         VerticalDivider(Modifier.padding(horizontal = 24.dp))
         FileRail(
@@ -165,7 +169,8 @@ private fun WideLayout(
                 .fillMaxHeight()
                 .weight(0.6f),
             selectedFolderIndex,
-            onEnterPlayMidiScreen
+            onEnterPlayMidiScreen,
+            version
         )
     }
 }
@@ -176,13 +181,15 @@ private fun NarrowLayout(
     selectedFolderIndex: Int,
     onSelect: (Int) -> Unit
 ) {
+    var version by remember { mutableStateOf(0) }
     Column {
         FolderRail(
             modifier = Modifier
                 .fillMaxWidth()
                 .weight(0.4f),
-            selectedFolderIndex,
-            onSelect = onSelect
+            selectedFolderIndex = selectedFolderIndex,
+            onSelect = onSelect,
+            onRefresh = { version++ }
         )
         HorizontalDivider(Modifier.padding(vertical = 24.dp))
         FileRail(
@@ -190,7 +197,8 @@ private fun NarrowLayout(
                 .fillMaxWidth()
                 .weight(0.6f),
             selectedFolderIndex,
-            onEnterPlayMidiScreen
+            onEnterPlayMidiScreen,
+            version
         )
     }
 }
@@ -199,11 +207,13 @@ private fun NarrowLayout(
 private fun FolderRail(
     modifier: Modifier,
     selectedFolderIndex: Int,
-    onSelect: (Int) -> Unit
+    onSelect: (Int) -> Unit,
+    onRefresh: () -> Unit
 ) {
     Column(
         modifier = modifier
     ) {
+        var refreshVersion by remember { mutableStateOf(0) }
         Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -222,9 +232,12 @@ private fun FolderRail(
 
             Spacer(Modifier.weight(1f))
 
+            val refreshRotateAnimated by animateFloatAsState(360f * refreshVersion, tween(durationMillis = 1000))
             Surface(
                 onClick = {
-
+                    refreshVersion++
+                    Global.fileLoader.clearCache()
+                    onRefresh()
                 },
                 color = MaterialTheme.colorScheme.background,
                 contentColor = MaterialTheme.colorScheme.secondary,
@@ -239,7 +252,7 @@ private fun FolderRail(
                     Icon(
                         imageVector = ic_refresh,
                         contentDescription = "Refresh",
-                        modifier = Modifier.size(20.dp)
+                        modifier = Modifier.size(20.dp).rotate(refreshRotateAnimated)
                     )
                     Text(
                         text = "Refresh",
@@ -265,7 +278,8 @@ private fun FolderRail(
                     }
                 }
                 Global.settings.libraryFolderList.removeAt(it)
-            }
+            },
+            refresher = refreshVersion
         )
     }
 }
@@ -274,7 +288,8 @@ private fun FolderRail(
 private fun FileRail(
     modifier: Modifier,
     selectedFolderIndex: Int,
-    onEnterPlayMidiScreen: (MidiPlayMethod) -> Unit
+    onEnterPlayMidiScreen: (MidiPlayMethod) -> Unit,
+    refresher: Int
 ) {
     Column(
         modifier = modifier
@@ -304,7 +319,8 @@ private fun FileRail(
                 else it[min(selectedFolderIndex, it.size - 1)].dir
             },
             onFileCountAvailable = { fileCount = it },
-            onConfirm = onEnterPlayMidiScreen
+            onConfirm = onEnterPlayMidiScreen,
+            refresher = refresher
         )
     }
 }

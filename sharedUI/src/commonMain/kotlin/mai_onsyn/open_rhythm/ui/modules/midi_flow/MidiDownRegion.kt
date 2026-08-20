@@ -195,12 +195,12 @@ fun MidiDownRegion(
         }
         LaunchedEffect(midi) {
             Global.player.setMidi(midi)
+            Global.player.seek(midi.startTick.toLong() - midi.ppq * 4)
         }
         LaunchedEffect(Unit) {
 //            midiInputDevice?.clearEvents()
             focusRequester.requestFocus()
             Global.player.setMidi(midi)
-            Global.player.seek(midi.startTick.toLong())
         }
         BindInputDeviceEvents(userActiveKeys)
 //        DisposableEffect(Unit) {

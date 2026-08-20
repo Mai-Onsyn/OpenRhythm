@@ -20,7 +20,8 @@ data class UIMidiData(
     val path: String,
     val duration: Double,
     val pianoOnly: Boolean,
-    val trackCount: Int
+    val trackCount: Int,
+    val noteCount: Int
 )
 
 class MidiFileLoader {
@@ -107,7 +108,8 @@ class MidiFileLoader {
                         path = it.absolutePath(),
                         duration = midi.msAtTick(midi.totalTicks.toLong()),
                         pianoOnly = pianoOnly,
-                        trackCount = midi.tracks.size
+                        trackCount = midi.tracks.size,
+                        midi.totalNotes
                     ))
                 } catch (e: Exception) {
                     Logger.w(e) { "Failed to load midi file: ${it.name}" }

@@ -4,7 +4,7 @@ import mai_onsyn.open_rhythm.core.midi.Midi
 import mai_onsyn.open_rhythm.core.midi.TempoEvent
 
 fun List<TempoEvent>.bpmAtTick(t: Long, default: Double = 120.0): Double {
-    val index = lastOrNull { it.tick <= t } ?: return default
+    val index = lastOrNull { it.tick <= t } ?: firstOrNull() ?: return default
     return index.bpm
 }
 

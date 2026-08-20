@@ -154,28 +154,22 @@ fun MidiInputSettings() {
                 onToggled = { Global.settings.EnableInputMidiNoteEvent = it }
             )
             itemWithSwitch(
-                name = "Receive PC events",
-                description = "Event for controlling instrument changes",
-                initial = Global.settings.EnableInputMidiPCEvent,
-                onToggled = { Global.settings.EnableInputMidiPCEvent = it }
-            )
-            itemWithSwitch(
                 name = "Receive CC events",
                 description = "Performance control events, like pressing the pedal",
                 initial = Global.settings.EnableInputMidiCCEvent,
                 onToggled = { Global.settings.EnableInputMidiCCEvent = it }
             )
             itemWithSwitch(
+                name = "Receive PC events",
+                description = "Event for controlling instrument changes",
+                initial = Global.settings.EnableInputMidiPCEvent,
+                onToggled = { Global.settings.EnableInputMidiPCEvent = it }
+            )
+            itemWithSwitch(
                 name = "Receive PB events",
                 description = "Dynamically adjust pitch to achieve glissando, vibrato, and other effects",
                 initial = Global.settings.EnableInputMidiPBEvent,
                 onToggled = { Global.settings.EnableInputMidiPBEvent = it }
-            )
-            itemWithSwitch(
-                name = "Receive other events",
-                description = "Somewhat rare midi events",
-                initial = Global.settings.EnableInputOtherMidiEvent,
-                onToggled = { Global.settings.EnableInputOtherMidiEvent = it }
             )
         }
     }

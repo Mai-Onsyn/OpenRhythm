@@ -10,10 +10,8 @@ import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
 import mai_onsyn.open_rhythm.bridge.keyEventDispatcher
 import mai_onsyn.open_rhythm.core.log.LogManager
-import java.awt.Dimension
 import mai_onsyn.open_rhythm.ui.App
-import org.jetbrains.compose.resources.painterResource
-import java.awt.event.KeyEvent
+import java.awt.Dimension
 
 fun main() = application {
     LogManager.initialize()

@@ -148,31 +148,37 @@ fun MidiOutputSettings() {
                 name = "Send note events",
                 description = "Enable key events input for notes",
                 initial = Global.settings.EnableOutputMidiNoteEvent,
-                onToggled = { Global.settings.EnableOutputMidiNoteEvent = it }
-            )
-            itemWithSwitch(
-                name = "Send PC events",
-                description = "Event for controlling instrument changes",
-                initial = Global.settings.EnableOutputMidiPCEvent,
-                onToggled = { Global.settings.EnableOutputMidiPCEvent = it }
+                onToggled = {
+                    Global.settings.EnableOutputMidiNoteEvent = it
+                    Global.player.enableNote = it
+                }
             )
             itemWithSwitch(
                 name = "Send CC events",
                 description = "Performance control events, like pressing the pedal",
                 initial = Global.settings.EnableOutputMidiCCEvent,
-                onToggled = { Global.settings.EnableOutputMidiCCEvent = it }
+                onToggled = {
+                    Global.settings.EnableOutputMidiCCEvent = it
+                    Global.player.enableCC = it
+                }
+            )
+            itemWithSwitch(
+                name = "Send PC events",
+                description = "Event for controlling instrument changes",
+                initial = Global.settings.EnableOutputMidiPCEvent,
+                onToggled = {
+                    Global.settings.EnableOutputMidiPCEvent = it
+                    Global.player.enablePC
+                }
             )
             itemWithSwitch(
                 name = "Send PB events",
                 description = "Dynamically adjust pitch to achieve glissando, vibrato, and other effects",
                 initial = Global.settings.EnableOutputMidiPBEvent,
-                onToggled = { Global.settings.EnableOutputMidiPBEvent = it }
-            )
-            itemWithSwitch(
-                name = "Send other events",
-                description = "Somewhat rare midi events",
-                initial = Global.settings.EnableOutputOtherMidiEvent,
-                onToggled = { Global.settings.EnableOutputOtherMidiEvent = it }
+                onToggled = {
+                    Global.settings.EnableOutputMidiPBEvent = it
+                    Global.player.enablePB = it
+                }
             )
         }
     }

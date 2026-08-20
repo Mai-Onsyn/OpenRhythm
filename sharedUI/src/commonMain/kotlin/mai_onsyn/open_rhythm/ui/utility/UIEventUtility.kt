@@ -53,27 +53,30 @@ fun BindInputDeviceEvents(
                                     }
                                     noteOff(it.pitch)
                                 }
-                                Global.player.sendShortEvent(it.event)
+                                if (Global.settings.EnableOutputMidiNoteEvent) Global.player.sendShortEvent(it.event)
                                 Logger.v { "Note input: $it" }
                             }
                         }
 
                         is MidiCCEvent -> if (Global.settings.EnableInputMidiCCEvent) {
-                            Global.player.sendShortEvent(it.event)
+                            if (Global.settings.EnableOutputMidiCCEvent) Global.player.sendShortEvent(it.event)
                             Logger.v { "CC input: $it" }
                         }
 
                         is MidiPCEvent -> if (Global.settings.EnableInputMidiPCEvent) {
-                            Global.player.sendShortEvent(it.event)
+                            if (Global.settings.EnableOutputMidiPCEvent) Global.player.sendShortEvent(it.event)
                             Logger.v { "PC input: $it" }
                         }
 
                         is MidiPBEvent -> if (Global.settings.EnableInputMidiPBEvent) {
-                            Global.player.sendShortEvent(it.event)
+                            if (Global.settings.EnableOutputMidiPBEvent) Global.player.sendShortEvent(it.event)
                             Logger.v { "PB input: $it" }
                         }
 
-                        else -> Logger.v { "Unknown input: $it" }
+                        else -> {
+//                            if (Global.settings.EnableInputOtherMidiEvent) Global.player.midiOutput?.send(it.event, 0, it.event.size, 0)
+                            Logger.v { "Unknown input: $it" }
+                        }
                     }
                 }
             } catch (e: ClosedReceiveChannelException) {

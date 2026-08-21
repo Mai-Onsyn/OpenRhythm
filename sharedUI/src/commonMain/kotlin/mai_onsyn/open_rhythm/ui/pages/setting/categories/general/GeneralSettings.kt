@@ -16,6 +16,7 @@ import androidx.compose.ui.unit.dp
 import mai_onsyn.open_rhythm.bridge.Global
 import mai_onsyn.open_rhythm.ui.icons.*
 import mai_onsyn.open_rhythm.ui.modules.ColorPickerDialog
+import mai_onsyn.open_rhythm.ui.modules.NumberSpinner
 import mai_onsyn.open_rhythm.ui.modules.getContrastTextColor
 import mai_onsyn.open_rhythm.ui.pages.setting.ChoiceRow
 import mai_onsyn.open_rhythm.ui.pages.setting.SettingsCard
@@ -181,6 +182,19 @@ private fun InteractionSettings() {
             initial = Global.settings.DoubleFingerTapToPlayPause,
             onToggled = { Global.settings.DoubleFingerTapToPlayPause = it }
         )
+        itemWithSwitch(
+            name = "Play automatically",
+            description = "Automatically start playing when entering the MIDI waterfall page",
+            initial = Global.settings.AutoStartPlayback,
+            onToggled = { Global.settings.AutoStartPlayback = it }
+        )
+        item("Playback start distance", "Distance to the first note when entering the waterfall page (unit: quarter note)") {
+            NumberSpinner(
+                value = Global.settings.PlaybackStartDistance,
+                onValueChange = { Global.settings.PlaybackStartDistance = it },
+                range = 0..16
+            )
+        }
     }
 }
 

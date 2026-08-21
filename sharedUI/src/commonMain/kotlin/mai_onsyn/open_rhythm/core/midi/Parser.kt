@@ -436,17 +436,16 @@ fun MutableList<Note>.takeRange(range: IntRange): MutableList<Note> {
         return this
     }
 
-    // 二分查找第一个 >= range.first 的索引
+    // 第一个 >= range.first 的索引
     val start = binarySearchLower(range.first)
     if (start >= size || this[start].tick > range.last) return mutableListOf()
 
-    // 二分查找最后一个 <= range.last 的索引
+    // 最后一个 <= range.last 的索引
     val end = binarySearchUpper(range.last)
 
     if (start > end) return mutableListOf()
 
-    // 直接截取子列表，避免逐个遍历 compare
-    return this.subList(start, end + 1).toMutableList()
+    return this.subList(start, end + 1)
 }
 
 private fun List<Note>.binarySearchLower(targetTick: Int): Int {

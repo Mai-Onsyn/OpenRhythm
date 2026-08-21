@@ -131,86 +131,9 @@ class MidiFileLoader {
         }
         val midi = withContext(Dispatchers.Default) {
             val bytes = bytes.toList()
-            if (Global.settings.UseParserV1) Midi.fromFile(name, bytes)
+            if (Global.settings.UseParserV1) parseMidiV1(name, bytes)
             else parseMidi(name, bytes)
         }
         return midi
     }
 }
-
-//val cachedMidiFileInfos = mutableMapOf<String, List<UIMidiData>>()
-//
-//suspend fun getFileInfosInFolder(path: String): List<UIMidiData> {
-//    if (cachedMidiFileInfos.contains(path)) return cachedMidiFileInfos[path]!!
-//    cachedMidiFileInfos[path] = mutableListOf()
-//
-//    val result = mutableListOf<UIMidiData>()
-//
-//    val parentFolder = PlatformFile(path)
-//    if (!parentFolder.exists() && !parentFolder.isDirectory()) {
-//        return result
-//    }
-//
-//    parentFolder.list().forEach {
-//        if (it.isRegularFile() && it.extension == "mid") {
-//            try {
-//                val midi = loadMidiFile(it)
-//                var pianoOnly = true
-//                for (track in midi.tracks) {
-//                    val bb = track.instrumentEvent.program == 0
-//                    if (!bb) {
-//                        pianoOnly = false
-//                        break
-//                    }
-//                }
-//
-//                result.add(UIMidiData(
-//                    fileName = it.nameWithoutExtension,
-//                    path = it.absolutePath(),
-//                    duration = midi.msAtTick(midi.totalTicks.toLong()),
-//                    pianoOnly = pianoOnly,
-//                    trackCount = midi.tracks.size
-//                ))
-//            } catch (e: Exception) {
-//                Logger.w { "Failed to load midi file: ${it.name}" }
-//                e.printStackTrace()
-//                return@forEach
-//            }
-//        }
-//    }
-//    cachedMidiFileInfos[path] = result
-//
-//    return result
-//}
-//
-//val cachedMidiFiles = mutableMapOf<String, Midi>()
-//suspend fun loadMidiFile(path: String): Midi? {
-//    val file = PlatformFile(path)
-//    return if (file.exists() && file.isRegularFile() && file.extension == "mid") {
-//        loadMidiFile(file)
-//    }
-//    else null
-//}
-//
-//suspend fun loadMidiFile(file: PlatformFile): Midi {
-//    if (cachedMidiFiles.containsKey(file.path)) {
-//        return cachedMidiFiles[file.path]!!
-//    }
-//
-//    val bytesArray = file.readBytes()
-//    val midi = withContext(Dispatchers.Default) {
-//        val bytes = bytesArray.toList()
-//        if (Global.settings.UseParserV1) Midi.fromFile(file.nameWithoutExtension, bytes)
-//        else parseMidi(file.nameWithoutExtension, bytes)
-//    }
-//    var noteCount = 0
-//    for (track in midi.tracks) {
-//        noteCount += track.notes.size
-//
-//        if (noteCount > 100_000) return midi
-//    }
-//    if (noteCount > 100_000) return midi
-//    else cachedMidiFiles[file.path] = midi
-//
-//    return midi
-//}

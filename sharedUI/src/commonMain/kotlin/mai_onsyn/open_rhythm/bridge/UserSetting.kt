@@ -35,6 +35,8 @@ class UserSetting(
     // =====General Interaction=====
     var DoubleClickToPlayPause      by st.observable("DoubleClickToPlayPause",      false)
     var DoubleFingerTapToPlayPause  by st.observable("DoubleFingerTapToPlayPause",  true)
+    var AutoStartPlayback           by st.observable("AutoStartPlayback",           true)
+    var PlaybackStartDistance       by st.observable("PlaybackStartDistance",       4)
 
     // =====General Security=====
     var ShowFolderPathInLibrary     by st.observable("ShowFolderPathInLibrary",     true)
@@ -45,7 +47,6 @@ class UserSetting(
     var EnableInputMidiCCEvent      by st.observable("EnableInputMidiCCEvent",      true)
     var EnableInputMidiPCEvent      by st.observable("EnableInputMidiPCEvent",      true)
     var EnableInputMidiPBEvent      by st.observable("EnableInputMidiPCBEvent",     true)
-    var EnableInputOtherMidiEvent   by st.observable("EnableInputOtherMidiEvent",   true)
 
     // =====MIDI Output=====
     var SelectedOutputDeviceName    by st.observable("SelectedOutputDeviceName",    "")
@@ -53,7 +54,6 @@ class UserSetting(
     var EnableOutputMidiCCEvent     by st.observable("EnableOutputMidiCCEvent",     true)
     var EnableOutputMidiPCEvent     by st.observable("EnableOutputMidiPCBEvent",    true)
     var EnableOutputMidiPBEvent     by st.observable("EnableOutputMidiPCBEvent",    true)
-    var EnableOutputOtherMidiEvent  by st.observable("EnableOutputOtherMidiEvent",  true)
     var GervillSF2Path              by st.observable("GervillSF2Path",              "")
 
     // =====MIDI Track=====

@@ -28,19 +28,19 @@ fun DebugSettings() {
         fold("Overlay layer") {
             itemWithSwitch(
                 name = "Show current tick",
-                description = "The MIDI tick position at the bottom boundary of the waterfall flow",
+                description = "The MIDI tick position at the bottom boundary of the waterfall",
                 initial = Global.settings.ShowCurrentTick,
                 onToggled = { Global.settings.ShowCurrentTick = it }
             )
             itemWithSwitch(
                 name = "Show FPS",
-                description = "Frame per second of midi waterfall flow",
+                description = "Frame per second of midi waterfall",
                 initial = Global.settings.ShowFps,
                 onToggled = { Global.settings.ShowFps = it }
             )
             itemWithSwitch(
                 name = "Show frame time",
-                description = "The interval millisecond time between two waterfall stream frames",
+                description = "The interval millisecond time between two waterfall frames",
                 initial = Global.settings.ShowFrameTime,
                 onToggled = { Global.settings.ShowFrameTime = it }
             )

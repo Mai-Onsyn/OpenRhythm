@@ -170,14 +170,6 @@ fun MidiDownRegion(
             )
         }
 
-        LaunchedEffect(isPlaying) {
-            if (isPlaying) {
-//                Singleton.player.setMidi(midi)
-                Global.player.onCompletion = { onPlayStateChange(false) }
-                Global.player.play()
-            }
-            else Global.player.pause()
-        }
         LaunchedEffect(isPlaying, midi, hpb) {
             while (true) {
                 withFrameMillis {
@@ -189,18 +181,23 @@ fun MidiDownRegion(
                     else currentTick = Global.player.preciseTick
                     onProgressChange((currentTick / midi.totalTicks).toFloat())
                     deltaYpx = 0f
-//                    if (Singleton.settings.AlwaysFocusMidiRegion) focusRequester.requestFocus()
                 }
             }
         }
         LaunchedEffect(midi) {
             Global.player.setMidi(midi)
-            Global.player.seek(midi.startTick.toLong() - midi.ppq * 4)
+            Global.player.seek(midi.startTick.toLong() - midi.ppq * Global.settings.PlaybackStartDistance)
+        }
+        LaunchedEffect(isPlaying) {
+            if (isPlaying) {
+                Global.player.onCompletion = { onPlayStateChange(false) }
+                Global.player.play()
+            }
+            else Global.player.pause()
         }
         LaunchedEffect(Unit) {
-//            midiInputDevice?.clearEvents()
             focusRequester.requestFocus()
-            Global.player.setMidi(midi)
+            if (Global.settings.AutoStartPlayback) onPlayStateChange(true)
         }
         BindInputDeviceEvents(userActiveKeys)
 //        DisposableEffect(Unit) {

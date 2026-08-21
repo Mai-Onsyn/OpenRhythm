@@ -167,11 +167,10 @@ class MidiPlayer2(
     }
 
     private fun buildEventSequence(midi: Midi?) {
+        eventList.clear()
         if (midi == null) {
-            eventList.clear()
             return
         }
-        eventList.clear()
 
         for (track in midi.tracks) {
             if (enableNote) for (note in track.notes) {

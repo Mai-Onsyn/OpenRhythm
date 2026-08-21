@@ -72,35 +72,13 @@ fun Body() {
             )
         }
 
-        item("Overlay labels", "The append text to show the pitch of key") {
-            val dropDownItems = remember { listOf(
-                ContextDropDownMenuItem("None", selectedContentColor = colorScheme.primary),
-                ContextDropDownMenuItem("Major", selectedContentColor = colorScheme.primary),
-                ContextDropDownMenuItem("White", selectedContentColor = colorScheme.primary),
-                ContextDropDownMenuItem("All", selectedContentColor = colorScheme.primary),
-            ) }
-            var expandDropMenu by remember { mutableStateOf(false) }
-            ContextDropdownMenu(
-                expanded = expandDropMenu,
-                onDismissRequest = { expandDropMenu = false },
-                items = dropDownItems,
-                selectedIndex = Global.settings.OverlayLabelsMode,
-                onSelect = { Global.settings.OverlayLabelsMode = it }
-            ) {
-                OutlinedButton(
-                    onClick = { expandDropMenu = true },
-                    shape = MaterialTheme.shapes.small,
-                    modifier = Modifier
-                        .pointerHoverIcon(PointerIcon.Hand)
-                        .width(100.dp)
-                ) {
-                    Text(
-                        text = dropDownItems.getOrNull(Global.settings.OverlayLabelsMode)?.label ?: "Error",
-                        style = MaterialTheme.typography.bodyMedium
-                    )
-                }
-            }
-        }
+        itemWithDropDownMenu(
+            name = "Overlay labels",
+            description = "The append text to show the pitch of key",
+            initial = Global.settings.OverlayLabelsMode,
+            onSelected = { Global.settings.OverlayLabelsMode = it },
+            items = listOf("None", "Major", "White", "All")
+        )
 
         item("Default pitch range", verticalLayout = true) {
             LabeledSliderWithPrefixSuffix(

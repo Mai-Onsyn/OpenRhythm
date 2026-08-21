@@ -15,8 +15,7 @@ class Midi(
     val endTick: Int = totalTicks,
     val ccChangeTimeline: Array<CCTimeline> = Array(16) { CCTimeline() },
     val pcChangeTimeline: Array<SingleChangeTimeline> = Array(16) { SingleChangeTimeline() },
-    val pbChangeTimeline: Array<SingleChangeTimeline> = Array(16) { SingleChangeTimeline() },
-    val hash: String = ""
+    val pbChangeTimeline: Array<SingleChangeTimeline> = Array(16) { SingleChangeTimeline() }
 ) {
     val tempoMap = TempoMap(ppq, tempoEvents)
     val totalNotes: Int

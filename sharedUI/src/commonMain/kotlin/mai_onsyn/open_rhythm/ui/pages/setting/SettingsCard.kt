@@ -19,8 +19,11 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import mai_onsyn.open_rhythm.ui.icons.ic_arrow_drop_down
+import mai_onsyn.open_rhythm.ui.modules.ContextDropDownMenuItem
+import mai_onsyn.open_rhythm.ui.modules.ContextDropdownMenu
 
 class SettingsCardScope(
     private val showDivider: Boolean = true
@@ -153,6 +156,54 @@ class SettingsCardScope(
                 initial = initial,
                 onToggled = onToggled
             )
+        }
+    }
+
+    @Composable
+    fun itemWithDropDownMenu(
+        name: String,
+        description: String? = null,
+        descColor: Color = MaterialTheme.colorScheme.onSurfaceVariant,
+        initial: Int = 0,
+        onSelected: (Int) -> Unit,
+        items: List<String>,
+        fixedWidth: Dp = 100.dp
+    ) {
+        var value by remember(initial) { mutableStateOf(initial) }
+        val colorScheme = MaterialTheme.colorScheme
+        val dropDownItems = remember {
+            mutableListOf<ContextDropDownMenuItem>().apply {
+                items.forEach {
+                    add(ContextDropDownMenuItem(it, selectedContentColor = colorScheme.primary))
+                }
+            }
+        }
+        var expandDropMenu by remember { mutableStateOf(false) }
+        item(
+            name = name,
+            description = description,
+            descColor = descColor
+        ) {
+            ContextDropdownMenu(
+                expanded = expandDropMenu,
+                onDismissRequest = { expandDropMenu = false },
+                items = dropDownItems,
+                selectedIndex = value,
+                onSelect = onSelected
+            ) {
+                OutlinedButton(
+                    onClick = { expandDropMenu = true },
+                    shape = MaterialTheme.shapes.small,
+                    modifier = Modifier
+                        .pointerHoverIcon(PointerIcon.Hand)
+                        .width(fixedWidth)
+                ) {
+                    Text(
+                        text = dropDownItems.getOrNull(value)?.label ?: "Error",
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                }
+            }
         }
     }
 }

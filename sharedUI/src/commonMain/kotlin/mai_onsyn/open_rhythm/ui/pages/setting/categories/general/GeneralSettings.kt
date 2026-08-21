@@ -170,6 +170,14 @@ private fun InteractionSettings() {
         icon = ic_arrow_selector_tool,
         modifier = Modifier.widthIn(400.dp, 800.dp)
     ) {
+        itemWithDropDownMenu(
+            name = "Screen rotation",
+            description = "Not valid on desktop, for mobile, set the screen orientation",
+            initial = Global.settings.MobileScreenOrientation,
+            onSelected = { Global.settings.MobileScreenOrientation = it },
+            items = listOf("Portrait", "Landscape", "Free", "System"),
+            fixedWidth = 120.dp
+        )
         itemWithSwitch(
             name = "Double tap to play/pause",
             description = "This is pretty easy to trigger by accident",

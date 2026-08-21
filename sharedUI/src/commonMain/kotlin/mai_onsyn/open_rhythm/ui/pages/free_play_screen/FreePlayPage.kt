@@ -5,6 +5,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.backhandler.BackHandler
+import androidx.compose.ui.keepScreenOn
 import mai_onsyn.open_rhythm.bridge.Global
 import mai_onsyn.open_rhythm.ui.modules.midi_flow.MidiUpRegion
 
@@ -14,9 +15,10 @@ fun FreePlayPage(
     onBack: () -> Unit
 ) {
     BackHandler { onBack() }
-//    Text("Free Play Page", style = MaterialTheme.typography.titleLarge)
     MidiUpRegion(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier
+            .fillMaxSize()
+            .keepScreenOn(),
         keyboardRatio = Global.settings.KeyboardAspectRatio
     )
 }

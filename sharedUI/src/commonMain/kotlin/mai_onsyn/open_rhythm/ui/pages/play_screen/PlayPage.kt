@@ -34,6 +34,7 @@ import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.keepScreenOn
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
@@ -85,6 +86,7 @@ fun PlayPage(
     Box(
         modifier = Modifier
             .clip(RectangleShape)
+            .keepScreenOn()
     ) {
         MidiDownRegion(
             modifier = Modifier

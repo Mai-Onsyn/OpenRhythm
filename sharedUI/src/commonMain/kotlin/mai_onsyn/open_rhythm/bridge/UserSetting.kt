@@ -37,6 +37,7 @@ class UserSetting(
     var DoubleFingerTapToPlayPause  by st.observable("DoubleFingerTapToPlayPause",  true)
     var AutoStartPlayback           by st.observable("AutoStartPlayback",           true)
     var PlaybackStartDistance       by st.observable("PlaybackStartDistance",       4)
+    var MobileScreenOrientation     by st.observable("MobileScreenOrientation",     2)  // 0=vertical; 1=horizontal; 2=any; 3=system
 
     // =====General Security=====
     var ShowFolderPathInLibrary     by st.observable("ShowFolderPathInLibrary",     true)

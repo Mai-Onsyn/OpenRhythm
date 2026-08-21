@@ -8,4 +8,5 @@ plugins {
     alias(libs.plugins.kotlinx.serialization).apply(false)
 
     id("com.mikepenz.aboutlibraries.plugin") version "14.2.1" apply false
+    id("io.github.kmpbits.splash") version "1.4.2" apply false
 }

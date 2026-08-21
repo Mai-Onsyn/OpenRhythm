@@ -1,3 +1,6 @@
+import io.kmpbits.splash.ExitAnimation
+import io.kmpbits.splash.SplashColor
+import io.kmpbits.splash.SplashLogo
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.gradle.kotlin.dsl.withType
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
@@ -9,13 +12,14 @@ plugins {
     alias(libs.plugins.android.kmp.library)
     alias(libs.plugins.kotlinx.serialization)
     id("com.mikepenz.aboutlibraries.plugin")
+    id("io.github.kmpbits.splash")
 }
 
 kotlin {
     android {
         namespace = "mai_onsyn.open_rhythm"
         compileSdk = 36
-        minSdk = 23
+        minSdk = 24
         androidResources.enable = true
         compilerOptions { jvmTarget = JvmTarget.JVM_17 }
     }
@@ -66,6 +70,7 @@ kotlin {
         androidMain.dependencies {
             implementation(libs.androidx.activity.ktx)
             implementation(libs.kotlinx.coroutines.android)
+            api("io.github.kmpbits:splash-runtime:1.4.2")
         }
 
         jvmMain.dependencies {
@@ -96,4 +101,13 @@ aboutLibraries {
     export {
         outputFile = project.file("src/commonMain/composeResources/files/aboutlibraries.json")
     }
+}
+
+splashScreen {
+    backgroundColor = SplashColor.hex("#fdf7ff")
+    backgroundColorNight = SplashColor.hex("#141218")
+    exitAnimation = ExitAnimation.FadeOut(300)
+    logo = SplashLogo.resource("foreground-512x.png")
+    iosProjectPath = "iosApp/iosApp"
+    androidAppPath = "androidApp"
 }

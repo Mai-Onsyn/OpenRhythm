@@ -1,5 +1,7 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
+evaluationDependsOn(":sharedUI")
+
 plugins {
     alias(libs.plugins.compose.compiler)
     alias(libs.plugins.android.application)
@@ -10,7 +12,7 @@ android {
     compileSdk = 36
 
     defaultConfig {
-        minSdk = 23
+        minSdk = 24
         targetSdk = 36
 
         applicationId = "mai_onsyn.open_rhythm.androidApp"

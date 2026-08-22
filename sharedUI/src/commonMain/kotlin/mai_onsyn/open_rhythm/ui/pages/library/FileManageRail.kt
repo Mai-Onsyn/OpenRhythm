@@ -14,11 +14,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import co.touchlab.kermit.Logger
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.ensureActive
 import mai_onsyn.open_rhythm.bridge.Global
 import mai_onsyn.open_rhythm.core.midi.UIMidiData
 import mai_onsyn.open_rhythm.core.util.Time
 import mai_onsyn.open_rhythm.ui.icons.ic_music_note
+import mai_onsyn.open_rhythm.ui.modules.LoadingSpinner
 import mai_onsyn.open_rhythm.ui.modules.MorphingPlayPauseButton
 import mai_onsyn.open_rhythm.ui.modules.NumberSpinner
 import mai_onsyn.open_rhythm.ui.modules.OpacitySurface
@@ -45,6 +47,8 @@ fun FileManageRail(
             ensureActive()
             onFileCountAvailable(result.size)
             UiState.Success(result)
+        } catch (e: CancellationException) {
+            value
         } catch (e: Exception) {
             e.printStackTrace()
             UiState.Error(e.message ?: "Failed to load files")
@@ -54,11 +58,17 @@ fun FileManageRail(
     when (uiState) {
         is UiState.Loading -> {
             Box(modifier = modifier) {
-                Text(
-                    text = "Loading...",
-                    style = MaterialTheme.typography.bodyLarge,
-                    modifier = Modifier.align(Alignment.Center)
-                )
+                Row(
+                    modifier = Modifier.align(Alignment.Center),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    LoadingSpinner(Modifier.size(20.dp), strokeWidth = 4.dp)
+                    Text(
+                        text = "Loading...",
+                        style = MaterialTheme.typography.bodyLarge
+                    )
+                }
             }
         }
         is UiState.Error -> {

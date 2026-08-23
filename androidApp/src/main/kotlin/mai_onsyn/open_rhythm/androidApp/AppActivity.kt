@@ -3,28 +3,20 @@ package mai_onsyn.open_rhythm.androidApp
 import android.app.Activity
 import android.content.pm.ActivityInfo
 import android.content.res.Configuration
-import android.os.Build
-import android.os.Bundle
-import android.view.WindowInsets
 import android.view.WindowManager
-import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowInsetsControllerCompat
-import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import io.kmpbits.splash.SplashActivity
-import kotlinx.coroutines.delay
 import mai_onsyn.open_rhythm.bridge.Global
 import mai_onsyn.open_rhythm.bridge.initAndroid
 import mai_onsyn.open_rhythm.core.log.LogManager
 import mai_onsyn.open_rhythm.ui.App
-import kotlin.time.Duration.Companion.milliseconds
 
 class AppActivity: SplashActivity() {
     override fun onPreCreate() {

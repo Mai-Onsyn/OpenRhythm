@@ -1,14 +1,17 @@
 package mai_onsyn.open_rhythm.ui.pages.setting.categories.midi
 
 import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
@@ -213,6 +216,7 @@ private fun ReorderableCollectionItemScope.TrackColorRow(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier
                     .height(40.dp)
+                    .weight(0.5f)
             ) {
                 Box(Modifier.draggableHandle().size(40.dp)) {
                     Icon(
@@ -232,42 +236,55 @@ private fun ReorderableCollectionItemScope.TrackColorRow(
                 )
             }
 
-            Spacer(Modifier.weight(1f))
-
-            Box(
-                modifier = Modifier
-                    .fillMaxHeight()
-                    .width(100.dp)
-                    .drawWithCache {
-                        val w = size.width
-                        val h = size.height
-                        onDrawBehind {
-                            withTransform({
-                                scale(
-                                    scaleX = w / h,
-                                    scaleY = 1f,
-                                    pivot = Offset(w / 2f, h / 2f)
-                                )
-                            }) {
-                                val brush = Brush.radialGradient(
-                                    colorStops = arrayOf(0f to color, 0.5f to color, 1f to Color.Transparent),
-                                    center = Offset(w / 2f, h / 2f),
-                                    radius = h / 2f
-                                )
-                                drawRect(brush = brush, topLeft = Offset.Zero, size = size)
-                            }
-                        }
-                    }
+//            Box(
+//                modifier = Modifier
+//                    .fillMaxHeight()
+//                    .width(100.dp)
+//                    .drawWithCache {
+//                        val w = size.width
+//                        val h = size.height
+//                        onDrawBehind {
+//                            withTransform({
+//                                scale(
+//                                    scaleX = w / h,
+//                                    scaleY = 1f,
+//                                    pivot = Offset(w / 2f, h / 2f)
+//                                )
+//                            }) {
+//                                val brush = Brush.radialGradient(
+//                                    colorStops = arrayOf(0f to color, 0.5f to color, 1f to Color.Transparent),
+//                                    center = Offset(w / 2f, h / 2f),
+//                                    radius = h / 2f
+//                                )
+//                                drawRect(brush = brush, topLeft = Offset.Zero, size = size)
+//                            }
+//                        }
+//                    }
+//            ) {
+//                Text(
+//                    text = color.toHex(),
+//                    style = MaterialTheme.typography.bodyMedium,
+//                    color = getContrastTextColor(color),
+//                    modifier = Modifier.align(Alignment.Center)
+//                )
+//            }
+            Row(
+                modifier = Modifier.fillMaxHeight().weight(0.5f),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
+                Box(
+                    modifier = Modifier
+                        .size(24.dp)
+                        .clip(CircleShape)
+                        .background(color)
+                )
                 Text(
                     text = color.toHex(),
                     style = MaterialTheme.typography.bodyMedium,
-                    color = getContrastTextColor(color),
-                    modifier = Modifier.align(Alignment.Center)
+//                    modifier = Modifier.width(64.dp)
                 )
             }
-
-            Spacer(Modifier.weight(1f))
 
             IconButton(
                 onClick = onDelete

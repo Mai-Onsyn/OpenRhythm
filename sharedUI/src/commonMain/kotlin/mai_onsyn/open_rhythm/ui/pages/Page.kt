@@ -24,17 +24,19 @@ import mai_onsyn.open_rhythm.ui.pages.library.LibraryPage
 import mai_onsyn.open_rhythm.ui.pages.library.MidiPlayMethod.PlayMode.*
 import mai_onsyn.open_rhythm.ui.pages.play_screen.PlayPage
 import mai_onsyn.open_rhythm.ui.pages.setting.SettingsPage
+import mai_onsyn.open_rhythm.ui.pages.track_edit.TrackEditPage
 
 @Serializable object Home
 
 @Serializable object Library
-
 
 @Serializable object FreePlayScreen
 
 @Serializable object Setting
 
 @Serializable object PlayScreen
+
+@Serializable object TrackEditScreen
 
 private val enterTransition:
         AnimatedContentTransitionScope<NavBackStackEntry>.() -> EnterTransition = {
@@ -89,14 +91,13 @@ fun AppNavigation(
         NavHost(
             modifier = Modifier.fillMaxSize(),
             navController = navController,
-            startDestination = Home
+            startDestination = Home,
+            enterTransition = enterTransition,
+            exitTransition = exitTransition,
+            popEnterTransition = popEnterTransition,
+            popExitTransition = popExitTransition
         ) {
-            composable<Home>(
-                enterTransition = enterTransition,
-                exitTransition = exitTransition,
-                popEnterTransition = popEnterTransition,
-                popExitTransition = popExitTransition
-            ) {
+            composable<Home> {
                 HomePage(
                     maxWidth > 600.dp,
                     { navController.navigate(Library) },
@@ -110,12 +111,7 @@ fun AppNavigation(
                 if (!navController.popBackStack())
                     navController.navigate(Home)
             }
-            composable<Library>(
-                enterTransition = enterTransition,
-                exitTransition = exitTransition,
-                popEnterTransition = popEnterTransition,
-                popExitTransition = popExitTransition
-            ) {
+            composable<Library> {
                 LibraryPage(
                     maxWidth > 600.dp,
                     onBack,
@@ -134,36 +130,32 @@ fun AppNavigation(
                             }
                         }
                         navController.navigate(PlayScreen)
-                        Logger.i { "Enter Play Screen $it" }
+                        Logger.i { "Enter play screen $it" }
+                    },
+                    {
+                        scope.launch(Dispatchers.IO) {
+                            currentPlayScreenMidi = Global.fileLoader.loadFile(it.path)
+                        }
+                        navController.navigate(TrackEditScreen)
+                        Logger.d { "Enter track edit: ${it.fileName}" }
                     }
                 )
             }
 
-            composable<PlayScreen>(
-                enterTransition = enterTransition,
-                exitTransition = exitTransition,
-                popEnterTransition = popEnterTransition,
-                popExitTransition = popExitTransition
-            ) {
+            composable<PlayScreen> {
                 PlayPage(currentPlayScreenMidi, onBack)
             }
 
-            composable<FreePlayScreen>(
-                enterTransition = enterTransition,
-                exitTransition = exitTransition,
-                popEnterTransition = popEnterTransition,
-                popExitTransition = popExitTransition
-            ) {
+            composable<FreePlayScreen> {
                 FreePlayPage(onBack)
             }
 
-            composable<Setting>(
-                enterTransition = enterTransition,
-                exitTransition = exitTransition,
-                popEnterTransition = popEnterTransition,
-                popExitTransition = popExitTransition
-            ) {
+            composable<Setting> {
                 SettingsPage(maxWidth > 600.dp, onBack)
+            }
+
+            composable<TrackEditScreen> {
+                TrackEditPage(currentPlayScreenMidi, onBack)
             }
         }
     }

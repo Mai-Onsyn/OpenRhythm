@@ -106,7 +106,7 @@ fun PlayPage(
             trackColors = Global.settings.trackColors.let { if (it.isEmpty()) TrackColorDefaults.colors() else it },
             isPlaying = isPlaying,
             keyboardRatio = if (Global.settings.KeyboardAutoAspect) Global.settings.KeyboardAspectRatio else 0f,
-            onPlayStateChange = { isPlaying = it; Logger.d { isPlaying.toString() } },
+            onPlayStateChange = { isPlaying = it },
             onProgressChange = { playProgress = it },
             focusRequester = focusRequester
         )

@@ -37,9 +37,9 @@ class MidiFileLoader {
         path, cachedFolderContentInfos, loadingFolderDeferred
     ) { _loadFolder(path) }
 
-    suspend fun loadFile(fileName: String): Midi = load(
-        fileName, cachedFileInfos, loadingFileDeferred
-    ) { _loadFile(fileName) }
+    suspend fun loadFile(path: String): Midi = load(
+        path, cachedFileInfos, loadingFileDeferred
+    ) { _loadFile(path) }
 
     fun isFolderLoaded(path: String): Boolean = cachedFolderContentInfos.containsKey(path)
 

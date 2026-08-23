@@ -1,8 +1,7 @@
-package mai_onsyn.open_rhythm.core.midi
+package mai_onsyn.open_rhythm.core.settings
 
 import androidx.compose.ui.graphics.Color
 import kotlinx.serialization.Serializable
-import mai_onsyn.open_rhythm.core.settings.ColorSerializer
 
 @Serializable
 data class MidiTrackSettings(
@@ -12,4 +11,10 @@ data class MidiTrackSettings(
     var volume: Float? = null,
     var visible: Boolean? = null,
     var audible: Boolean? = null
+)
+
+@Serializable
+data class MidiFileSettings(
+    val trackSettings: MutableMap<Int, MidiTrackSettings> = mutableMapOf(),
+    var lastUpdated: Long = 0
 )

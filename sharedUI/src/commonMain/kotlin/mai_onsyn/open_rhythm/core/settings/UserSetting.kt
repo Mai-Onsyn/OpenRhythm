@@ -101,6 +101,7 @@ class UserSetting(
 
     // =====User Data=====
     val libraryFolderList by st.list("LibraryFolderList", mutableListOf(), UILibraryFolder.serializer())
+    val midiFileSettings by st.map("MidiFileSettings", mutableMapOf(), String.serializer(), MidiFileSettings.serializer())
 
     fun resetAllSettings() = st.clear()
 }

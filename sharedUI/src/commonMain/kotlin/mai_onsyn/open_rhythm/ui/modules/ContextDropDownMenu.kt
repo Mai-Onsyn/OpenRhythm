@@ -53,10 +53,10 @@ fun ContextDropdownMenu(
             expanded = expanded,
             onDismissRequest = onDismissRequest,
             modifier = Modifier.onSizeChanged { popupRegionWidth = it.width },
-            offset = DpOffset(
+            offset = if (alignment == Alignment.End) DpOffset(
                 x = with(density) { (interactionRegionWidth - popupRegionWidth).toDp() },
                 y = 0.dp
-            )
+            ) else DpOffset.Zero
         ) {
             items.forEachIndexed { index, item ->
                 if (item.icon == null && item.label == null) return@forEachIndexed

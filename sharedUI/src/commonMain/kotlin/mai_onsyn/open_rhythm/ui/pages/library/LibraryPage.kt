@@ -24,6 +24,7 @@ import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
 import mai_onsyn.open_rhythm.bridge.Global
 import mai_onsyn.open_rhythm.bridge.pickDirectoryWithPermission
+import mai_onsyn.open_rhythm.core.midi.UIMidiData
 import mai_onsyn.open_rhythm.ui.icons.ic_add
 import mai_onsyn.open_rhythm.ui.icons.ic_arrow_back
 import mai_onsyn.open_rhythm.ui.icons.ic_refresh
@@ -37,7 +38,8 @@ import kotlin.math.min
 fun LibraryPage(
     useWideLayout: Boolean,
     onBack: () -> Unit,
-    onEnterPlayMidiScreen: (MidiPlayMethod) -> Unit
+    onEnterPlayMidiScreen: (MidiPlayMethod) -> Unit,
+    onEnterTrackEditScreen: (UIMidiData) -> Unit
 ) {
     BackHandler { onBack() }
 
@@ -49,21 +51,33 @@ fun LibraryPage(
                 .padding(32.dp)
         ) {
             Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier
-                    .padding(start = 16.dp)
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Column {
-                    Text(
-                        text = "MIDI Library",
-                        style = MaterialTheme.typography.headlineMedium
-                    )
-                    Text(
-                        text = "Manage your MIDI folders and files",
-                        style = MaterialTheme.typography.labelMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                IconButton(
+                    onClick = onBack,
+                    shape = MaterialTheme.shapes.small,
+                    modifier = Modifier
+                        .size(48.dp, 32.dp)
+                        .pointerHoverIcon(PointerIcon.Hand)
+                ) {
+                    Icon(
+                        imageVector = ic_arrow_back,
+                        contentDescription = "Back",
+                        modifier = Modifier.size(24.dp)
                     )
                 }
+                Spacer(Modifier.width(4.dp))
+                Text(
+                    text = "MIDI Library",
+                    style = MaterialTheme.typography.headlineMedium
+                )
+//                Column {
+//                    Text(
+//                        text = "Manage your MIDI folders and files",
+//                        style = MaterialTheme.typography.labelMedium,
+//                        color = MaterialTheme.colorScheme.onSurfaceVariant
+//                    )
+//                }
                 Spacer(Modifier.weight(1f))
 
                 var showNewFolderExistedPopup by remember { mutableStateOf(false) }
@@ -126,30 +140,31 @@ fun LibraryPage(
             HorizontalDivider(Modifier.padding(vertical = 16.dp))
 
             if (useWideLayout) {
-                WideLayout(onEnterPlayMidiScreen, selectedFolderIndex) { selectedFolderIndex = it }
-            } else NarrowLayout(onEnterPlayMidiScreen, selectedFolderIndex) { selectedFolderIndex = it }
+                WideLayout(onEnterPlayMidiScreen, onEnterTrackEditScreen, selectedFolderIndex) { selectedFolderIndex = it }
+            } else NarrowLayout(onEnterPlayMidiScreen, onEnterTrackEditScreen, selectedFolderIndex) { selectedFolderIndex = it }
         }
 
-        Box(Modifier.padding(top = 8.dp, start = 8.dp)) {
-            IconButton(
-                onClick = onBack,
-                shape = MaterialTheme.shapes.small,
-                modifier = Modifier
-                    .size(56.dp, 32.dp)
-            ) {
-                Icon(
-                    imageVector = ic_arrow_back,
-                    contentDescription = "Back",
-                    modifier = Modifier.size(24.dp).pointerHoverIcon(PointerIcon.Hand)
-                )
-            }
-        }
+//        Box(Modifier.padding(top = 8.dp, start = 8.dp)) {
+//            IconButton(
+//                onClick = onBack,
+//                shape = MaterialTheme.shapes.small,
+//                modifier = Modifier
+//                    .size(56.dp, 32.dp)
+//            ) {
+//                Icon(
+//                    imageVector = ic_arrow_back,
+//                    contentDescription = "Back",
+//                    modifier = Modifier.size(24.dp).pointerHoverIcon(PointerIcon.Hand)
+//                )
+//            }
+//        }
     }
 }
 
 @Composable
 private fun WideLayout(
     onEnterPlayMidiScreen: (MidiPlayMethod) -> Unit,
+    onEnterTrackEditScreen: (UIMidiData) -> Unit,
     selectedFolderIndex: Int,
     onSelect: (Int) -> Unit
 ) {
@@ -170,6 +185,7 @@ private fun WideLayout(
                 .weight(0.6f),
             selectedFolderIndex,
             onEnterPlayMidiScreen,
+            onEnterTrackEditScreen,
             version
         )
     }
@@ -178,6 +194,7 @@ private fun WideLayout(
 @Composable
 private fun NarrowLayout(
     onEnterPlayMidiScreen: (MidiPlayMethod) -> Unit,
+    onEnterTrackEditScreen: (UIMidiData) -> Unit,
     selectedFolderIndex: Int,
     onSelect: (Int) -> Unit
 ) {
@@ -198,6 +215,7 @@ private fun NarrowLayout(
                 .weight(0.6f),
             selectedFolderIndex,
             onEnterPlayMidiScreen,
+            onEnterTrackEditScreen,
             version
         )
     }
@@ -289,6 +307,7 @@ private fun FileRail(
     modifier: Modifier,
     selectedFolderIndex: Int,
     onEnterPlayMidiScreen: (MidiPlayMethod) -> Unit,
+    onEnterTrackEditScreen: (UIMidiData) -> Unit,
     refresher: Int
 ) {
     Column(
@@ -320,6 +339,7 @@ private fun FileRail(
             },
             onFileCountAvailable = { fileCount = it },
             onConfirm = onEnterPlayMidiScreen,
+            onEnterTrackEdit = onEnterTrackEditScreen,
             refresher = refresher
         )
     }

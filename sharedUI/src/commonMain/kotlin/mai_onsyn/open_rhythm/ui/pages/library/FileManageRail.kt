@@ -19,7 +19,11 @@ import kotlinx.coroutines.ensureActive
 import mai_onsyn.open_rhythm.bridge.Global
 import mai_onsyn.open_rhythm.core.midi.UIMidiData
 import mai_onsyn.open_rhythm.core.util.Time
+import mai_onsyn.open_rhythm.ui.icons.ic_edit_square
+import mai_onsyn.open_rhythm.ui.icons.ic_more_vert
 import mai_onsyn.open_rhythm.ui.icons.ic_music_note
+import mai_onsyn.open_rhythm.ui.modules.ContextDropDownMenuItem
+import mai_onsyn.open_rhythm.ui.modules.ContextDropdownMenu
 import mai_onsyn.open_rhythm.ui.modules.LoadingSpinner
 import mai_onsyn.open_rhythm.ui.modules.MorphingPlayPauseButton
 import mai_onsyn.open_rhythm.ui.modules.NumberSpinner
@@ -34,6 +38,7 @@ fun FileManageRail(
     path: String,
     onFileCountAvailable: (Int) -> Unit,
     onConfirm: (MidiPlayMethod) -> Unit,
+    onEnterTrackEdit: (UIMidiData) -> Unit,
     refresher: Int
 ) {
     val uiState by produceState<UiState<List<UIMidiData>>>(
@@ -82,13 +87,6 @@ fun FileManageRail(
         }
         is UiState.Success -> {
             val midiFiles = (uiState as UiState.Success<List<UIMidiData>>).data
-//            Box(modifier = modifier) {
-//                Text(
-//                    text = "${midiFiles.size}",
-//                    style = MaterialTheme.typography.bodyLarge,
-//                    modifier = Modifier.align(Alignment.Center)
-//                )
-//            }
             var isPlaying by remember { mutableStateOf(false) }
             var playingIdx by remember { mutableStateOf(-1) }
             LaunchedEffect(path) {
@@ -138,9 +136,9 @@ fun FileManageRail(
                             } else {
                                 isPlaying = false
                             }
-//                            println(it.toString())
                         },
-                        onConfirm = onConfirm
+                        onConfirm = onConfirm,
+                        onEnterTrackEdit = onEnterTrackEdit
                     )
                 }
             }
@@ -154,7 +152,8 @@ fun FileRailItem(
     target: UIMidiData,
     isPlaying: Boolean = false,
     onPlayButtonClick: (Boolean) -> Unit,
-    onConfirm: (MidiPlayMethod) -> Unit
+    onConfirm: (MidiPlayMethod) -> Unit,
+    onEnterTrackEdit: (UIMidiData) -> Unit
 ) {
     var showModeSelector by remember { mutableStateOf(false) }
     Surface(
@@ -199,18 +198,18 @@ fun FileRailItem(
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )
-                    Text(
-                        text = "•",
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                    Text(
-                        text = "${target.noteCount} notes",
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                    )
+//                    Text(
+//                        text = "•",
+//                        style = MaterialTheme.typography.labelSmall,
+//                        color = MaterialTheme.colorScheme.onSurfaceVariant
+//                    )
+//                    Text(
+//                        text = "${target.noteCount} notes",
+//                        style = MaterialTheme.typography.labelSmall,
+//                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+//                        maxLines = 1,
+//                        overflow = TextOverflow.Ellipsis
+//                    )
                     Text(
                         text = "•",
                         style = MaterialTheme.typography.labelSmall,
@@ -236,19 +235,6 @@ fun FileRailItem(
             Spacer(modifier = Modifier.height(16.dp))
 
             val isPlayingState by rememberUpdatedState(isPlaying)
-//            OpacitySurface(
-//                modifier = Modifier.pointerInput(Unit) {
-//                    detectTapGestures(
-//                        onTap = { onPlayButtonClick(!isPlayingState) }
-//                    )
-//                }
-//            ) {
-//                MorphingPlayPauseButton(
-//                    modifier = Modifier.size(24.dp),
-//                    isPlaying = isPlaying,
-//                    fill = MaterialTheme.colorScheme.primary
-//                )
-//            }
             OpacitySurface(
                 contentPadding = 0.dp
             ) {
@@ -260,6 +246,40 @@ fun FileRailItem(
                         modifier = Modifier.size(24.dp),
                         isPlaying = isPlaying,
                         fill = MaterialTheme.colorScheme.primary
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            val contextItems = remember { listOf(
+                ContextDropDownMenuItem(
+                    label = "Edit track",
+                    icon = ic_edit_square
+                )
+            ) }
+            var contextMenuExpanded by remember { mutableStateOf(false) }
+            ContextDropdownMenu(
+                expanded = contextMenuExpanded,
+                onDismissRequest = { contextMenuExpanded = false },
+                selectedIndex = -1,
+                onSelect = {
+                    contextMenuExpanded = false
+                    when (it) {
+                        0 -> onEnterTrackEdit(target)
+                    }
+                },
+                items = contextItems
+            ) {
+                IconButton(
+                    onClick = { contextMenuExpanded = true },
+                    shape = MaterialTheme.shapes.small,
+                    modifier = Modifier.size(24.dp, 32.dp)
+                ) {
+                    Icon(
+                        imageVector = ic_more_vert,
+                        contentDescription = "Operations for ${target.fileName}",
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
             }

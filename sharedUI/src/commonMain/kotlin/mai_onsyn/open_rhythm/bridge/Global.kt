@@ -9,6 +9,7 @@ import mai_onsyn.open_rhythm.core.midi.device.KeyboardVirtualMidiInputDevice
 import mai_onsyn.open_rhythm.core.midi.device.KtMidiInputDevice
 import mai_onsyn.open_rhythm.core.midi.device.MidiInputDevice
 import mai_onsyn.open_rhythm.core.midi.MidiFileLoader
+import mai_onsyn.open_rhythm.core.settings.UserSetting
 import mai_onsyn.open_rhythm.ui.pages.setting.categories.key_map.toMappingMap
 
 object Global {

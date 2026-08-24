@@ -250,8 +250,11 @@ class MidiPlayer2(
                         state = State.PLAYING
                         blocker.clear()
                     }
-                } else currTickEvents.forEach {
-                    eventChannel.send(it.event)
+                } else {
+                    currTickEvents.forEach {
+                        ensureActive()
+                        eventChannel.trySend(it.event)
+                    }
                 }
             }
         }

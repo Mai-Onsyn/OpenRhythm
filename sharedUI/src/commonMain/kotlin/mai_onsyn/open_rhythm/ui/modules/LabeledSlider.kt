@@ -44,6 +44,8 @@ fun LabeledSlider(
     range: IntRange,
     steps: Int,
     modifier: Modifier = Modifier,
+    centerValue: Int = range.first,
+    showTooltip: Boolean = true,
     onValueChanged: (Int) -> Unit,
     onSlidStart: (Int) -> Unit = {},
     onSlidStop: () -> Unit = {},
@@ -116,7 +118,8 @@ fun LabeledSlider(
             )
             drawRoundRect(
                 color = colorScheme.primary,
-                size = size.copy(width = size.width * animatedProgress),
+                size = size.copy(width = size.width * (animatedProgress - (centerValue - range.first) / totalTicks)),
+                topLeft = Offset((centerValue - range.first) / totalTicks * size.width, 0f),
                 cornerRadius = CornerRadius(size.height / 2),
             )
         }
@@ -149,12 +152,12 @@ fun LabeledSlider(
 
                     }
                 }
-                .then(drawLabelModifier(
+                .then(if (showTooltip) drawLabelModifier(
                     interactingAlpha,
                     animatedProgress,
                     colorScheme.primaryContainer,
                     textLayoutResult
-                ))
+                ) else Modifier)
         )
     }
 }
@@ -165,6 +168,8 @@ fun SliderWithSuffix(
     range: IntRange,
     steps: Int = 1,
     modifier: Modifier = Modifier,
+    centerValue: Int = range.first,
+    showTooltip: Boolean = true,
     onValueChanged: (Int) -> Unit,
     onSlidStart: (Int) -> Unit = {},
     onSlidStop: () -> Unit = {},
@@ -176,7 +181,7 @@ fun SliderWithSuffix(
         verticalAlignment = Alignment.CenterVertically
     ) {
         LabeledSlider(
-            value, range, steps, Modifier.weight(1f), onValueChanged, onSlidStart, onSlidStop, valueMapping
+            value, range, steps, Modifier.weight(1f), centerValue, showTooltip, onValueChanged, onSlidStart, onSlidStop, valueMapping
         )
         Spacer(Modifier.width(10.dp))
         LabelRow(valueMapping(value), extraSuffix)

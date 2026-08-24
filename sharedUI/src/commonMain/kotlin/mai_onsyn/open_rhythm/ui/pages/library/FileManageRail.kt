@@ -244,7 +244,7 @@ fun FileRailItem(
                 ) {
                     MorphingPlayPauseButton(
                         modifier = Modifier.size(24.dp),
-                        isPlaying = isPlaying,
+                        isPlaying = isPlayingState,
                         fill = MaterialTheme.colorScheme.primary
                     )
                 }
@@ -252,37 +252,49 @@ fun FileRailItem(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            val contextItems = remember { listOf(
-                ContextDropDownMenuItem(
-                    label = "Edit track",
-                    icon = ic_edit_square
-                )
-            ) }
-            var contextMenuExpanded by remember { mutableStateOf(false) }
-            ContextDropdownMenu(
-                expanded = contextMenuExpanded,
-                onDismissRequest = { contextMenuExpanded = false },
-                selectedIndex = -1,
-                onSelect = {
-                    contextMenuExpanded = false
-                    when (it) {
-                        0 -> onEnterTrackEdit(target)
-                    }
-                },
-                items = contextItems
+            IconButton(
+                onClick = { onEnterTrackEdit(target) },
+                shape = MaterialTheme.shapes.small,
+                modifier = Modifier.pointerHoverIcon(PointerIcon.Hand)
             ) {
-                IconButton(
-                    onClick = { contextMenuExpanded = true },
-                    shape = MaterialTheme.shapes.small,
-                    modifier = Modifier.size(24.dp, 32.dp)
-                ) {
-                    Icon(
-                        imageVector = ic_more_vert,
-                        contentDescription = "Operations for ${target.fileName}",
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
+                Icon(
+                    imageVector = ic_edit_square,
+                    contentDescription = "Operations for ${target.fileName}",
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.size(16.dp)
+                )
             }
+//            val contextItems = remember { listOf(
+//                ContextDropDownMenuItem(
+//                    label = "Edit track",
+//                    icon = ic_edit_square
+//                )
+//            ) }
+//            var contextMenuExpanded by remember { mutableStateOf(false) }
+//            ContextDropdownMenu(
+//                expanded = contextMenuExpanded,
+//                onDismissRequest = { contextMenuExpanded = false },
+//                selectedIndex = -1,
+//                onSelect = {
+//                    contextMenuExpanded = false
+//                    when (it) {
+//                        0 -> onEnterTrackEdit(target)
+//                    }
+//                },
+//                items = contextItems
+//            ) {
+//                IconButton(
+//                    onClick = { contextMenuExpanded = true },
+//                    shape = MaterialTheme.shapes.small,
+//                    modifier = Modifier.size(24.dp, 32.dp)
+//                ) {
+//                    Icon(
+//                        imageVector = ic_more_vert,
+//                        contentDescription = "Operations for ${target.fileName}",
+//                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+//                    )
+//                }
+//            }
         }
     }
 

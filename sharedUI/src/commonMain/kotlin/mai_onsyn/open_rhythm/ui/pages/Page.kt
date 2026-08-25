@@ -84,7 +84,8 @@ fun AppNavigation(
 ) {
     val navController = rememberNavController()
 
-    var currentPlayScreenMidi by remember { mutableStateOf<Midi?>(null) }
+    var currentOperateMidi by remember { mutableStateOf<Midi?>(null) }
+    var currentOperateMidiPath by remember { mutableStateOf("") }
 
     val scope = rememberCoroutineScope()
     BoxWithConstraints(modifier) {
@@ -117,7 +118,7 @@ fun AppNavigation(
                     onBack,
                     {
                         scope.launch(Dispatchers.IO) {
-                            currentPlayScreenMidi = Global.fileLoader.loadFile(it.data.path)
+                            currentOperateMidi = Global.fileLoader.loadFile(it.data.path)
                             when (it.playMode) {
                                 AUTO -> {}
                                 PRACTICE -> {
@@ -125,17 +126,19 @@ fun AppNavigation(
                                 }
                                 PRACTICE_SINGLE -> {
                                     Global.player.practiceMode = true
-                                    currentPlayScreenMidi = currentPlayScreenMidi!!.take(it.trackNum)
+                                    currentOperateMidi = currentOperateMidi!!.take(it.trackNum)
                                 }
                             }
+                            currentOperateMidiPath = it.data.path
                         }
                         navController.navigate(PlayScreen)
                         Logger.i { "Enter play screen $it" }
                     },
                     {
                         scope.launch(Dispatchers.IO) {
-                            currentPlayScreenMidi = Global.fileLoader.loadFile(it.path)
+                            currentOperateMidi = Global.fileLoader.loadFile(it.path)
                         }
+                        currentOperateMidiPath = it.path
                         navController.navigate(TrackEditScreen)
                         Logger.d { "Enter track edit: ${it.fileName}" }
                     }
@@ -143,7 +146,7 @@ fun AppNavigation(
             }
 
             composable<PlayScreen> {
-                PlayPage(currentPlayScreenMidi, onBack)
+                PlayPage(currentOperateMidi, onBack)
             }
 
             composable<FreePlayScreen> {
@@ -155,7 +158,7 @@ fun AppNavigation(
             }
 
             composable<TrackEditScreen> {
-                TrackEditPage(currentPlayScreenMidi, onBack)
+                TrackEditPage(currentOperateMidi, currentOperateMidiPath, onBack)
             }
         }
     }

@@ -1,27 +1,8 @@
 package mai_onsyn.open_rhythm.ui.pages.track_edit
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxWithConstraints
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.safeDrawingPadding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.pager.HorizontalPager
-import androidx.compose.material3.Button
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
-import androidx.compose.material3.VerticalDivider
-import androidx.compose.runtime.Composable
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
@@ -31,17 +12,19 @@ import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import mai_onsyn.open_rhythm.bridge.Global
 import mai_onsyn.open_rhythm.core.midi.Midi
 import mai_onsyn.open_rhythm.ui.icons.ic_arrow_back
 import mai_onsyn.open_rhythm.ui.icons.ic_music_note
 import mai_onsyn.open_rhythm.ui.icons.ic_refresh
 import mai_onsyn.open_rhythm.ui.modules.OpacitySurface
+import mai_onsyn.open_rhythm.ui.modules.dialog.ConfirmDialog
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun TrackEditPage(
     midi: Midi?,
+    midiPath: String,
     onBack: () -> Unit,
 ) {
     BackHandler { onBack() }
@@ -58,6 +41,7 @@ fun TrackEditPage(
             .fillMaxSize()
             .padding(horizontal = 32.dp, vertical = 24.dp)
     ) {
+        var refreshVersion by remember { mutableStateOf(0) }
         BoxWithConstraints {
             val showNameOnTitle = maxWidth > 520.dp
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -101,9 +85,11 @@ fun TrackEditPage(
                         modifier = Modifier.weight(1f)
                     )
                 } else Spacer(Modifier.weight(1f))
+
+                var showRefreshConfirmDialog by remember { mutableStateOf(false) }
                 Button(
                     onClick = {
-
+                        showRefreshConfirmDialog = true
                     },
                     shape = MaterialTheme.shapes.small,
                     modifier = Modifier.pointerHoverIcon(PointerIcon.Hand)
@@ -123,15 +109,31 @@ fun TrackEditPage(
                         )
                     }
                 }
+
+                ConfirmDialog(
+                    visible = showRefreshConfirmDialog,
+                    onDismissRequest = { showRefreshConfirmDialog = false },
+                    onConfirm = {
+                        showRefreshConfirmDialog = false
+                        Global.settings.midiFileSettings.remove(midiPath)
+                        refreshVersion++
+                    },
+                    title = "Reset tracks",
+                    message = "Are you sure you want to reset all the MIDI track settings?",
+                    isDangerous = true
+                )
             }
         }
         HorizontalDivider(Modifier.padding(vertical = 16.dp))
 
-        TrackTable(
-            modifier = Modifier
-                .fillMaxWidth()
-                .weight(1f),
-            midi = midi
-        )
+        key(refreshVersion) {
+            TrackTable(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f),
+                midiPath = midiPath,
+                midi = midi
+            )
+        }
     }
 }

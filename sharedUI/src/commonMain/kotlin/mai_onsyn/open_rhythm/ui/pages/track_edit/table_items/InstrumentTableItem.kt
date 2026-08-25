@@ -1,19 +1,11 @@
 package mai_onsyn.open_rhythm.ui.pages.track_edit.table_items
 
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.layout.BoxScope
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.*
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.PointerIcon
@@ -100,7 +92,7 @@ val instNames: List<String>
     get() {
         if (_instNames == null) {
             val jsonStr = runBlocking(Dispatchers.IO) {
-                Res.readBytes("files/instruments/en_us-inst.json")
+                Res.readBytes("files/instruments/en_us.json")
             }.decodeToString()
             _instNames = Json.decodeFromString(jsonStr) as List<String>
             if (_instNames!!.size != 128)
@@ -113,7 +105,7 @@ val categories: List<String>
     get() {
         if (_categories == null) {
             val jsonStr = runBlocking(Dispatchers.IO) {
-                Res.readBytes("files/instruments/en_us-category.json")
+                Res.readBytes("files/instruments/categories/en_us.json")
             }.decodeToString()
             _categories = Json.decodeFromString(jsonStr) as List<String>
             if (_categories!!.size != 16)

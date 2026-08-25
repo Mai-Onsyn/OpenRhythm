@@ -160,6 +160,13 @@ private fun AppearanceSettings() {
                 )
             }
         }
+
+        itemWithSwitch(
+            name = "Status bar shadow",
+            description = "Turn off to get a perfectly hidden status bar",
+            initial = Global.settings.StatusBarShadow,
+            onToggled = { Global.settings.StatusBarShadow = it }
+        )
     }
 }
 

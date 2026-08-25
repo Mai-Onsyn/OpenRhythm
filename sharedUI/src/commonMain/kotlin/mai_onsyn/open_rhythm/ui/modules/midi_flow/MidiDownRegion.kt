@@ -185,7 +185,7 @@ fun MidiDownRegion(
             }
         }
         LaunchedEffect(midi) {
-            Global.player.setMidi(midi)
+            Global.player.setMidi(midi, Global.settings.midiFileSettings[midi.path])
             Global.player.seek(midi.startTick.toLong() - midi.ppq * Global.settings.PlaybackStartDistance)
         }
         LaunchedEffect(isPlaying) {

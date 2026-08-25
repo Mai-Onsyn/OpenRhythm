@@ -1,9 +1,5 @@
 package mai_onsyn.open_rhythm.core.midi
 
-import dev.atsushieno.ktmidi.Midi1CompoundMessage
-import dev.atsushieno.ktmidi.Midi1Music
-import dev.atsushieno.ktmidi.read
-
 class Midi(
     val name: String,
     val ppq: Int,
@@ -15,7 +11,8 @@ class Midi(
     val endTick: Int = totalTicks,
     val ccChangeTimeline: Array<CCTimeline> = Array(16) { CCTimeline() },
     val pcChangeTimeline: Array<SingleChangeTimeline> = Array(16) { SingleChangeTimeline() },
-    val pbChangeTimeline: Array<SingleChangeTimeline> = Array(16) { SingleChangeTimeline() }
+    val pbChangeTimeline: Array<SingleChangeTimeline> = Array(16) { SingleChangeTimeline() },
+    val path: String = ""
 ) {
     val tempoMap = TempoMap(ppq, tempoEvents)
     val totalNotes: Int
@@ -31,11 +28,13 @@ fun Midi.take(trackNumber: Int): Midi {
         name, ppq, 4 * ppq, mutableListOf(), tempoEvents, timeSignatureEvents,
         ccChangeTimeline = ccChangeTimeline,
         pcChangeTimeline = pcChangeTimeline,
-        pbChangeTimeline = pbChangeTimeline
+        pbChangeTimeline = pbChangeTimeline,
+        path = path
     ) else Midi(
         name, ppq, totalTicks, mutableListOf(tracks[trackNumber]), tempoEvents, timeSignatureEvents,
         ccChangeTimeline = ccChangeTimeline,
         pcChangeTimeline = pcChangeTimeline,
-        pbChangeTimeline = pbChangeTimeline
+        pbChangeTimeline = pbChangeTimeline,
+        path = path
     )
 }

@@ -12,11 +12,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.drawWithCache
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.drawscope.withTransform
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
@@ -30,14 +26,11 @@ import mai_onsyn.open_rhythm.ui.icons.ic_add
 import mai_onsyn.open_rhythm.ui.icons.ic_delete
 import mai_onsyn.open_rhythm.ui.icons.ic_flowchart
 import mai_onsyn.open_rhythm.ui.icons.ic_reorder
-import mai_onsyn.open_rhythm.ui.icons.ic_sort
 import mai_onsyn.open_rhythm.ui.modules.ColorPickerDialog
 import mai_onsyn.open_rhythm.ui.modules.ColorSelector
 import mai_onsyn.open_rhythm.ui.modules.NumberSpinner
 import mai_onsyn.open_rhythm.ui.modules.PrimaryOperationButton
-import mai_onsyn.open_rhythm.ui.modules.dialog.ConfirmDialog
 import mai_onsyn.open_rhythm.ui.modules.dialog.DialogPopup
-import mai_onsyn.open_rhythm.ui.modules.getContrastTextColor
 import mai_onsyn.open_rhythm.ui.pages.setting.SettingsCard
 import sh.calvin.reorderable.ReorderableCollectionItemScope
 import sh.calvin.reorderable.ReorderableItem

@@ -19,8 +19,6 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
-import mai_onsyn.open_rhythm.ui.icons.ic_add
-import mai_onsyn.open_rhythm.ui.icons.ic_remove
 
 data class ContextDropDownMenuItem(
     val label: String? = null,

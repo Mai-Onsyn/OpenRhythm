@@ -1,19 +1,10 @@
 package mai_onsyn.open_rhythm.ui.pages.play_screen
 
-import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.*
 import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.slideOutVertically
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.offset
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.safeDrawingPadding
+import androidx.compose.foundation.layout.*
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
@@ -27,18 +18,12 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
-import androidx.compose.ui.input.pointer.PointerEventPass
-import androidx.compose.ui.input.pointer.PointerEventType
-import androidx.compose.ui.input.pointer.PointerIcon
-import androidx.compose.ui.input.pointer.pointerHoverIcon
-import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.input.pointer.*
 import androidx.compose.ui.keepScreenOn
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
-import co.touchlab.kermit.Logger
 import kotlinx.coroutines.delay
 import mai_onsyn.open_rhythm.bridge.Global
 import mai_onsyn.open_rhythm.core.midi.Midi
@@ -47,7 +32,6 @@ import mai_onsyn.open_rhythm.ui.icons.ic_arrow_warm_up
 import mai_onsyn.open_rhythm.ui.modules.midi_flow.MidiDownRegion
 import mai_onsyn.open_rhythm.ui.theme.TrackColorDefaults
 import kotlin.math.roundToInt
-import kotlin.random.Random
 import kotlin.time.Duration.Companion.seconds
 
 @OptIn(ExperimentalComposeUiApi::class)
@@ -64,9 +48,13 @@ fun PlayPage(
     val displayMidi by rememberUpdatedState(
         (midi ?: Midi("Empty MIDI", 480, 4800)).apply {
             tracks.forEach { track ->
+                track.visible = true
                 if (track.trackChannel == 9) {
                     track.visible = !Global.settings.DrumKitHiddenByDefault
                 }
+            }
+            Global.settings.midiFileSettings[path]?.trackSettings?.forEach { (track, settings) ->
+                tracks[track].visible = (settings.visible ?: true)
             }
         }
     )
@@ -88,6 +76,22 @@ fun PlayPage(
             .clip(RectangleShape)
             .keepScreenOn()
     ) {
+        val trackColors = remember(midi) {
+            Global.settings.trackColors.let {
+                if (it.isEmpty()) TrackColorDefaults.colors() else it
+            }.toMutableList().apply {
+                Global.settings.midiFileSettings[displayMidi.path]?.trackSettings?.forEach { (track, settings) ->
+                    val color = settings.color ?: return@forEach
+                    while (track > this.size - 1) {
+                        val size = this.size
+                        for (i in 0 until size) {
+                            this.add(this[i])
+                        }
+                    }
+                    this[track] = color
+                }
+            }
+        }
         MidiDownRegion(
             modifier = Modifier
                 .fillMaxSize()
@@ -103,7 +107,7 @@ fun PlayPage(
                     }
                 },
             midi = displayMidi,
-            trackColors = Global.settings.trackColors.let { if (it.isEmpty()) TrackColorDefaults.colors() else it },
+            trackColors = trackColors,
             isPlaying = isPlaying,
             keyboardRatio = if (Global.settings.KeyboardAutoAspect) Global.settings.KeyboardAspectRatio else 0f,
             onPlayStateChange = { isPlaying = it },

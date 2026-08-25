@@ -13,6 +13,7 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.unit.dp
+import mai_onsyn.open_rhythm.bridge.Global
 import mai_onsyn.open_rhythm.ui.icons.ic_arrow_back
 import mai_onsyn.open_rhythm.ui.icons.ic_arrow_warm_up
 import mai_onsyn.open_rhythm.ui.modules.FlatSlider
@@ -38,6 +39,7 @@ fun StatusBar(
     Surface(
         modifier = modifier,
         color = MaterialTheme.colorScheme.secondaryContainer,
+        shadowElevation = if (Global.settings.StatusBarShadow) 8.dp else 0.dp,
     ) {
         Box(
             modifier = Modifier

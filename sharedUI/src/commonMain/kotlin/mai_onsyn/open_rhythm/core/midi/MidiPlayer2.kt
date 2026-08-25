@@ -4,6 +4,7 @@ import co.touchlab.kermit.Logger
 import dev.atsushieno.ktmidi.MidiOutput
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
+import mai_onsyn.open_rhythm.core.settings.MidiFileSettings
 import mai_onsyn.open_rhythm.core.util.NoteBlocker
 import mai_onsyn.open_rhythm.core.util.Time
 import mai_onsyn.open_rhythm.core.util.nanoAtTick
@@ -20,6 +21,7 @@ class MidiPlayer2(
     private val eventChannel = Channel<ByteArray>(Channel.UNLIMITED)
 
     private var midi: Midi? = null
+    private var config: MidiFileSettings? = null
     private var state: State = State.STOPPED
     private val eventList = mutableListOf<MidiEvent>()
     private var playingIndex = 0
@@ -47,8 +49,9 @@ class MidiPlayer2(
         launchGuardThread()
     }
 
-    fun setMidi(midi: Midi?) {
+    fun setMidi(midi: Midi?, config: MidiFileSettings? = null) {
         this.midi = midi
+        this.config = config
         reset()
         buildEventSequence(midi)
     }
@@ -86,7 +89,7 @@ class MidiPlayer2(
     fun seek(value: Double, percentage: Boolean = true) {
         if (percentage) {
             val totalTicks = midi?.totalTicks ?: return
-            seek((totalTicks * value.coerceIn(0.0, 1.0)).toLong())
+            seek((totalTicks * value.coerceIn(0.0, 1.0)), false)
         } else {
             if (midi == null) return
 
@@ -172,13 +175,18 @@ class MidiPlayer2(
             return
         }
 
-        for (track in midi.tracks) {
+        for ((i, track) in midi.tracks.withIndex()) {
+            if (!(config?.trackSettings[i]?.audible ?: true)) continue
             if (enableNote) for (note in track.notes) {
                 eventList.add(NoteEvent.noteOn(note.tick, note.pitch, note.velocity, note.channel))
                 eventList.add(NoteEvent.noteOff(note.tick + note.duration, note.pitch, note.velocity, note.channel))
             }
+            val volume = config?.trackSettings[i]?.volume
             if (enableCC) for (event in track.controllerEvents) {
-                eventList.add(event)
+                if (event is MidiCCEvent && event.controller == 7 && volume != null) {
+                    eventList.add(MidiCCEvent.of(event.tick, event.channel, event.controller, (event.value + volume).coerceIn(0, 127)))
+                }
+                else eventList.add(event)
             }
         }
         eventList.sortWith(compareBy({ it.tick }, { it.order }))
@@ -188,10 +196,16 @@ class MidiPlayer2(
         senderThread = scope.launch {
             for (msg in eventChannel) {
                 try {
+//                    config?.trackSettings
+//                    if (msg[0].toInt() and 0xF0 == 0xB0) {
+//                        val cc = MidiCCEvent(0, msg)
+//                        val newCC = MidiCCEvent.of(0, cc.channel, cc.controller, cc.value)
+//                        midiOutput?.send()
+//                    }
                     midiOutput?.send(msg, 0, msg.size, 0)
 //                    Logger.v { "Send event: ${msg.contentToString()}" }
-//                    if (msg[0].toInt() and 0xF0 == 0xE0) {
-//                        Logger.w { "Send PB to channel ${msg[0].toInt() and 0x0F}, value ${msg[1].toInt() + (msg[2].toInt() shl 7)}" }
+//                    if (msg[0].toInt() and 0xF0 == 0xC0) {
+//                        Logger.w { "Send PC to channel ${msg[0].toInt() and 0x0F}, value ${msg[1].toInt()}" }
 //                    }
                 } catch (e: Exception) {
                     Logger.e { "Error while sending message: ${e.message}" }
@@ -303,13 +317,17 @@ class MidiPlayer2(
     private fun sendPreplayStatus(midi: Midi, tick: Double) {
         val range = tick.toInt()..tick.toInt()
         reset()
+        midi.tracks.forEachIndexed { index, track ->
+            pc(config?.trackSettings[index]?.inst ?: track.trackInst, track.trackChannel)
+        }
         for (i in 0..15) {
             midi.ccChangeTimeline[i].getInterval(range).forEach {
-                cc(it.controller, it.value, i)
+                if (it.controller == 7) cc(it.controller, (it.value + (config?.trackSettings[i]?.volume ?:0)).coerceIn(0, 127))
+                else cc(it.controller, it.value, i)
             }
-            midi.pcChangeTimeline[i].getInterval(range).forEach {
-                pc(it.value, i)
-            }
+//            midi.pcChangeTimeline[i].getInterval(range).forEach {
+//                pc(it.value, i)
+//            }
             midi.pbChangeTimeline[i].getInterval(range).forEach {
                 pb(it.value, i)
             }

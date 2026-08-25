@@ -24,13 +24,11 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import co.touchlab.kermit.Logger
 import com.materialkolor.ktx.darken
 import kotlinx.coroutines.delay
 import mai_onsyn.open_rhythm.bridge.Global
 import mai_onsyn.open_rhythm.core.midi.Midi
 import mai_onsyn.open_rhythm.core.midi.Note
-import mai_onsyn.open_rhythm.core.midi.TimeSignatureEvent
 import mai_onsyn.open_rhythm.core.util.Time
 import mai_onsyn.open_rhythm.ui.modules.getContrastTextColor
 import mai_onsyn.open_rhythm.ui.utility.*

@@ -2,15 +2,9 @@ package mai_onsyn.open_rhythm.core.midi
 
 import co.touchlab.kermit.Logger
 import io.github.vinceglb.filekit.*
-import kotlinx.coroutines.CompletableDeferred
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.IO
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
-import kotlinx.coroutines.withContext
 import kotlinx.io.IOException
 import mai_onsyn.open_rhythm.bridge.Global
 import mai_onsyn.open_rhythm.core.util.msAtTick
@@ -132,7 +126,7 @@ class MidiFileLoader {
         val midi = withContext(Dispatchers.Default) {
             val bytes = bytes.toList()
             if (Global.settings.UseParserV1) parseMidiV1(name, bytes)
-            else parseMidi(name, bytes)
+            else parseMidi(name, bytes, file.absolutePath())
         }
         return midi
     }

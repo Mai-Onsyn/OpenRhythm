@@ -14,8 +14,9 @@ class UserSetting(
 ) {
     // =====General Appearance=====
     var DarkMode                        by st.observable("DarkMode",                        2)  // 0 = light; 1 = dark; 2 = system default
-    var PrimarySeedColor                by st.observable("PrimarySeedColor", Color(0xFF485F84))
-    var UserSpecifiedPrimarySeedColor   by st.observable("UserSpecifiedPrimarySeedColor", Color(0xFFCD20ED))
+    var PrimarySeedColor                by st.observable("PrimarySeedColor",                Color(0xFF485F84))
+    var UserSpecifiedPrimarySeedColor   by st.observable("UserSpecifiedPrimarySeedColor",   Color(0xFFCD20ED))
+    var StatusBarShadow                 by st.observable("StatusBarShadow",                 true)
 
     // =====General Interaction=====
     var DoubleClickToPlayPause      by st.observable("DoubleClickToPlayPause",      false)

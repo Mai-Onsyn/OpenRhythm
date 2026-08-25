@@ -1,7 +1,6 @@
 package mai_onsyn.open_rhythm.ui.pages.track_edit.table_items
 
 import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
@@ -10,9 +9,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.PointerEventType
+import androidx.compose.ui.input.pointer.pointerInput
 import mai_onsyn.open_rhythm.bridge.Global
 import mai_onsyn.open_rhythm.core.midi.MidiTrack
-import mai_onsyn.open_rhythm.ui.modules.getContrastTextColor
 
 @Composable
 fun BoxScope.PreviewTableItem(
@@ -32,7 +32,23 @@ fun BoxScope.PreviewTableItem(
     }
     val pitchSpan = maxPitch - minPitch + 1
     Canvas(
-        modifier = Modifier.fillMaxSize()
+        modifier = Modifier
+            .fillMaxSize()
+            .pointerInput(Unit) {
+                awaitPointerEventScope {
+                    while (true) {
+                        val event = awaitPointerEvent()
+                        val change = event.changes.first()
+                        if (
+                            event.type == PointerEventType.Move && change.pressed ||
+                            event.type == PointerEventType.Press
+                        ) {
+                            Global.player.seek((change.position.x / size.width).toDouble(), true)
+//                            Logger.d { "seek ${change.position.x / size.width}" }
+                        }
+                    }
+                }
+            }
     ) {
         val heightPerNote = size.height / pitchSpan
         track.notes.forEach { note ->

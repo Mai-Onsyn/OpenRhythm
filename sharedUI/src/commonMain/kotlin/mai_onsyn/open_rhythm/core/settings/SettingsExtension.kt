@@ -7,7 +7,6 @@ import androidx.compose.ui.graphics.isUnspecified
 import androidx.compose.ui.graphics.toArgb
 import com.russhwolf.settings.Settings
 import kotlinx.serialization.KSerializer
-import kotlinx.serialization.Serializer
 import kotlinx.serialization.descriptors.PrimitiveKind
 import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
 import kotlinx.serialization.descriptors.SerialDescriptor

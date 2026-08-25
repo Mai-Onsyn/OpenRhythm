@@ -6,7 +6,6 @@ import kotlinx.coroutines.InternalCoroutinesApi
 import kotlinx.coroutines.internal.SynchronizedObject
 import kotlinx.coroutines.internal.synchronized
 import mai_onsyn.open_rhythm.core.util.Time
-import kotlin.collections.toList
 
 @OptIn(InternalCoroutinesApi::class)
 class MemoryLogWriter(

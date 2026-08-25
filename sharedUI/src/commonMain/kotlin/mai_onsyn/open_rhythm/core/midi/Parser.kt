@@ -129,7 +129,7 @@ private data class NoteGroup(
     val noteEvents: MutableList<SimpleNoteEvent> = mutableListOf()
 )
 
-fun parseMidi(name: String, bytes: List<Byte>): Midi {
+fun parseMidi(name: String, bytes: List<Byte>, path: String? = null): Midi {
 //    val KTMIDI_PARSE_START = Time.nanos
     val midiFile = Midi1Music()
     midiFile.read(bytes)
@@ -275,7 +275,8 @@ fun parseMidi(name: String, bytes: List<Byte>): Midi {
                         { MidiCCEvent.of(it.tick.toLong(), group.channel, it.controller, it.value) },
                         { MidiPBEvent.of(it.tick.toLong(), group.channel, it.value) }
                     ).apply {
-                        this.add(0, MidiPCEvent.of(range.first.toLong(), group.channel, inst))
+                        this.add(0, MidiCCEvent.of(range.first.toLong(), group.channel, 7, 100))
+//                        this.add(0, MidiPCEvent.of(range.first.toLong(), group.channel, inst))
                     },
                     tickRange = range,
                     trackInst = inst,
@@ -322,7 +323,8 @@ fun parseMidi(name: String, bytes: List<Byte>): Midi {
         endTick = lastTick,
         ccChangeTimeline = ccTimeline,
         pcChangeTimeline = pcTimeline,
-        pbChangeTimeline = pbTimeline
+        pbChangeTimeline = pbTimeline,
+        path = path ?: ""
     )
 }
 

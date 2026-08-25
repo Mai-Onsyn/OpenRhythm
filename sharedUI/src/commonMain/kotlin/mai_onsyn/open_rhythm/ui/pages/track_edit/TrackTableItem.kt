@@ -1,37 +1,41 @@
 package mai_onsyn.open_rhythm.ui.pages.track_edit
 
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import mai_onsyn.open_rhythm.bridge.Global
 import mai_onsyn.open_rhythm.core.midi.MidiTrack
-import mai_onsyn.open_rhythm.ui.pages.track_edit.table_items.ColorTableItem
-import mai_onsyn.open_rhythm.ui.pages.track_edit.table_items.EnabledTableItem
-import mai_onsyn.open_rhythm.ui.pages.track_edit.table_items.InstrumentTableItem
-import mai_onsyn.open_rhythm.ui.pages.track_edit.table_items.OrderTableItem
-import mai_onsyn.open_rhythm.ui.pages.track_edit.table_items.PlayPauseButton
-import mai_onsyn.open_rhythm.ui.pages.track_edit.table_items.PreviewTableItem
-import mai_onsyn.open_rhythm.ui.pages.track_edit.table_items.VolumeTableItem
+import mai_onsyn.open_rhythm.core.settings.addSettings
+import mai_onsyn.open_rhythm.core.settings.removeSettings
+import mai_onsyn.open_rhythm.ui.pages.track_edit.table_items.*
+import mai_onsyn.open_rhythm.ui.theme.TrackColorDefaults
 
 @Composable
 fun TrackTableItem(
     modifier: Modifier = Modifier,
     index: Int,
+    midiPath: String,
     track: MidiTrack,
     totalTracks: Int,
-    midiTickRange: IntRange
+    midiTickRange: IntRange,
+    isPlaying: Boolean,
+    onPlayPauseRequest: (Boolean) -> Unit
 ) {
-    var rowColor by remember { mutableStateOf(Global.settings.trackColors[index % totalTracks]) }
+    val defaultColor = Global.settings.trackColors.let {
+        if (it.isEmpty()) TrackColorDefaults.colors().let { d -> d[index % d.size] }
+        else it[index % it.size]
+    }
+    var rowColor by remember { mutableStateOf(defaultColor) }
     TablePlaceRow(
         modifier = modifier,
         header = { OrderTableItem(index) },
         inst = {
             InstrumentTableItem(
-                initial = track.trackInst,
-                onChanged = {}
+                initial = Global.settings.midiFileSettings[midiPath]?.trackSettings[index]?.inst ?: track.trackInst,
+                onChanged = {
+                    if (it == track.trackInst) removeSettings(midiPath, index, inst = true)
+                    else addSettings(midiPath, index, inst = it)
+                    Global.player.pc(it, track.trackChannel)
+                }
             )
         },
         preview = {
@@ -43,26 +47,37 @@ fun TrackTableItem(
         },
         color = {
             ColorTableItem(
-                initial = rowColor,
-                onChanged = { rowColor = it }
+                initial = Global.settings.midiFileSettings[midiPath]?.trackSettings[index]?.color ?: rowColor,
+                onChanged = {
+                    rowColor = it
+                    if (it == defaultColor)
+                        removeSettings(midiPath, index, color = true)
+                    else addSettings(midiPath, index, color = it)
+                }
             )
         },
         volume = {
             VolumeTableItem(
-                initial = 0f,
-                onChanged = {}
+                initial = Global.settings.midiFileSettings[midiPath]?.trackSettings[index]?.volume ?: 0,
+                onChanged = {
+                    if (it == 0) removeSettings(midiPath, index, volume = true)
+                    else addSettings(midiPath, index, volume = it)
+                }
             )
         },
         enable = {
             EnabledTableItem(
-                initial = true,
-                onChanged = {}
+                initial = Global.settings.midiFileSettings[midiPath]?.trackSettings[index]?.let { it.audible ?: true && it.visible ?: true } ?: true,
+                onChanged = {
+                    if (it) removeSettings(midiPath, index, visible = true, audible = true)
+                    else addSettings(midiPath, index, visible = it, audible = it)
+                }
             )
         },
         play = {
             PlayPauseButton(
-                initial = false,
-                onChanged = {}
+                isPlaying = isPlaying,
+                onChanged = onPlayPauseRequest
             )
         }
     )

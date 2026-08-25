@@ -5,7 +5,10 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.*
-import androidx.compose.material3.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -13,10 +16,10 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.unit.dp
-import mai_onsyn.open_rhythm.ui.icons.*
-import openrhythm.sharedui.generated.resources.Res
-import openrhythm.sharedui.generated.resources.monochrome_256x
-import org.jetbrains.compose.resources.painterResource
+import mai_onsyn.open_rhythm.ui.icons.ic_exit_to_app
+import mai_onsyn.open_rhythm.ui.icons.ic_library_music
+import mai_onsyn.open_rhythm.ui.icons.ic_piano
+import mai_onsyn.open_rhythm.ui.icons.ic_settings
 
 @Composable
 fun HomePage(

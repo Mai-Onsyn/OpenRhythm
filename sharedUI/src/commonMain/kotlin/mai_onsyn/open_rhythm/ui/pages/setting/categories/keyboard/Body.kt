@@ -1,26 +1,13 @@
 package mai_onsyn.open_rhythm.ui.pages.setting.categories.keyboard
 
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.width
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.input.pointer.PointerIcon
-import androidx.compose.ui.input.pointer.pointerHoverIcon
-import androidx.compose.ui.unit.dp
 import mai_onsyn.open_rhythm.bridge.Global
 import mai_onsyn.open_rhythm.core.midi.Note
 import mai_onsyn.open_rhythm.ui.icons.ic_piano
 import mai_onsyn.open_rhythm.ui.modules.ColorSelector
-import mai_onsyn.open_rhythm.ui.modules.ContextDropDownMenuItem
-import mai_onsyn.open_rhythm.ui.modules.ContextDropdownMenu
-import mai_onsyn.open_rhythm.ui.modules.LabeledRangeSlider
 import mai_onsyn.open_rhythm.ui.modules.LabeledSliderWithPrefixSuffix
 import mai_onsyn.open_rhythm.ui.modules.SliderWithSuffix
 import mai_onsyn.open_rhythm.ui.pages.setting.SettingsCard

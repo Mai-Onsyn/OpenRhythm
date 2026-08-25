@@ -20,7 +20,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.materialkolor.ktx.toHex
 import mai_onsyn.open_rhythm.ui.modules.dialog.DialogPopup
-import kotlin.math.abs
 import kotlin.math.roundToInt
 
 private fun parseHexToColor(hex: String): Color? {

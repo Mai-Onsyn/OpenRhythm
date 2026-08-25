@@ -1,6 +1,5 @@
 package mai_onsyn.open_rhythm.core.util
 
-import co.touchlab.kermit.Logger
 import kotlinx.coroutines.CompletableDeferred
 
 class NoteBlocker {

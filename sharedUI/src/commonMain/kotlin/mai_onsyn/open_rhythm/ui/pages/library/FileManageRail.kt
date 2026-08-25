@@ -20,15 +20,8 @@ import mai_onsyn.open_rhythm.bridge.Global
 import mai_onsyn.open_rhythm.core.midi.UIMidiData
 import mai_onsyn.open_rhythm.core.util.Time
 import mai_onsyn.open_rhythm.ui.icons.ic_edit_square
-import mai_onsyn.open_rhythm.ui.icons.ic_more_vert
 import mai_onsyn.open_rhythm.ui.icons.ic_music_note
-import mai_onsyn.open_rhythm.ui.modules.ContextDropDownMenuItem
-import mai_onsyn.open_rhythm.ui.modules.ContextDropdownMenu
-import mai_onsyn.open_rhythm.ui.modules.LoadingSpinner
-import mai_onsyn.open_rhythm.ui.modules.MorphingPlayPauseButton
-import mai_onsyn.open_rhythm.ui.modules.NumberSpinner
-import mai_onsyn.open_rhythm.ui.modules.OpacitySurface
-import mai_onsyn.open_rhythm.ui.modules.PrimaryOperationButton
+import mai_onsyn.open_rhythm.ui.modules.*
 import mai_onsyn.open_rhythm.ui.modules.dialog.DialogPopup
 import mai_onsyn.open_rhythm.ui.utility.UiState
 
@@ -104,7 +97,7 @@ fun FileManageRail(
                         Global.fileLoader.loadFile(midiFiles[playingIdx].path).let {
                             Global.player.stop()
                             Global.player.seek(it.startTick.toLong())
-                            Global.player.setMidi(it)
+                            Global.player.setMidi(it, Global.settings.midiFileSettings[midiFiles[playingIdx].path])
                             Global.player.play()
                             Global.player.onCompletion = { isPlaying = false }
                         }

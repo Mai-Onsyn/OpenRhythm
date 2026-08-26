@@ -8,7 +8,7 @@
 
 Open Rhythm is a piano visualization & MIDI practice tool — a Synthesia-style experience that's open source. It plays standard MIDI 1 (`.mid`) files with a flowing waterfall visualization, lets you jam freely, and offers a follow-along practice mode.
 
----
+
 
 ## 🌍 Cross-Platform
 
@@ -19,7 +19,7 @@ Built on Compose Multiplatform. Currently supported:
 
 📱 **iOS** – 🚨 Planned, but not implemented yet (…I don't own an Apple device 😔)
 
----
+
 
 ## ✨ Highlights
 
@@ -62,7 +62,7 @@ Built on Compose Multiplatform. Currently supported:
 - Built-in logging system with adjustable level and log-file export
 - All settings persist across sessions, with one-click reset
 
----
+
 
 ## ⚠️ Known Limitations
 
@@ -78,7 +78,7 @@ Compose Multiplatform leans on the JVM, so Desktop needs to bundle the JVM and S
 
 JVM memory (ZGC) is well managed, but Compose's native layer holds onto memory fairly aggressively and recycles it late, so overall memory usage runs on the higher side.
 
----
+
 
 ## 🗺️ Roadmap
 
@@ -86,7 +86,7 @@ JVM memory (ZGC) is well managed, but Compose's native layer holds onto memory f
 - 3D shadows on the virtual keyboard
 - An external scripting language (kotlite planned) to control waterfall / virtual-keyboard rendering
 
----
+
 
 ## 🚀 Quick Start (Build & Run)
 
@@ -96,13 +96,13 @@ Just fire it up from the project root:
 ./gradlew build run
 ```
 
----
+
 
 ## 📄 License
 
 GPL‑v3.0 — see the [LICENSE](https://github.com/Mai-Onsyn/OpenRhythm/blob/master/LICENSE.txt) file.
 
----
+
 
 ## 🔗 Project Home
 

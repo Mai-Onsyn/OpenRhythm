@@ -8,7 +8,7 @@
 
 Open Rhythm 是一款钢琴可视化与 MIDI 练习软件，类似 Synthesia。支持标准 MIDI 1 格式（.mid）文件的播放、瀑布流可视化、自由演奏，以及跟随练习模式。
 
----
+
 
 ## 🌍 跨平台支持
 
@@ -19,7 +19,7 @@ Open Rhythm 是一款钢琴可视化与 MIDI 练习软件，类似 Synthesia。�
 
 📱 **iOS** – 🚨 计划支持，尚未实现 (我没有苹果设备😔)
 
----
+
 
 ## ✨主要特性
 
@@ -61,7 +61,7 @@ Open Rhythm 是一款钢琴可视化与 MIDI 练习软件，类似 Synthesia。�
 - 内置日志系统，可调节日志级别并导出日志文件
 - 全部设置持久化，支持一键重置
 
----
+
 
 ## ⚠️ 已知不足
 
@@ -77,7 +77,7 @@ Compose Multiplatform 依赖 JVM，在 Desktop 需要捆绑 JVM 和 Skia，体�
 
 虽然 JVM 内存（ZGC）控制良好，但 Compose 的 Native 层内存占用较高且回收不及时，整体内存消耗偏高。
 
----
+
 
 ## 🗺️未来计划
 
@@ -85,7 +85,7 @@ Compose Multiplatform 依赖 JVM，在 Desktop 需要捆绑 JVM 和 Skia，体�
 - 虚拟键盘立体阴影
 - 使用外置脚本语言 (计划 kotlite) 控制 MIDI 瀑布流 / 虚拟键盘的渲染
 
----
+
 
 ## 🚀快速开始 (构建 & 运行)
 
@@ -95,12 +95,12 @@ Compose Multiplatform 依赖 JVM，在 Desktop 需要捆绑 JVM 和 Skia，体�
 ./gradlew build run
 ```
 
----
+
 
 ## 📄 许可证
 GPL‑v3.0，详见 [LICENSE](https://github.com/Mai-Onsyn/OpenRhythm/blob/master/LICENSE.txt) 文件。
 
----
+
 
 ## 🔗 项目主页
 

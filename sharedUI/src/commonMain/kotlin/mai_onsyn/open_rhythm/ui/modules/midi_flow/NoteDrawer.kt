@@ -10,7 +10,7 @@ import mai_onsyn.open_rhythm.bridge.Global
 fun DrawScope.drawNoteGraphics(
     color: Color,
     rect: Rect,
-    cornerRadius: Float,
+    cornerRadius: Float
 ) {
     // shadow
     if (Global.settings.DrawNoteShadow) drawRoundRect(

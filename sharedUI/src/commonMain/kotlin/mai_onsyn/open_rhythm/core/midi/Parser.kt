@@ -328,17 +328,6 @@ fun parseMidi(name: String, bytes: List<Byte>, path: String? = null): Midi {
     )
 }
 
-fun logDurations(title: String, labels: List<String>, vararg timestamps: Long) {
-    val sb = StringBuilder("$title: ")
-    for ((idx, label) in labels.withIndex()) {
-        sb.append("$label: ${(timestamps[idx + 1] - timestamps[idx]) / 1000000f}ms")
-        if (idx != labels.size - 1) {
-            sb.append(", ")
-        }
-    }
-    Logger.d { sb.toString() }
-}
-
 private fun mergeToNoteList(group: NoteGroup): MutableList<Note> {
     val noteList = mutableListOf<Note>()
 

@@ -28,13 +28,13 @@ fun BoxScope.InstrumentTableItem(
     isDrum: Boolean = false
 ) {
     val colorScheme = MaterialTheme.colorScheme
-    var value by remember { mutableStateOf(if (isDrum) initial shr 3 else initial) }
+    var value by remember { mutableStateOf(if (isDrum) drumKitPrograms.indexOf(initial).let { if (it == -1) 0 else it } else initial) }
 
     val instItems = remember { mutableListOf<ContextDropDownMenuItem>().apply {
         if (isDrum) {
-            for (i in 0 until 8) {
+            for (i in drumKitNames) {
                 add(ContextDropDownMenuItem(
-                    label = drumKitNames[i],
+                    label = i,
                     selectedContentColor = colorScheme.primary
                 ))
             }
@@ -63,7 +63,7 @@ fun BoxScope.InstrumentTableItem(
         alignment = Alignment.Start,
         onSelect = {
             value = it
-            onChanged(if (isDrum) value shl 3 else value)
+            onChanged(if (isDrum) drumKitPrograms[value] else value)
         },
         modifier = Modifier
             .height(40.dp)
@@ -86,7 +86,7 @@ fun BoxScope.InstrumentTableItem(
                     overflow = TextOverflow.Ellipsis
                 )
                 Text(
-                    text = (if (isDrum) value shl 3 else value).toString(),
+                    text = (if (isDrum) drumKitPrograms[value] else value).toString(),
                     style = MaterialTheme.typography.labelSmall,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.primary
@@ -127,11 +127,28 @@ val categories: List<String>
 private var _instNames: List<String>? = null
 private var _categories: List<String>? = null
 
-val drumKitNames: Array<String> = Array(9) { n ->
-    when (n shl 3) {
-        0 -> "Standard Kit"; 8 -> "Room Kit"; 16 -> "Power Kit"
-        24 -> "Electronic Kit"; 25 -> "TR-808 Kit"; 32 -> "Jazz Kit"
-        40 -> "Brush Kit"; 48 -> "Orchestra Kit"; 56 -> "Sound Effects Kit"
-        else -> "Custom Kit #$n"
-    }
-}
+//val drumKitNames: Array<String> = Array(9) { n ->
+//    when (n shl 3) {
+//        0 -> "Standard Kit"; 8 -> "Room Kit"; 16 -> "Power Kit"
+//        24 -> "Electronic Kit"; 25 -> "TR-808 Kit"; 32 -> "Jazz Kit"
+//        40 -> "Brush Kit"; 48 -> "Orchestra Kit"; 56 -> "Sound Effects Kit"
+//        else -> "Custom Kit #$n"
+//    }
+//}
+//val drumKitNames: Map<Int, String> = mapOf(
+//    0 to "Standard Kit",
+//    8 to "Room Kit",
+//    16 to "Power Kit",
+//    24 to "Electronic Kit",
+//    25 to "TR-808 Kit",
+//    32 to "Jazz Kit",
+//    40 to "Brush Kit",
+//    48 to "Orchestra Kit",
+//    56 to "Sound Effects Kit",
+//)
+
+private val drumKitPrograms = intArrayOf(0, 8, 16, 24, 25, 32, 40, 48, 56)
+private val drumKitNames = arrayOf(
+    "Standard Kit", "Room Kit", "Power Kit", "Electronic Kit", "TR-808 Kit",
+    "Jazz Kit", "Brush Kit", "Orchestra Kit", "Sound Effects Kit"
+)

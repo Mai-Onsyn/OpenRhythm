@@ -29,13 +29,13 @@ class MidiTrack(
     var enable: Boolean = true,
     var visible: Boolean = true
 ) {
-    val instrumentEvent: MidiPCEvent get() {
-        return try {
-            controllerEvents.first { it is MidiPCEvent } as MidiPCEvent
-        } catch (_: NoSuchElementException) {
-            MidiPCEvent.of(0, trackChannel, 0)
-        }
-    }
+//    val instrumentEvent: MidiPCEvent get() {
+//        return try {
+//            controllerEvents.first { it is MidiPCEvent } as MidiPCEvent
+//        } catch (_: NoSuchElementException) {
+//            MidiPCEvent.of(0, trackChannel, 0)
+//        }
+//    }
 
     val trackChannel: Int get() = controllerEvents.firstOrNull()?.channel ?: 0
 

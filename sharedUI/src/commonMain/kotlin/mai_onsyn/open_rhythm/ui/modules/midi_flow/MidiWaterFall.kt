@@ -24,6 +24,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import co.touchlab.kermit.Logger
 import com.materialkolor.ktx.darken
 import kotlinx.coroutines.delay
 import mai_onsyn.open_rhythm.bridge.Global
@@ -126,11 +127,13 @@ fun MidiWaterFall(
                     }
                 }
         ) {
+//            val DRAW_START = Time.nanos
             if (drawOctaveLine) drawOctaveLines(minPitch, maxPitch, gridPos)
             val height = size.height
             val visibleTickCount = (height / hpb.toPx() * midi.ppq).toInt()
             val pxPerTick = hpb.toPx() / midi.ppq
             if (drawSectionLine) drawSectionLines(midi, currTick, currTick + visibleTickCount, pxPerTick)
+//            val LINES_END = Time.nanos
 
             val toDrawNotes = mutableListOf<DrawableNote>()
             for ((i, track) in midi.tracks.withIndex()) {
@@ -144,8 +147,10 @@ fun MidiWaterFall(
                     toDrawNotes.add(DrawableNote(it, trackColors[i % trackColors.size], i))
                 }
             }
+//            val FIND_DRAW_NOTES_END = Time.nanos
             toDrawNotes.sortWith(compareBy({ it.note.tick }, { it.trackNum }))
             renderingNoteCount = toDrawNotes.size
+//            val SORT_END = Time.nanos
 
             activeNoteOutput.clear()
             fun drawNote(pack: DrawableNote, blackKey: Boolean) {
@@ -178,11 +183,17 @@ fun MidiWaterFall(
             for (pack in toDrawNotes) {
                 if (isBlackKey(pack.note.pitch)) drawNote(pack, true)
             }
+//            val DRAW_END = Time.nanos
 //            activeNoteCount = activeNoteOutput.size
             val now = Time.millis
             frameTime = now - lastDrawTime
             lastDrawTime = now
             countedFrames++
+
+//            logDurations("Draw cost",
+//                listOf("lines", "find", "sort", "draw"),
+//                DRAW_START, LINES_END, FIND_DRAW_NOTES_END, SORT_END, DRAW_END
+//            )
         }
 
         Box(Modifier.matchParentSize()) {
@@ -219,6 +230,18 @@ fun MidiWaterFall(
         }
     }
 }
+
+//fun logDurations(title: String, labels: List<String>, vararg timestamps: Long) {
+//    val sb = StringBuilder("$title: ")
+//    for ((idx, label) in labels.withIndex()) {
+//        sb.append("$label: ${(timestamps[idx + 1] - timestamps[idx]) / 1000000f}ms")
+//        sb.append(", ")
+////        if (idx != labels.size - 1) {
+////        }
+//    }
+//    sb.append("total: ${(timestamps.last() - timestamps.first()) / 1000000f}ms")
+//    Logger.d { sb.toString() }
+//}
 
 data class DrawableNote(
     val note: Note,

@@ -35,7 +35,8 @@ fun TrackTableItem(
                     if (it == track.trackInst) removeSettings(midiPath, index, inst = true)
                     else addSettings(midiPath, index, inst = it)
                     Global.player.pc(it, track.trackChannel)
-                }
+                },
+                isDrum = track.trackChannel == 9
             )
         },
         preview = {

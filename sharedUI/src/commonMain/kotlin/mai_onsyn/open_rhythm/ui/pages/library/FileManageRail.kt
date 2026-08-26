@@ -96,8 +96,8 @@ fun FileManageRail(
                     try {
                         Global.fileLoader.loadFile(midiFiles[playingIdx].path).let {
                             Global.player.stop()
-                            Global.player.seek(it.startTick.toLong())
                             Global.player.setMidi(it, Global.settings.midiFileSettings[midiFiles[playingIdx].path])
+                            Global.player.seek(it.startTick.toLong())
                             Global.player.play()
                             Global.player.onCompletion = { isPlaying = false }
                         }

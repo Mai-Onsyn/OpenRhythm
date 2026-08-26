@@ -54,7 +54,10 @@ fun PlayPage(
                 }
             }
             Global.settings.midiFileSettings[path]?.trackSettings?.forEach { (track, settings) ->
-                tracks[track].visible = (settings.visible ?: true)
+//                tracks[track].visible = (settings.visible ?: true)
+                settings.visible?.let {
+                    tracks[track].visible = it
+                }
             }
         }
     )

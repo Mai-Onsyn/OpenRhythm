@@ -66,7 +66,7 @@ class MidiPlayer2(
         val pMidi = midi ?: return
         playbackThread?.cancel()
         launchPlaybackThread(pMidi)
-//        Logger.i { "Player Playing" }
+        Logger.i { "Player Playing ${pMidi.name}" }
     }
 
     fun pause() {
@@ -322,7 +322,7 @@ class MidiPlayer2(
         }
         for (i in 0..15) {
             midi.ccChangeTimeline[i].getInterval(range).forEach {
-                if (it.controller == 7) cc(it.controller, (it.value + (config?.trackSettings[i]?.volume ?:0)).coerceIn(0, 127))
+                if (it.controller == 7) cc(it.controller, (it.value + (config?.trackSettings[i]?.volume ?:0)).coerceIn(0, 127), i)
                 else cc(it.controller, it.value, i)
             }
 //            midi.pcChangeTimeline[i].getInterval(range).forEach {

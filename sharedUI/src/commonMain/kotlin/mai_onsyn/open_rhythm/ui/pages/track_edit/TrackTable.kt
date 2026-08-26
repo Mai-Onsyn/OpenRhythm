@@ -12,6 +12,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import co.touchlab.kermit.Logger
 import mai_onsyn.open_rhythm.bridge.Global
 import mai_onsyn.open_rhythm.core.midi.Midi
 import mai_onsyn.open_rhythm.core.midi.take
@@ -75,15 +76,15 @@ fun TrackTable(
             LaunchedEffect(playingIndex) {
                 Global.player.stop()
                 if (playingIndex != -1) {
-                    Global.player.stop()
-                    Global.player.seek(midi.tracks[playingIndex].tickRange.first.toLong())
                     Global.player.setMidi(
                         midi.take(playingIndex),
                         Global.settings.midiFileSettings[midiPath]?.take(playingIndex)
                     )
+                    Global.player.seek(midi.tracks[playingIndex].tickRange.first.toLong())
                     Global.player.play()
                     Global.player.onCompletion = { playingIndex = -1 }
                 }
+//                Logger.d { "$playingIndex" }
             }
             DisposableEffect(Unit) {
                 onDispose {

@@ -24,22 +24,32 @@ import openrhythm.sharedui.generated.resources.Res
 @Composable
 fun BoxScope.InstrumentTableItem(
     initial: Int,
-    onChanged: (Int) -> Unit
+    onChanged: (Int) -> Unit,
+    isDrum: Boolean = false
 ) {
     val colorScheme = MaterialTheme.colorScheme
-    var value by remember { mutableStateOf(initial) }
+    var value by remember { mutableStateOf(if (isDrum) initial shr 3 else initial) }
 
     val instItems = remember { mutableListOf<ContextDropDownMenuItem>().apply {
-        var categoryIndex = 0
-        for (inst in 0..127) {
-            add(ContextDropDownMenuItem(
-                label = instNames[inst],
-                selectedContentColor = colorScheme.primary,
-                category = categories[categoryIndex]
-            ))
+        if (isDrum) {
+            for (i in 0 until 8) {
+                add(ContextDropDownMenuItem(
+                    label = drumKitNames[i],
+                    selectedContentColor = colorScheme.primary
+                ))
+            }
+        } else {
+            var categoryIndex = 0
+            for (inst in 0..127) {
+                add(ContextDropDownMenuItem(
+                    label = instNames[inst],
+                    selectedContentColor = colorScheme.primary,
+                    category = categories[categoryIndex]
+                ))
 
-            if (categoryBreakPoints[categoryIndex] == inst) {
-                categoryIndex++
+                if (categoryBreakPoints[categoryIndex] == inst) {
+                    categoryIndex++
+                }
             }
         }
     } }
@@ -53,7 +63,7 @@ fun BoxScope.InstrumentTableItem(
         alignment = Alignment.Start,
         onSelect = {
             value = it
-            onChanged(value)
+            onChanged(if (isDrum) value shl 3 else value)
         },
         modifier = Modifier
             .height(40.dp)
@@ -69,14 +79,14 @@ fun BoxScope.InstrumentTableItem(
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
-                    text = instNames[value],
+                    text = if (isDrum) drumKitNames[value] else instNames[value],
                     style = MaterialTheme.typography.labelMedium,
                     maxLines = 1,
                     modifier = Modifier.weight(1f),
                     overflow = TextOverflow.Ellipsis
                 )
                 Text(
-                    text = value.toString(),
+                    text = (if (isDrum) value shl 3 else value).toString(),
                     style = MaterialTheme.typography.labelSmall,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.primary
@@ -116,3 +126,12 @@ val categories: List<String>
 
 private var _instNames: List<String>? = null
 private var _categories: List<String>? = null
+
+val drumKitNames: Array<String> = Array(9) { n ->
+    when (n shl 3) {
+        0 -> "Standard Kit"; 8 -> "Room Kit"; 16 -> "Power Kit"
+        24 -> "Electronic Kit"; 25 -> "TR-808 Kit"; 32 -> "Jazz Kit"
+        40 -> "Brush Kit"; 48 -> "Orchestra Kit"; 56 -> "Sound Effects Kit"
+        else -> "Custom Kit #$n"
+    }
+}

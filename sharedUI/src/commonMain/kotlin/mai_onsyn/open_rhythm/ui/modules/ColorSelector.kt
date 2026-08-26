@@ -26,7 +26,7 @@ fun ColorSelector(
     var showColorPicker by remember { mutableStateOf(false) }
     Surface(
         onClick = { showColorPicker = true },
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
+        border = BorderStroke(0.25.dp, MaterialTheme.colorScheme.outlineVariant),
         color = color,
         shape = MaterialTheme.shapes.small,
         contentColor = getContrastTextColor(color)

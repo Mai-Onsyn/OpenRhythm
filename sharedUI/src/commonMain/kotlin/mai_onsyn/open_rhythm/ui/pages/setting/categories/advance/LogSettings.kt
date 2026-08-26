@@ -30,36 +30,42 @@ fun LogSettings() {
         icon = ic_assignment,
         modifier = Modifier.widthIn(400.dp, 800.dp)
     ) {
-        item("Log level") {
-            val candidates = remember { listOf(
-                ContextDropDownMenuItem("Trace", selectedContentColor = colorScheme.primary),
-                ContextDropDownMenuItem("Debug", selectedContentColor = colorScheme.primary),
-                ContextDropDownMenuItem("Info", selectedContentColor = colorScheme.primary),
-                ContextDropDownMenuItem("Warn", selectedContentColor = colorScheme.primary),
-                ContextDropDownMenuItem("Error", selectedContentColor = colorScheme.primary),
-                ContextDropDownMenuItem("All", selectedContentColor = colorScheme.primary),
-            ) }
-
-            var expanded by remember { mutableStateOf(false) }
-            ContextDropdownMenu(
-                expanded = expanded,
-                onDismissRequest = { expanded = false },
-                selectedIndex = Global.settings.LogLevel,
-                onSelect = { Global.settings.LogLevel = it },
-                items = candidates,
-            ) {
-                OutlinedButton(
-                    onClick = { expanded = true },
-                    modifier = Modifier.pointerHoverIcon(PointerIcon.Hand),
-                    shape = MaterialTheme.shapes.small
-                ) {
-                    Text(
-                        text = candidates[Global.settings.LogLevel].label!!,
-                        style = MaterialTheme.typography.bodyMedium
-                    )
-                }
-            }
-        }
+        itemWithDropDownMenu(
+            name = "Log level",
+            initial = Global.settings.LogLevel,
+            onSelected = { Global.settings.LogLevel = it },
+            items = listOf("Trace", "Debug", "Info", "Warn", "Error", "Assert")
+        )
+//        item("Log level") {
+//            val candidates = remember { listOf(
+//                ContextDropDownMenuItem("Trace", selectedContentColor = colorScheme.primary),
+//                ContextDropDownMenuItem("Debug", selectedContentColor = colorScheme.primary),
+//                ContextDropDownMenuItem("Info", selectedContentColor = colorScheme.primary),
+//                ContextDropDownMenuItem("Warn", selectedContentColor = colorScheme.primary),
+//                ContextDropDownMenuItem("Error", selectedContentColor = colorScheme.primary),
+//                ContextDropDownMenuItem("All", selectedContentColor = colorScheme.primary),
+//            ) }
+//
+//            var expanded by remember { mutableStateOf(false) }
+//            ContextDropdownMenu(
+//                expanded = expanded,
+//                onDismissRequest = { expanded = false },
+//                selectedIndex = Global.settings.LogLevel,
+//                onSelect = { Global.settings.LogLevel = it },
+//                items = candidates,
+//            ) {
+//                OutlinedButton(
+//                    onClick = { expanded = true },
+//                    modifier = Modifier.pointerHoverIcon(PointerIcon.Hand),
+//                    shape = MaterialTheme.shapes.small
+//                ) {
+//                    Text(
+//                        text = candidates[Global.settings.LogLevel].label!!,
+//                        style = MaterialTheme.typography.bodyMedium
+//                    )
+//                }
+//            }
+//        }
 
         item("Log limit", "The current log limit, doesn't affect the logs that have already been output") {
             CompactOutlinedTextField(

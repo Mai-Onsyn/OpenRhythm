@@ -105,4 +105,6 @@ class UserSetting(
     val midiFileSettings by st.map("MidiFileSettings", mutableMapOf(), String.serializer(), MidiFileSettings.serializer())
 
     fun resetAllSettings() = st.clear()
+    fun clearUserMidiFileSettings() = st.remove("MidiFileSettings")
+    fun clearLibraries() = st.remove("LibraryFolderList")
 }

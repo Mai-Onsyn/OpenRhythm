@@ -67,7 +67,7 @@ fun MidiInputSettings() {
                             .heightIn(max = 600.dp)
                             .width(IntrinsicSize.Max)
                             .verticalScroll(rememberScrollState())
-                            .border(1.dp, MaterialTheme.colorScheme.outline, MaterialTheme.shapes.medium)
+                            .border(0.25.dp, MaterialTheme.colorScheme.outlineVariant, MaterialTheme.shapes.medium)
                     ) {
                         val virtualKeyboard = "Virtual Keyboard"
                         DeviceRow(

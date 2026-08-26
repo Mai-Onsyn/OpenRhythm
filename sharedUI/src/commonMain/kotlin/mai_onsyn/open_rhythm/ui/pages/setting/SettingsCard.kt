@@ -2,6 +2,7 @@ package mai_onsyn.open_rhythm.ui.pages.setting
 
 import androidx.compose.animation.*
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
@@ -192,7 +193,8 @@ class SettingsCardScope(
                     shape = MaterialTheme.shapes.small,
                     modifier = Modifier
                         .pointerHoverIcon(PointerIcon.Hand)
-                        .width(fixedWidth)
+                        .width(fixedWidth),
+                    border = BorderStroke(0.25.dp, MaterialTheme.colorScheme.outlineVariant)
                 ) {
                     Text(
                         text = dropDownItems.getOrNull(value)?.label ?: "Error",

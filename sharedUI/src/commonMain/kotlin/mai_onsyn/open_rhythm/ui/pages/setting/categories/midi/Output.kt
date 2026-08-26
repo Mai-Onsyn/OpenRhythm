@@ -1,5 +1,6 @@
 package mai_onsyn.open_rhythm.ui.pages.setting.categories.midi
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.widthIn
@@ -90,7 +91,8 @@ fun MidiOutputSettings() {
                         shape = MaterialTheme.shapes.small,
                         modifier = Modifier
                             .pointerHoverIcon(PointerIcon.Hand)
-                            .widthIn(max = 240.dp)
+                            .widthIn(max = 240.dp),
+                        border = BorderStroke(0.25.dp, MaterialTheme.colorScheme.outlineVariant)
                     ) {
                         Text(
                             text = deviceNames.getOrElse(selectedDeviceIndex) { "No Output" },

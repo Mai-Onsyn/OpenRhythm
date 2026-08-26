@@ -68,10 +68,14 @@ fun CompactOutlinedTextField(
                 container = {
                     OutlinedTextFieldDefaults.Container(
                         enabled = true,
-                        isError = false,
+                        isError = isError,
                         interactionSource = interactionSource,
-                        colors = OutlinedTextFieldDefaults.colors(),
-                        shape = MaterialTheme.shapes.small
+                        colors = OutlinedTextFieldDefaults.colors(
+                            unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant
+                        ),
+                        shape = MaterialTheme.shapes.small,
+                        unfocusedBorderThickness = 0.25.dp,
+                        focusedBorderThickness = 0.4.dp
                     )
                 },
                 placeholder = placeholder,

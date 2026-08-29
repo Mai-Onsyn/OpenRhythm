@@ -55,12 +55,13 @@ class UserSetting(
     // =====Key Mapping=====
     val userKeyMappings by st.list("UserKeyMappings", KeyMidiMapping.default(), KeyMidiMapping.Companion.serializer())
 
-    // =====Waterfall Appearance=====
+    // =====Waterfall Background=====
     var WaterfallBackgroundColor        by st.observable("WaterfallBackgroundColor",        Color.Unspecified)
     var CustomWaterfallBackgroundColor  by st.observable("CustomWaterfallBackgroundColor", Color(48, 48, 48))
     var BackgroundImageDir              by st.observable("BackgroundImageDir",              "")
     var BackgroundImageOpacity          by st.observable("BackgroundImageOpacity",          0.3f)
     var BackgroundImageBlurDp           by st.observable("BackgroundImageBlurDp",           0f)
+    var ImageExpandToKeyboard           by st.observable("ImageExpandToKeyboard",           false)
     var OriginalBackgroundImageSize     by st.observable("OriginalBackgroundImageSize",     false)
     var DrawOctaveLines                 by st.observable("DrawOctaveLines",                 true)
     var OctaveLineColor                 by st.observable("OctaveLineColor",                 Color.LightGray)
@@ -74,6 +75,8 @@ class UserSetting(
     var QuarterNoteDpHeight     by st.observable("QuarterNoteDpHeight",     120f)
     var DrawPitchLabels         by st.observable("DrawPitchLabels",         false)
     var DrawNoteShadow          by st.observable("DrawNoteShadow",          true)
+    var NoteOpacity             by st.observable("NoteOpacity",             1f)
+    var OpacityAffectKeyboard   by st.observable("OpacityAffectKeyboard",   false)
 
     // =====Keyboard Appearance=====
     var KeyboardAutoAspect              by st.observable("KeyBoardAutoAspect",          true)

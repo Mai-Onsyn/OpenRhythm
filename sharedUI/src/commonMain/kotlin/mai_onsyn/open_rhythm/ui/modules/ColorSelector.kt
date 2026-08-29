@@ -21,6 +21,7 @@ fun ColorSelector(
     modifier: Modifier = Modifier.size(100.dp, 40.dp),
     initialColor: Color,
     onColorSelected: (Color) -> Unit,
+    enableAlpha: Boolean = false
 ) {
     var color by remember { mutableStateOf(initialColor) }
     var showColorPicker by remember { mutableStateOf(false) }
@@ -42,6 +43,7 @@ fun ColorSelector(
 
     ColorPickerDialog(
         visible = showColorPicker,
+        enableAlpha = enableAlpha,
         initialColor = color,
         onDismissRequest = { showColorPicker = false },
         onConfirmRequest = {

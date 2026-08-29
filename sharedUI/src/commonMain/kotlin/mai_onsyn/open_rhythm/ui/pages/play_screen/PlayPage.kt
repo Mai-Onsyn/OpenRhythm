@@ -66,6 +66,7 @@ fun PlayPage(
     val focusRequester = remember { FocusRequester() }
 
     DisposableEffect(Unit) {
+        if (Global.settings.AutoStartPlayback && drawStatusBar) isPlaying = true
         onDispose {
             Global.player.practiceMode = false
         }

@@ -27,6 +27,7 @@ import kotlinx.coroutines.IO
 import kotlinx.coroutines.withContext
 import mai_onsyn.open_rhythm.bridge.Global
 import mai_onsyn.open_rhythm.core.util.Time
+import mai_onsyn.open_rhythm.ui.utility.BackgroundImage
 import mai_onsyn.open_rhythm.ui.utility.BindInputDeviceEvents
 
 @Composable
@@ -36,94 +37,72 @@ fun MidiUpRegion(
 ) {
     val density = LocalDensity.current
     var keyboardHeight by remember { mutableStateOf(100.dp) }
-    Column(
-        modifier = modifier
-            .onSizeChanged {
-                if (keyboardRatio == 0f) return@onSizeChanged
-                keyboardHeight = with(density) { (it.width / keyboardRatio).toDp() }
-            },
+    Box(
+        Modifier.background(Global.settings.WaterfallBackgroundColor.let { if (it.isUnspecified) MaterialTheme.colorScheme.surface else it })
     ) {
-        val activeKeys = remember { mutableStateMapOf<Int, Color>() }
-        val notes = remember { mutableStateListOf<LiveNote>() }
-
-        Box(
-            Modifier
-                .weight(1f)
-                .background(Global.settings.WaterfallBackgroundColor.let { if (it.isUnspecified) MaterialTheme.colorScheme.surface else it })
-        ) {
-            val platformContext = LocalPlatformContext.current
-            val bgImageRequest by produceState<ImageRequest?>(null, Global.settings.BackgroundImageDir) {
-                val file = PlatformFile(Global.settings.BackgroundImageDir)
-                withContext(Dispatchers.IO) {
-                    value = if (file.exists() && file.isRegularFile()) {
-                        if (Global.settings.OriginalBackgroundImageSize) ImageRequest.Builder(platformContext)
-                            .data(file.readBytes())
-                            .size(Size.ORIGINAL)
-                            .build()
-                        else ImageRequest.Builder(platformContext)
-                            .data(file.readBytes())
-                            .build()
-                    } else null
+        if (Global.settings.ImageExpandToKeyboard) BackgroundImage()
+        Column(
+            modifier = modifier
+                .onSizeChanged {
+                    if (keyboardRatio == 0f) return@onSizeChanged
+                    keyboardHeight = with(density) { (it.width / keyboardRatio).toDp() }
                 }
+        ) {
+            val activeKeys = remember { mutableStateMapOf<Int, Color>() }
+            val notes = remember { mutableStateListOf<LiveNote>() }
+
+            Box(Modifier.weight(1f)) {
+                if (!Global.settings.ImageExpandToKeyboard) BackgroundImage()
+                MidiUpFlow(
+                    modifier = Modifier
+                        .fillMaxSize(),
+                    notes = notes,
+                    minPitch = Global.settings.MinPitch,
+                    maxPitch = Global.settings.MaxPitch,
+                    color = Global.settings.MidiInteractionColor,
+                    drawOctaveLine = Global.settings.DrawOctaveLines,
+                    noteRoundPercent = Global.settings.NoteRoundConerPercent
+                )
             }
-            AsyncImage(
-                model = bgImageRequest,
-                contentDescription = "background image",
+
+            val appendTextMap = appliedOverlayLabels()
+
+            AppDefaultMidiKeyboard(
                 modifier = Modifier
-                    .alpha(Global.settings.BackgroundImageOpacity)
-                    .blur(Global.settings.BackgroundImageBlurDp.dp)
-                    .matchParentSize(),
-                contentScale = ContentScale.Crop,
+                    .fillMaxWidth()
+                    .height(keyboardHeight),
+                userActiveKey = activeKeys,
+                onPress = { key, velocity ->
+                    activeKeys[key] = Global.settings.MidiInteractionColor
+                    Global.player.noteOn(key, velocity)
+
+                    notes.add(LiveNote(key, Time.nanos))
+                },
+                onRelease = { key ->
+                    activeKeys.remove(key)
+                    Global.player.noteOff(key)
+
+                    notes.firstOrNull { it.pitch == key && it.endNanos == null }?.let {
+                        it.endNanos = Time.nanos
+                    }
+                },
+                onVerticalDragged = {
+                    keyboardHeight = max(64.dp, with(density) { keyboardHeight - it.toDp() })
+                },
+                appendTexts = appendTextMap
             )
-            MidiUpFlow(
-                modifier = Modifier
-                    .fillMaxSize(),
-                notes = notes,
-                minPitch = Global.settings.MinPitch,
-                maxPitch = Global.settings.MaxPitch,
-                color = Global.settings.MidiInteractionColor,
-                drawOctaveLine = Global.settings.DrawOctaveLines,
-                noteRoundPercent = Global.settings.NoteRoundConerPercent
+
+            BindInputDeviceEvents(
+                activeKeys,
+                { key, _ ->
+                    notes.add(LiveNote(key, Time.nanos))
+                },
+                { key ->
+                    notes.firstOrNull { it.pitch == key && it.endNanos == null }?.let {
+                        it.endNanos = Time.nanos
+                    }
+                }
             )
         }
-
-        val appendTextMap = appliedOverlayLabels()
-
-        AppDefaultMidiKeyboard(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(keyboardHeight),
-            userActiveKey = activeKeys,
-            onPress = { key, velocity ->
-                activeKeys[key] = Global.settings.MidiInteractionColor
-                Global.player.noteOn(key, velocity)
-
-                notes.add(LiveNote(key, Time.nanos))
-            },
-            onRelease = { key ->
-                activeKeys.remove(key)
-                Global.player.noteOff(key)
-
-                notes.firstOrNull { it.pitch == key && it.endNanos == null }?.let {
-                    it.endNanos = Time.nanos
-                }
-            },
-            onVerticalDragged = {
-                keyboardHeight = max(64.dp, with(density) { keyboardHeight - it.toDp() })
-            },
-            appendTexts = appendTextMap
-        )
-
-        BindInputDeviceEvents(
-            activeKeys,
-            { key, _ ->
-                notes.add(LiveNote(key, Time.nanos))
-            },
-            { key ->
-                notes.firstOrNull { it.pitch == key && it.endNanos == null }?.let {
-                    it.endNanos = Time.nanos
-                }
-            }
-        )
     }
 }

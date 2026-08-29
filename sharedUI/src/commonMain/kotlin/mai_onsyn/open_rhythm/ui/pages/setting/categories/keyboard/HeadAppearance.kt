@@ -64,6 +64,7 @@ fun HeadAppearance() {
             name = "Custom drag area color"
         ) {
             ColorSelector(
+                enableAlpha = true,
                 initialColor = Global.settings.CustomKeyboardDragAreaColor,
                 onColorSelected = {
                     Global.settings.KeyboardDragAreaColor = it

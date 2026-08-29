@@ -20,9 +20,10 @@ fun DrawScope.drawNoteGraphics(
         cornerRadius = CornerRadius(cornerRadius)
     )
 
+    val c = if (Global.settings.NoteOpacity < 1f) color.copy(alpha = Global.settings.NoteOpacity) else color
     // base
     drawRoundRect(
-        color = color,
+        color = c,
         topLeft = rect.topLeft,
         size = rect.size,
         cornerRadius = CornerRadius(cornerRadius)

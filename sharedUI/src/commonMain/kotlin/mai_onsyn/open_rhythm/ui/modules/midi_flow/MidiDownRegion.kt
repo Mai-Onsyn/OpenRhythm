@@ -35,6 +35,7 @@ import kotlinx.coroutines.IO
 import kotlinx.coroutines.withContext
 import mai_onsyn.open_rhythm.bridge.Global
 import mai_onsyn.open_rhythm.core.midi.Midi
+import mai_onsyn.open_rhythm.ui.utility.BackgroundImage
 import mai_onsyn.open_rhythm.ui.utility.BindInputDeviceEvents
 
 @Composable
@@ -58,148 +59,121 @@ fun MidiDownRegion(
     val focusRequester = remember { focusRequester ?: FocusRequester() }
 
     val currentIsPlaying by rememberUpdatedState(isPlaying)
-    Column(
-        modifier = modifier
-            .focusable()
-            .focusRequester(focusRequester)
-            .onSizeChanged {
-                if (keyboardRatio == 0f) return@onSizeChanged
-                keyboardHeight = with(density) { (it.width / keyboardRatio).toDp() }
-            }
-            .pointerInput(Unit) {
-                awaitPointerEventScope {
-                    val event = awaitPointerEvent(PointerEventPass.Initial)
-                    for (change in event.changes) {
-                        if (change.pressed) {
-                            focusRequester.requestFocus()
-                            Logger.d { "Column request focus" }
-                            break
-                        }
-                    }
-                }
-            }
-            .onKeyEvent {
-                if (it.key == Key.Spacebar && it.type == KeyEventType.KeyDown) {
-                    onPlayStateChange(!currentIsPlaying)
-                    return@onKeyEvent true
-                }
-                false
-            }
+
+    Box(
+        Modifier.background(Global.settings.WaterfallBackgroundColor.let { if (it.isUnspecified) MaterialTheme.colorScheme.surface else it })
     ) {
-        var currentTick by remember { mutableStateOf(0.0) }
-
-        val hpb by remember(Global.settings.QuarterNoteDpHeight) { mutableStateOf(Global.settings.QuarterNoteDpHeight.dp) }
-        var deltaYpx by remember { mutableStateOf(0f) }
-
-        Box(
-            Modifier
-                .weight(1f)
-                .background(Global.settings.WaterfallBackgroundColor.let { if (it.isUnspecified) MaterialTheme.colorScheme.surface else it })
-        ) {
-            val platformContext = LocalPlatformContext.current
-            val bgImageRequest by produceState<ImageRequest?>(null, Global.settings.BackgroundImageDir) {
-                val file = PlatformFile(Global.settings.BackgroundImageDir)
-                withContext(Dispatchers.IO) {
-                    value = if (file.exists() && file.isRegularFile()) {
-                        if (Global.settings.OriginalBackgroundImageSize) ImageRequest.Builder(platformContext)
-                            .data(file.readBytes())
-                            .size(Size.ORIGINAL)
-                            .build()
-                        else ImageRequest.Builder(platformContext)
-                            .data(file.readBytes())
-                            .build()
-                    } else null
+        if (Global.settings.ImageExpandToKeyboard) BackgroundImage()
+        Column(
+            modifier = modifier
+                .focusable()
+                .focusRequester(focusRequester)
+                .onSizeChanged {
+                    if (keyboardRatio == 0f) return@onSizeChanged
+                    keyboardHeight = with(density) { (it.width / keyboardRatio).toDp() }
                 }
-            }
-            AsyncImage(
-                model = bgImageRequest,
-                contentDescription = "background image",
-                modifier = Modifier
-                    .alpha(Global.settings.BackgroundImageOpacity)
-                    .blur(Global.settings.BackgroundImageBlurDp.dp)
-                    .matchParentSize(),
-                contentScale = ContentScale.Crop,
-            )
-            MidiWaterFall(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .pointerInput(Unit) {
-                        awaitPointerEventScope {
-                            while (true) {
-                                val event = awaitPointerEvent(PointerEventPass.Initial)
+                .pointerInput(Unit) {
+                    awaitPointerEventScope {
+                        val event = awaitPointerEvent(PointerEventPass.Initial)
+                        for (change in event.changes) {
+                            if (change.pressed) {
+                                focusRequester.requestFocus()
+                                Logger.d { "Column request focus" }
+                                break
+                            }
+                        }
+                    }
+                }
+                .onKeyEvent {
+                    if (it.key == Key.Spacebar && it.type == KeyEventType.KeyDown) {
+                        onPlayStateChange(!currentIsPlaying)
+                        return@onKeyEvent true
+                    }
+                    false
+                }
+        ) {
+            var currentTick by remember { mutableStateOf(0.0) }
 
-                                for (change in event.changes) {
-                                    if (change.pressed) {
-                                        focusRequester.requestFocus()
-                                        break
+            val hpb by remember(Global.settings.QuarterNoteDpHeight) { mutableStateOf(Global.settings.QuarterNoteDpHeight.dp) }
+            var deltaYpx by remember { mutableStateOf(0f) }
+
+            Box(Modifier.weight(1f)) {
+                if (!Global.settings.ImageExpandToKeyboard) BackgroundImage()
+                MidiWaterFall(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .pointerInput(Unit) {
+                            awaitPointerEventScope {
+                                while (true) {
+                                    val event = awaitPointerEvent(PointerEventPass.Initial)
+
+                                    for (change in event.changes) {
+                                        if (change.pressed) {
+                                            focusRequester.requestFocus()
+                                            break
+                                        }
                                     }
-                                }
 
-                                if (Global.settings.DoubleFingerTapToPlayPause) {
-                                    if (event.changes.size == 2 && event.changes.first().pressed && event.changes.last().pressed) {
-                                        Logger.i { "Double Click Toggle to ${!currentIsPlaying}" }
-                                        onPlayStateChange(!currentIsPlaying)
+                                    if (Global.settings.DoubleFingerTapToPlayPause) {
+                                        if (event.changes.size == 2 && event.changes.first().pressed && event.changes.last().pressed) {
+                                            Logger.i { "Double Click Toggle to ${!currentIsPlaying}" }
+                                            onPlayStateChange(!currentIsPlaying)
+                                        }
                                     }
                                 }
                             }
                         }
-                    }
-                    .then(
-                        if (Global.settings.DoubleClickToPlayPause)
-                            Modifier.pointerInput(Unit) {
-                                detectTapGestures(
-                                    onDoubleTap = {
-                                        onPlayStateChange(!currentIsPlaying)
-                                    }
-                                )
-                            }
-                        else Modifier
-                    ),
-                trackColors = trackColors,
-                currTick = currentTick,
-                minPitch = Global.settings.MinPitch,
-                maxPitch = Global.settings.MaxPitch,
-                midi = midi,
-                hpb = hpb,
-                activeNoteOutput = midiActiveKeys,
-                onVerticalDragged = { deltaYpx += it },
-                drawOctaveLine = Global.settings.DrawOctaveLines,
-                drawSectionLine = Global.settings.DrawSectionLines,
-                noteRoundPercent = Global.settings.NoteRoundConerPercent,
-                drawPitchLabel = Global.settings.DrawPitchLabels
-            )
-        }
+                        .then(
+                            if (Global.settings.DoubleClickToPlayPause)
+                                Modifier.pointerInput(Unit) {
+                                    detectTapGestures(
+                                        onDoubleTap = {
+                                            onPlayStateChange(!currentIsPlaying)
+                                        }
+                                    )
+                                }
+                            else Modifier
+                        ),
+                    trackColors = trackColors,
+                    currTick = currentTick,
+                    minPitch = Global.settings.MinPitch,
+                    maxPitch = Global.settings.MaxPitch,
+                    midi = midi,
+                    hpb = hpb,
+                    activeNoteOutput = midiActiveKeys,
+                    onVerticalDragged = { deltaYpx += it },
+                    drawOctaveLine = Global.settings.DrawOctaveLines,
+                    drawSectionLine = Global.settings.DrawSectionLines,
+                    noteRoundPercent = Global.settings.NoteRoundConerPercent,
+                    drawPitchLabel = Global.settings.DrawPitchLabels
+                )
+            }
 
-        LaunchedEffect(isPlaying, midi, hpb) {
-            while (true) {
-                withFrameMillis {
-                    if (deltaYpx != 0f && !isPlaying) {
-                        val deltaTick = deltaYpx * midi.ppq / with(density) { hpb.toPx() }
-                        currentTick = Global.player.preciseTick + deltaTick
-                        Global.player.seek(currentTick, false)
+            LaunchedEffect(isPlaying, midi, hpb) {
+                while (true) {
+                    withFrameMillis {
+                        if (deltaYpx != 0f && !isPlaying) {
+                            val deltaTick = deltaYpx * midi.ppq / with(density) { hpb.toPx() }
+                            currentTick = Global.player.preciseTick + deltaTick
+                            Global.player.seek(currentTick, false)
+                        } else currentTick = Global.player.preciseTick
+                        onProgressChange((currentTick / midi.totalTicks).toFloat())
+                        deltaYpx = 0f
                     }
-                    else currentTick = Global.player.preciseTick
-                    onProgressChange((currentTick / midi.totalTicks).toFloat())
-                    deltaYpx = 0f
                 }
             }
-        }
-        LaunchedEffect(midi) {
-            Global.player.setMidi(midi, Global.settings.midiFileSettings[midi.path])
-            Global.player.seek(midi.startTick.toLong() - midi.ppq * Global.settings.PlaybackStartDistance)
-        }
-        LaunchedEffect(isPlaying) {
-            if (isPlaying) {
-                Global.player.onCompletion = { onPlayStateChange(false) }
-                Global.player.play()
+            LaunchedEffect(midi) {
+                focusRequester.requestFocus()
+                Global.player.setMidi(midi, Global.settings.midiFileSettings[midi.path])
+                Global.player.seek(midi.startTick.toLong() - midi.ppq * Global.settings.PlaybackStartDistance)
             }
-            else Global.player.pause()
-        }
-        LaunchedEffect(Unit) {
-            focusRequester.requestFocus()
-            if (Global.settings.AutoStartPlayback) onPlayStateChange(true)
-        }
-        BindInputDeviceEvents(userActiveKeys)
+            LaunchedEffect(isPlaying) {
+                if (isPlaying) {
+                    Global.player.onCompletion = { onPlayStateChange(false) }
+                    Global.player.play()
+                } else Global.player.pause()
+            }
+            BindInputDeviceEvents(userActiveKeys)
 //        DisposableEffect(Unit) {
 //            val handler: (KeyEvent) -> Boolean = {
 //                if (it.key == Key.Spacebar && it.type == KeyEventType.KeyDown) {
@@ -213,32 +187,33 @@ fun MidiDownRegion(
 //            }
 //        }
 
-        val appendTextMap = appliedOverlayLabels()
+            val appendTextMap = appliedOverlayLabels()
 
-        AppDefaultMidiKeyboard(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(keyboardHeight),
-            midiActiveKey = midiActiveKeys,
-            userActiveKey = userActiveKeys,
-            onPress = { key, velocity ->
-                userActiveKeys[key] = Global.settings.MidiInteractionColor
-                Global.player.noteOn(key, velocity)
-                if (Global.player.practiceMode) {
-                    Global.player.blocker.press(key)
-                }
-            },
-            onRelease = { key ->
-                userActiveKeys.remove(key)
-                Global.player.noteOff(key)
-                if (Global.player.practiceMode) {
-                    Global.player.blocker.release(key)
-                }
-            },
-            onVerticalDragged = {
-                keyboardHeight = max(64.dp, with(density) { keyboardHeight - it.toDp() })
-            },
-            appendTexts = appendTextMap
-        )
+            AppDefaultMidiKeyboard(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(keyboardHeight),
+                midiActiveKey = midiActiveKeys,
+                userActiveKey = userActiveKeys,
+                onPress = { key, velocity ->
+                    userActiveKeys[key] = Global.settings.MidiInteractionColor
+                    Global.player.noteOn(key, velocity)
+                    if (Global.player.practiceMode) {
+                        Global.player.blocker.press(key)
+                    }
+                },
+                onRelease = { key ->
+                    userActiveKeys.remove(key)
+                    Global.player.noteOff(key)
+                    if (Global.player.practiceMode) {
+                        Global.player.blocker.release(key)
+                    }
+                },
+                onVerticalDragged = {
+                    keyboardHeight = max(64.dp, with(density) { keyboardHeight - it.toDp() })
+                },
+                appendTexts = appendTextMap
+            )
+        }
     }
 }

@@ -68,10 +68,7 @@ fun WaterfallBackground() {
         }
 
         var bgImageDir by remember { mutableStateOf(Global.settings.BackgroundImageDir.let { it.ifBlank { null } }) }
-        item(
-            "Image",
-            bgImageDir
-        ) {
+        item("Image", bgImageDir) {
             Row {
                 IconButton(
                     onClick ={
@@ -117,6 +114,12 @@ fun WaterfallBackground() {
                 description = "This can use a lot of memory for big images",  // 这得吃不少内存，先生
                 initial = Global.settings.OriginalBackgroundImageSize,
                 onToggled = { Global.settings.OriginalBackgroundImageSize = it }
+            )
+            itemWithSwitch(
+                name = "Expand to keyboard region",
+                description = "It's recommended to use with a semi-transparent keyboard",
+                initial = Global.settings.ImageExpandToKeyboard,
+                onToggled = { Global.settings.ImageExpandToKeyboard = it }
             )
             item("Image opacity", verticalLayout = true) {
                 var value by remember { mutableStateOf((Global.settings.BackgroundImageOpacity * 100).toInt()) }

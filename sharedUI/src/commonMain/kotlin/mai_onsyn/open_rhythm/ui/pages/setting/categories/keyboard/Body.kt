@@ -47,6 +47,7 @@ fun Body() {
 
         item("White key color") {
             ColorSelector(
+                enableAlpha = true,
                 initialColor = Global.settings.WhiteKeyColor,
                 onColorSelected = { Global.settings.WhiteKeyColor = it }
             )
@@ -54,6 +55,7 @@ fun Body() {
 
         item("Black key color") {
             ColorSelector(
+                enableAlpha = true,
                 initialColor = Global.settings.BlackKeyColor,
                 onColorSelected = { Global.settings.BlackKeyColor = it }
             )

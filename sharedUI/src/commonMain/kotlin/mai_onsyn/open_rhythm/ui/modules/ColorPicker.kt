@@ -22,16 +22,53 @@ import com.materialkolor.ktx.toHex
 import mai_onsyn.open_rhythm.ui.modules.dialog.DialogPopup
 import kotlin.math.roundToInt
 
+//private fun parseHexToColor(hex: String): Color? {
+//    val clean = hex.removePrefix("#")
+//    if (clean.length != 6) return null
+//    return try {
+//        val colorInt = clean.toLong(16).toInt() or 0xFF000000.toInt()
+//        Color(colorInt)
+//    } catch (e: Exception) {
+//        null
+//    }
+//}
+
 private fun parseHexToColor(hex: String): Color? {
     val clean = hex.removePrefix("#")
-    if (clean.length != 6) return null
-    return try {
-        val colorInt = clean.toLong(16).toInt() or 0xFF000000.toInt()
-        Color(colorInt)
-    } catch (e: Exception) {
-        null
+    return when (clean.length) {
+        6 -> { // RRGGBB
+            try {
+                val colorInt = clean.toInt(16) or 0xFF000000.toInt()
+                Color(colorInt)
+            } catch (_: Exception) { null }
+        }
+        8 -> { // RRGGBBAA
+            try {
+                val r = clean.substring(2, 4).toInt(16)
+                val g = clean.substring(4, 6).toInt(16)
+                val b = clean.substring(6, 8).toInt(16)
+                val a = clean.substring(0, 2).toInt(16)
+                Color(r / 255f, g / 255f, b / 255f, a / 255f)
+            } catch (_: Exception) { null }
+        }
+        else -> null
     }
 }
+
+//private fun colorToHex(color: Color): String {
+//    val r = (color.red * 255).roundToInt()
+//    val g = (color.green * 255).roundToInt()
+//    val b = (color.blue * 255).roundToInt()
+//    val a = (color.alpha * 255).roundToInt()
+//
+//    fun Int.format(): String = this.toString(16).padStart(2, '0').uppercase()
+//
+//    return if (a == 255) {
+//        "#${r.format()}${g.format()}${b.format()}"
+//    } else {
+//        "#${r.format()}${g.format()}${b.format()}${a.format()}"
+//    }
+//}
 
 private fun rgbToHsb(color: Color): Triple<Float, Float, Float> {
     val r = color.red
@@ -55,6 +92,7 @@ private fun rgbToHsb(color: Color): Triple<Float, Float, Float> {
 fun ColorPickerDialog(
     visible: Boolean,
     initialColor: Color = Color.White,
+    enableAlpha: Boolean = false,
     onColorChanged: (Color) -> Unit = {},
     onDismissRequest: () -> Unit = {},
     onConfirmRequest: (Color) -> Unit = {}
@@ -65,6 +103,7 @@ fun ColorPickerDialog(
     ) {
         ColorPicker(
             initialColor = initialColor,
+            enableAlpha = enableAlpha,
             onColorChanged = onColorChanged,
             onConfirmRequest = onConfirmRequest,
             onCancelRequest = onDismissRequest,
@@ -78,15 +117,17 @@ fun ColorPickerDialog(
 @Composable
 fun ColorPicker(
     initialColor: Color = Color.Red,
+    enableAlpha: Boolean = false,
     onColorChanged: (Color) -> Unit,
     onConfirmRequest: (Color) -> Unit = {},
     onCancelRequest: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     var hsv by remember { mutableStateOf(rgbToHsb(initialColor)) }
+    var alpha by remember { mutableStateOf(initialColor.alpha) }
 
-    val currentColor = remember(hsv.first, hsv.second, hsv.third) {
-        Color.hsv(hsv.first, hsv.second, hsv.third)
+    val currentColor = remember(hsv.first, hsv.second, hsv.third, alpha) {
+        Color.hsv(hsv.first, hsv.second, hsv.third, alpha)
     }
 
     var hexInput by remember(currentColor) {
@@ -152,6 +193,15 @@ fun ColorPicker(
                 trackBrush = Brush.horizontalGradient(listOf(Color.Black, valEndColor)),
                 onValueChange = { hsv = Triple(hsv.first, hsv.second, it / 100f) }
             )
+
+            if (enableAlpha) HsbSliderRow(
+                label = "A",
+                value = alpha * 100f,
+                valueRange = 0f..100f,
+                displayValue = "${(alpha * 100).roundToInt()}%",
+                trackBrush = Brush.horizontalGradient(listOf(Color.Transparent, Color.hsv(hsv.first, hsv.second, hsv.third, 1f))),
+                onValueChange = { alpha = it / 100f }
+            )
         }
 
         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -159,10 +209,11 @@ fun ColorPicker(
                 value = hexInput,
                 onValueChange = { input ->
                     val cleanInput = input.uppercase().filter { it.isDigit() || it in 'A'..'F' || it == '#' }
-                    if (cleanInput.length <= 7) {
+                    if (cleanInput.length <= if (enableAlpha) 9 else 7) {
                         hexInput = cleanInput
                         parseHexToColor(cleanInput)?.let { parsedColor ->
                             hsv = rgbToHsb(parsedColor)
+                            alpha = parsedColor.alpha
                         }
                     }
                 },
@@ -170,10 +221,11 @@ fun ColorPicker(
                 onConfirm = {
                     parseHexToColor(hexInput)?.let { parsedColor ->
                         hsv = rgbToHsb(parsedColor)
+                        alpha = parsedColor.alpha
                     }
                 },
                 modifier = Modifier
-                    .width(96.dp)
+                    .width(114.dp)
             )
             Spacer(Modifier.weight(1f))
             PrimaryOperationButton("Confirm") { onConfirmRequest(currentColor) }

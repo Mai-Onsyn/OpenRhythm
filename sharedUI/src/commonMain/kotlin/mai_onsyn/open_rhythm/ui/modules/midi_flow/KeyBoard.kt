@@ -44,6 +44,7 @@ fun MidiKeyBoard(
     centerAppendLayer: Boolean = false,
     whiteKeyColor: Color = Color.White,
     blackKeyColor: Color = Color.Black,
+    lightNoteOpacity: Float = 1.0f,
     darkPart: Color = Color.Black,
     onPress: (Int, Int) -> Unit = { pitch, velocity -> },
     onRelease: (Int) -> Unit = {},
@@ -241,7 +242,10 @@ fun MidiKeyBoard(
                     size = if (activeKey.containsKey(pitch)) Size(rect.size.width, rect.size.height + endPadding * 0.6f) else rect.size,
                     rx = whiteKeyWidth * 0.3f,
                     ry = whiteKeyWidth * 0.15f,
-                    color = activeKey[pitch] ?: whiteKeyColor
+                    color = activeKey[pitch]?.let {
+                        if (lightNoteOpacity == 1f) it
+                        else it.copy(lightNoteOpacity)
+                    } ?: whiteKeyColor
                 )
             }
         }
@@ -259,7 +263,10 @@ fun MidiKeyBoard(
                 )
 
                 drawRoundedBottomShape(
-                    color = activeKey[pitch]?.darken(1.5f) ?: blackKeyColor,
+                    color = activeKey[pitch]?.darken(1.5f)?.let {
+                        if (lightNoteOpacity == 1f) it
+                        else it.copy(lightNoteOpacity)
+                    } ?: blackKeyColor,
                     topLeft = Offset(rect.topLeft.x + rect.size.width * 0.07f, rect.topLeft.y),
                     size = Size(rect.size.width * 0.86f, rect.size.height - rect.size.width * 0.1f),
                     rx = radiusUnit * 4,

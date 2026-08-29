@@ -17,6 +17,7 @@ fun KeyboardShadows() {
     ) {
         item("Shadow color") {
             ColorSelector(
+                enableAlpha = true,
                 initialColor = Global.settings.KeyboardShadowColor,
                 onColorSelected = { Global.settings.KeyboardShadowColor = it }
             )

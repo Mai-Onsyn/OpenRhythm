@@ -17,6 +17,7 @@ class UserSetting(
     var PrimarySeedColor                by st.observable("PrimarySeedColor",                Color(0xFF485F84))
     var UserSpecifiedPrimarySeedColor   by st.observable("UserSpecifiedPrimarySeedColor",   Color(0xFFCD20ED))
     var StatusBarShadow                 by st.observable("StatusBarShadow",                 true)
+    var ShowMidiDeviceInfoInHome        by st.observable("ShowMidiDeviceInfoInHome",        true)
 
     // =====General Interaction=====
     var DoubleClickToPlayPause      by st.observable("DoubleClickToPlayPause",      false)

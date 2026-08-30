@@ -4,6 +4,7 @@ import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
@@ -12,22 +13,28 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import mai_onsyn.open_rhythm.ui.icons.ic_exit_to_app
+import mai_onsyn.open_rhythm.bridge.Global
+import mai_onsyn.open_rhythm.ui.icons.ic_graphic_eq
 import mai_onsyn.open_rhythm.ui.icons.ic_library_music
 import mai_onsyn.open_rhythm.ui.icons.ic_piano
 import mai_onsyn.open_rhythm.ui.icons.ic_settings
+import mai_onsyn.open_rhythm.ui.icons.ic_settings_input_svideo
+import openrhythm.sharedui.generated.resources.Res
+import openrhythm.sharedui.generated.resources.foreground_512x
+import org.jetbrains.compose.resources.painterResource
 
 @Composable
 fun HomePage(
     useWideLayout: Boolean = false,
     onGotoExplorer: () -> Unit = {},
     onGotoFreePlay: () -> Unit = {},
-    onGotoSettings: () -> Unit = {},
-    onExit: () -> Unit = {}
+    onGotoSettings: () -> Unit = {}
 ) {
     AnimatedContent(
         targetState = useWideLayout,
@@ -35,6 +42,38 @@ fun HomePage(
             fadeIn() togetherWith fadeOut()
         }
     ) { wide ->
+        if (Global.settings.ShowMidiDeviceInfoInHome) Box(Modifier.fillMaxSize().padding(16.dp).alpha(0.6f)) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.align(Alignment.BottomStart)
+            ) {
+                Icon(
+                    imageVector = ic_settings_input_svideo,
+                    contentDescription = "Input device",
+                    tint = MaterialTheme.colorScheme.primary
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = Global.settings.enabledMidiInputDeviceList.joinToString(),
+                    style = MaterialTheme.typography.labelLarge
+                )
+            }
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.align(Alignment.BottomEnd)
+            ) {
+                Text(
+                    text = Global.settings.SelectedOutputDeviceName,
+                    style = MaterialTheme.typography.labelLarge
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Icon(
+                    imageVector = ic_graphic_eq,
+                    contentDescription = "Input device",
+                    tint = MaterialTheme.colorScheme.primary
+                )
+            }
+        }
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -42,46 +81,38 @@ fun HomePage(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(16.dp)
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-//                Surface(
-//                    modifier = Modifier.size(64.dp),
-//                    shape = MaterialTheme.shapes.large,
-//                    color = MaterialTheme.colorScheme.primaryContainer
-//                ) {
-//                    Box(contentAlignment = Alignment.Center) {
-//                        Icon(
-//                            painter = painterResource(Res.drawable.monochrome_256x),
-//                            contentDescription = null,
-//                            modifier = Modifier.size(64.dp)
-//                        )
-//                    }
-//                }
+                Image(
+                    painter = painterResource(Res.drawable.foreground_512x),
+                    contentDescription = null,
+                    modifier = Modifier.size(96.dp)
+                )
                 Text(
                     text = "Open Rhythm",
-                    style = MaterialTheme.typography.displayMedium
+                    style = MaterialTheme.typography.displayMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.primary
                 )
             }
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(48.dp))
 
             if (wide) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(16.dp)
                 ) { NavigationList(
-                    onGotoExplorer, onGotoFreePlay,
-                    onGotoSettings, onExit
+                    onGotoExplorer, onGotoFreePlay, onGotoSettings
                 ) }
             } else {
                 Column(
                     verticalArrangement = Arrangement.spacedBy(16.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) { NavigationList(
-                    onGotoExplorer, onGotoFreePlay,
-                    onGotoSettings, onExit
+                    onGotoExplorer, onGotoFreePlay, onGotoSettings
                 ) }
             }
         }
@@ -92,29 +123,31 @@ fun HomePage(
 private fun NavigationList(
     onGotoExplorer: () -> Unit,
     onGotoFreePlay: () -> Unit,
-    onGotoSettings: () -> Unit,
-    onExit: () -> Unit
+    onGotoSettings: () -> Unit
 ) {
-    NavigationButton(
-        displayText = "浏览文件",
+    NavigationCard(
+        title = "Explorer",
+        description = "Open MIDI file",
         icon = ic_library_music,
         onClick = onGotoExplorer
     )
-    NavigationButton(
-        displayText = "自由演奏",
+    NavigationCard(
+        title = "Performance",
+        description = "Play on keyboard",
         icon = ic_piano,
         onClick = onGotoFreePlay
     )
-    NavigationButton(
-        displayText = "设置",
+    NavigationCard(
+        title = "Settings",
+        description = "Device and Appearance",
         icon = ic_settings,
         onClick = onGotoSettings
     )
-    NavigationButton(
-        displayText = "退出",
-        icon = ic_exit_to_app,
-        onClick = onExit
-    )
+//    NavigationButton(
+//        displayText = "退出",
+//        icon = ic_exit_to_app,
+//        onClick = onExit
+//    )
 }
 
 @Composable

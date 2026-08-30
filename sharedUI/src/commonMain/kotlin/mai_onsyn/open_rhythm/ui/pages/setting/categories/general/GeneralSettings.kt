@@ -167,6 +167,12 @@ private fun AppearanceSettings() {
             initial = Global.settings.StatusBarShadow,
             onToggled = { Global.settings.StatusBarShadow = it }
         )
+
+        itemWithSwitch(
+            name = "Show MIDI device infos in Home",
+            initial = Global.settings.ShowMidiDeviceInfoInHome,
+            onToggled = { Global.settings.ShowMidiDeviceInfoInHome = it }
+        )
     }
 }
 

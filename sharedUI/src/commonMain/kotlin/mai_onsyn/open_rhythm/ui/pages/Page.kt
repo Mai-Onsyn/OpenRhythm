@@ -100,11 +100,10 @@ fun AppNavigation(
         ) {
             composable<Home> {
                 HomePage(
-                    maxWidth > 600.dp,
+                    maxWidth > 840.dp,
                     { navController.navigate(Library) },
                     { navController.navigate(FreePlayScreen) },
-                    { navController.navigate(Setting) },
-                    { TODO("Exit the application") }
+                    { navController.navigate(Setting) }
                 )
             }
 

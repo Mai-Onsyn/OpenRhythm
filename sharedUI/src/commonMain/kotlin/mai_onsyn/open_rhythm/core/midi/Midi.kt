@@ -38,3 +38,16 @@ fun Midi.take(trackNumber: Int): Midi {
         path = path
     )
 }
+
+fun Midi.sortTracksByPitches() {
+    val avgPitches = DoubleArray(tracks.size) { index ->
+        val notes = tracks[index].notes
+        if (notes.isEmpty()) 0.0 else notes.map { it.pitch }.average()
+    }
+
+    val sortedIndices = tracks.indices.sortedByDescending { avgPitches[it] }
+
+    val sortedTracks = sortedIndices.map { tracks[it] }
+    tracks.clear()
+    tracks.addAll(sortedTracks)
+}

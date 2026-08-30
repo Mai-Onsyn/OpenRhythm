@@ -116,7 +116,7 @@ fun MidiOutputSettings() {
         animatedItem(
             visible = gervillSelected,
             name = "SF2 path",
-            description = "Set the SF2 file to replace the default Gervill soundfont"
+            description = "Set the SF2 file to replace the default Gervill soundfont (Press Enter to load)"
         ) {
             fun reload() {
                 coroutineScope.launch {

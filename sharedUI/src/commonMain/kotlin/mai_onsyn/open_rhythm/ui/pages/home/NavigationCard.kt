@@ -52,9 +52,7 @@ fun NavigationCard(
                 )
             }
             Spacer(Modifier.width(16.dp))
-            Column(
-                verticalArrangement = Arrangement.spacedBy(4.dp),
-            ) {
+            Column {
                 Text(
                     text = title,
                     style = MaterialTheme.typography.titleMedium,

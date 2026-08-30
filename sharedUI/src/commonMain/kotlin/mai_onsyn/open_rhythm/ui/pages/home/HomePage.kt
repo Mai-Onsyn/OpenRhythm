@@ -42,7 +42,7 @@ fun HomePage(
             fadeIn() togetherWith fadeOut()
         }
     ) { wide ->
-        if (Global.settings.ShowMidiDeviceInfoInHome) Box(Modifier.fillMaxSize().padding(16.dp).alpha(0.6f)) {
+        if (Global.settings.ShowMidiDeviceInfoInHome) Box(Modifier.fillMaxSize().padding(16.dp)) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.align(Alignment.BottomStart)
@@ -55,7 +55,8 @@ fun HomePage(
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
                     text = Global.settings.enabledMidiInputDeviceList.joinToString(),
-                    style = MaterialTheme.typography.labelLarge
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
             Row(
@@ -64,7 +65,8 @@ fun HomePage(
             ) {
                 Text(
                     text = Global.settings.SelectedOutputDeviceName,
-                    style = MaterialTheme.typography.labelLarge
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Icon(

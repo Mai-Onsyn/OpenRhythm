@@ -30,6 +30,7 @@ import mai_onsyn.open_rhythm.ui.modules.ColorPickerDialog
 import mai_onsyn.open_rhythm.ui.modules.ColorSelector
 import mai_onsyn.open_rhythm.ui.modules.NumberSpinner
 import mai_onsyn.open_rhythm.ui.modules.PrimaryOperationButton
+import mai_onsyn.open_rhythm.ui.modules.dialog.ConfirmDialog
 import mai_onsyn.open_rhythm.ui.modules.dialog.DialogPopup
 import mai_onsyn.open_rhythm.ui.pages.setting.SettingsCard
 import sh.calvin.reorderable.ReorderableCollectionItemScope
@@ -102,6 +103,34 @@ fun TrackAndChannel() {
             initial = Global.settings.DrumKitHiddenByDefault,
             onToggled = { Global.settings.DrumKitHiddenByDefault = it }
         )
+
+        item("Sort tracks by pitch") {
+            var showWarnDialog by remember { mutableStateOf(false) }
+            Switch(
+                checked = Global.settings.SortTracksByPitch,
+                onCheckedChange = {
+                    val cfgCount = Global.settings.midiFileSettings.size
+                    if (cfgCount > 0) {
+                        showWarnDialog = true
+                    } else Global.settings.SortTracksByPitch = it
+                },
+                modifier = Modifier.pointerHoverIcon(PointerIcon.Hand)
+            )
+
+            ConfirmDialog(
+                visible = showWarnDialog,
+                onDismissRequest = { showWarnDialog = false },
+                title = "Warning",
+                message = "This action will delete all MIDI file settings (${Global.settings.midiFileSettings.size} files). Do you want to continue?",
+                onConfirm = {
+                    showWarnDialog = false
+                    Global.settings.SortTracksByPitch = !Global.settings.SortTracksByPitch
+                    Global.settings.clearUserMidiFileSettings()
+                    Global.fileLoader.clearCache()
+                },
+                isDangerous = true
+            )
+        }
     }
 }
 

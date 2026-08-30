@@ -45,10 +45,11 @@ class UserSetting(
     var GervillSF2Path              by st.observable("GervillSF2Path",              "")
 
     // =====MIDI Track=====
-    val trackColors             by st.list("TrackColors",                   TrackColorDefaults.colors(), ColorSerializer())
-    var MidiInteractionColor    by st.observable("MidiInteractionColor", Color(138, 226, 52))
+    val trackColors             by st.list("TrackColors",               TrackColorDefaults.colors(), ColorSerializer())
+    var MidiInteractionColor    by st.observable("MidiInteractionColor",    Color(140, 255, 155))
     var MidiInteractionChannel  by st.observable("MidiInteractionChannel",  0)
     var DrumKitHiddenByDefault  by st.observable("DrumKitHiddenByDefault",  true)
+    var SortTracksByPitch       by st.observable("SortTracksByPitch",       true)
 
     // =====MIDI File=====
     var UseParserV1 by st.observable("UseParserV1", false)

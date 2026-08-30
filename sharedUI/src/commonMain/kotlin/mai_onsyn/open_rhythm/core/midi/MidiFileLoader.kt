@@ -126,7 +126,7 @@ class MidiFileLoader {
         val midi = withContext(Dispatchers.Default) {
             val bytes = bytes.toList()
             if (Global.settings.UseParserV1) parseMidiV1(name, bytes)
-            else parseMidi(name, bytes, file.absolutePath())
+            else parseMidi(name, bytes, file.absolutePath()).apply { if (Global.settings.SortTracksByPitch) sortTracksByPitches() }
         }
         return midi
     }

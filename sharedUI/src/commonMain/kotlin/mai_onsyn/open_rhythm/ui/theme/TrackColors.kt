@@ -6,7 +6,7 @@ object TrackColorDefaults {
     fun colors(): List<Color> {
         if (_default == null) {
             _default = Array(16) { i ->
-                Color.hsv((350f + i * 137.5f) % 360f, 0.3f + (i * 0.14f) % 0.2f, 1f)
+                Color.hsv((350f + i * 137.5f) % 360f, 0.3f + i / 4 * 0.1f, 1f)
             }.toList()
         }
         return _default!!

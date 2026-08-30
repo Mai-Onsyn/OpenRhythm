@@ -72,5 +72,39 @@ fun NoteAppearance() {
                 extraSuffix = "dp"
             )
         }
+        item("Minium note duration", verticalLayout = true) {
+            var value by remember { mutableStateOf(Global.settings.BasicNoteMiniumDuration.let { if (it == 31) 8 else it }) }
+            SliderWithSuffix(
+                value = value,
+                onValueChanged = {
+                    value = it
+                    Global.settings.BasicNoteMiniumDuration = if (it == 8) 31 else it
+                    Global.fileLoader.clearCache()
+                },
+                steps = 1,
+                range = 0..8,
+                valueMapping = {
+                    if (it == 8) "OFF"
+                    else (1 shl it).toString()
+                }
+            )
+        }
+        item("Minium drum kit note duration", verticalLayout = true) {
+            var value by remember { mutableStateOf(Global.settings.DrumNoteMiniumDuration.let { if (it == 31) 8 else it }) }
+            SliderWithSuffix(
+                value = value,
+                onValueChanged = {
+                    value = it
+                    Global.settings.DrumNoteMiniumDuration = if (it == 8) 31 else it
+                    Global.fileLoader.clearCache()
+                },
+                steps = 1,
+                range = 0..8,
+                valueMapping = {
+                    if (it == 8) "OFF"
+                    else (1 shl it).toString()
+                }
+            )
+        }
     }
 }

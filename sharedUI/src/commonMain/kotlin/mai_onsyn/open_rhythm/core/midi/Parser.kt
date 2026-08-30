@@ -1,9 +1,10 @@
 package mai_onsyn.open_rhythm.core.midi
 
-import co.touchlab.kermit.Logger
 import dev.atsushieno.ktmidi.Midi1CompoundMessage
 import dev.atsushieno.ktmidi.Midi1Music
 import dev.atsushieno.ktmidi.read
+import mai_onsyn.open_rhythm.bridge.Global
+import kotlin.math.max
 
 class CCTimeline(
     val eventList: MutableList<SimpleCCEvent> = mutableListOf()
@@ -133,6 +134,7 @@ fun parseMidi(name: String, bytes: List<Byte>, path: String? = null): Midi {
 //    val KTMIDI_PARSE_START = Time.nanos
     val midiFile = Midi1Music()
     midiFile.read(bytes)
+    val ppq = midiFile.deltaTimeSpec
 //    val KTMIDI_PARSE_END__BUILD_TIMELINE_START = Time.nanos
 
     val tempoEvents = mutableListOf<TempoEvent>()
@@ -257,7 +259,9 @@ fun parseMidi(name: String, bytes: List<Byte>, path: String? = null): Midi {
 //        val SOTR_START = Time.nanos
 //        group.noteEvents.sortWith(compareBy({ it.tick }, { it.on }))
 //        val SOTR_END_MERGE_START = Time.nanos
-        val notes = mergeToNoteList(group)
+        val notes = mergeToNoteList(group,
+            ((ppq shl 2) shr (if (group.channel == 9) Global.settings.DrumNoteMiniumDuration else Global.settings.BasicNoteMiniumDuration)).toLong()
+        )
 //        logDurations("build", listOf("sort", "merge"), SOTR_START, SOTR_END_MERGE_START, Time.nanos)
 
         fun detectInstTrack(inst: Int, range: IntRange) {
@@ -314,7 +318,7 @@ fun parseMidi(name: String, bytes: List<Byte>, path: String? = null): Midi {
 
     return Midi(
         name = name,
-        ppq = midiFile.deltaTimeSpec,
+        ppq = ppq,
         totalTicks = lastTick,//midiFile.getTotalTicks(),
         tracks = resultTrackList,
         tempoEvents = tempoEvents,
@@ -328,7 +332,7 @@ fun parseMidi(name: String, bytes: List<Byte>, path: String? = null): Midi {
     )
 }
 
-private fun mergeToNoteList(group: NoteGroup): MutableList<Note> {
+private fun mergeToNoteList(group: NoteGroup, minDuration: Long): MutableList<Note> {
     val noteList = mutableListOf<Note>()
 
     // 为 128 个 MIDI 音高分别建立 FIFO 队列 (0..127)
@@ -345,7 +349,7 @@ private fun mergeToNoteList(group: NoteGroup): MutableList<Note> {
             // Note OFF：弹出队列头部最早的 Note ON (FIFO)
             val pressEvent = noteActive[pitch].removeFirstOrNull()
             if (pressEvent != null) {
-                val duration = (event.tick - pressEvent.tick).toLong()
+                val duration = max((event.tick - pressEvent.tick).toLong(), minDuration)
                 if (duration > 0) {
                     noteList.add(
                         Note(
@@ -385,7 +389,7 @@ fun <A, B, C, K : Comparable<K>> Iterable<A>.mergeWith(
     var b = itB.nextOrNull()
 
     while (a != null && b != null) {
-        when (val compare = keyA(a).compareTo(keyB(b))) {
+        when (keyA(a).compareTo(keyB(b))) {
             -1 -> {
                 yield(transformA(a))
                 a = itA.nextOrNull()

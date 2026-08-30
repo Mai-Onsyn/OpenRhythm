@@ -79,6 +79,8 @@ class UserSetting(
     var DrawNoteShadow          by st.observable("DrawNoteShadow",          true)
     var NoteOpacity             by st.observable("NoteOpacity",             1f)
     var OpacityAffectKeyboard   by st.observable("OpacityAffectKeyboard",   false)
+    var BasicNoteMiniumDuration by st.observable("BasicNoteMiniumDuration", 31) // shr 31基本都是0 即无限制
+    var DrumNoteMiniumDuration  by st.observable("DrumNoteMiniumDuration",  5)  // shr 5 = 32分音符
 
     // =====Keyboard Appearance=====
     var KeyboardAutoAspect              by st.observable("KeyBoardAutoAspect",          true)

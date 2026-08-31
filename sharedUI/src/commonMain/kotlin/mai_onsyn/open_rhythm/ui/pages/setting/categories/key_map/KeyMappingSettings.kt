@@ -82,7 +82,7 @@ fun KeyMappingSettings() {
         Spacer(Modifier.heightIn(16.dp, 32.dp))
 
         val activeKeys = remember { mutableStateMapOf<Long, Color>() }
-        VisualKeyboard(
+        VisualKeyboard2(
             modifier = Modifier
                 .fillMaxWidth(),
             eventDispatcher = Global.globalKeyEventDispatcher,

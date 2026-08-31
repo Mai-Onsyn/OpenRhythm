@@ -31,7 +31,7 @@ Open Rhythm 是一款钢琴可视化与 MIDI 练习软件，类似 Synthesia。�
 - 多MIDI输入设备连接
 - 单MIDI输出设备连接 (对于JVM平台的Gervill合成器，支持加载SF2音色库)
 - 电脑键盘可作为虚拟 MIDI 输入，并自定义键位映射
-- 可单独过滤MIDI音符、CC、PC、PB事件的接收与发
+- 可单独过滤MIDI音符、CC、PC、PB事件的接收与发送
 
 ### 播放与交互
 

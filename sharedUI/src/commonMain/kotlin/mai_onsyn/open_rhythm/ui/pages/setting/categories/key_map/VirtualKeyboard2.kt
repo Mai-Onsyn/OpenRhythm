@@ -7,13 +7,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
+import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
@@ -26,8 +21,16 @@ import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.text.TextLayoutResult
+import androidx.compose.ui.text.TextMeasurer
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import mai_onsyn.open_rhythm.core.GlobalKeyEventDispatcher
+import mai_onsyn.open_rhythm.ui.utility.drawTextCentered
 
 private typealias URect = Rect
 
@@ -70,22 +73,30 @@ fun VisualKeyboard2(
     ) {
         var mouseUPos by remember { mutableStateOf(Offset.Zero) }
         val mouseClickEvents = remember { mutableStateListOf<Offset>() }
+
+        var unitSize by remember { mutableStateOf(0f) }
+        val textMeasurer = rememberTextMeasurer()
+        val firstTextLayoutResults = rememberTextLayoutResults(unitSize, drawControl, drawNumpad, selectedKey, textMeasurer) { it.firstName }
+        val lastTextLayoutResults = rememberTextLayoutResults(unitSize, drawControl, drawNumpad, selectedKey, textMeasurer) { it.lastName }
         Canvas(
             modifier = modifier
                 .fillMaxWidth()
                 .padding(8.dp)
                 .aspectRatio(uw / uh)
+                .onSizeChanged {
+                    unitSize = it.height * 0.16f
+                }
                 .pointerInput(Unit) {
                     awaitPointerEventScope {
                         while (true) {
                             val event = awaitPointerEvent()
-                            mouseUPos = event.changes[0].position / size.height.toFloat() * 6.25f
+                            mouseUPos = event.changes[0].position / unitSize
                         }
                     }
                 }
                 .pointerInput(Unit) {
                     detectTapGestures {
-                        mouseClickEvents.add(it / size.height.toFloat() * 6.25f)
+                        mouseClickEvents.add(it / unitSize)
                     }
                 }
         ) {
@@ -109,8 +120,8 @@ fun VisualKeyboard2(
                 }
                 drawKeyButton(
                     region = region,
-                    firstText = key.firstName,
-                    secondText = key.lastName,
+                    firstText = firstTextLayoutResults[key.code] ?: continue,
+                    secondText = lastTextLayoutResults[key.code],
                     activeBorderColor = activeKeys[key.code],
                     color =
                         if (selectedKey == key.code) colorScheme.primary
@@ -122,10 +133,47 @@ fun VisualKeyboard2(
     }
 }
 
+@Composable
+private fun rememberTextLayoutResults(
+    unitSize: Float,
+    drawControl: Boolean,
+    drawNumpad: Boolean,
+    selectedKey: Long?,
+    textMeasurer: TextMeasurer,
+    dataSelector: (KeyData) -> String?
+): SnapshotStateMap<Long, TextLayoutResult> {
+    val colorScheme = MaterialTheme.colorScheme
+    val density = LocalDensity.current
+    val firstTextStyle = remember(unitSize) {
+        TextStyle(
+            fontSize = unitSize.sp / density.density * 0.25f,
+            color = colorScheme.onSurface
+        )
+    }
+    val firstTextLayoutResults = remember(unitSize, drawControl, drawNumpad, selectedKey) {
+        mutableStateMapOf<Long, TextLayoutResult>().apply {
+            fun putElements(list: List<KeyData>) {
+                list.forEach {
+                    put(
+                        it.code, textMeasurer.measure(
+                            text = dataSelector(it) ?: return@forEach,
+                            style = if (selectedKey == it.code) firstTextStyle.copy(color = colorScheme.onPrimary) else firstTextStyle
+                        )
+                    )
+                }
+            }
+            putElements(mainArea)
+            if (drawControl) putElements(controlArea)
+            if (drawNumpad) putElements(numpadArea)
+        }
+    }
+    return firstTextLayoutResults
+}
+
 private fun DrawScope.drawKeyButton(
     region: URect,
-    firstText: String,
-    secondText: String? = null,
+    firstText: TextLayoutResult,
+    secondText: TextLayoutResult? = null,
     activeBorderColor: Color? = null,
     color: Color
 ) {
@@ -154,6 +202,19 @@ private fun DrawScope.drawKeyButton(
             cornerRadius = CornerRadius(conerValue, conerValue)
         )
     }
+    if (secondText != null) {
+        drawTextCentered(
+            layoutResult = firstText,
+            center = (region.center - Offset(region.size.packedValue) * 0.2f) * unitMultiplier
+        )
+        drawTextCentered(
+            layoutResult = secondText,
+            center = (region.center + Offset(region.size.packedValue) * 0.2f) * unitMultiplier
+        )
+    } else drawTextCentered(
+        layoutResult = firstText,
+        center = region.center * unitMultiplier
+    )
 }
 
 private fun Rect.scale(scale: Float): Rect {

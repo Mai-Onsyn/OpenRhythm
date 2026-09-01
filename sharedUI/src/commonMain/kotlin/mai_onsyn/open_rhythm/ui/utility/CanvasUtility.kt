@@ -7,6 +7,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.TextLayoutResult
+import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.drawText
 import androidx.compose.ui.text.rememberTextMeasurer
@@ -30,6 +31,22 @@ fun DrawScope.drawTextCentered(
         topLeft = Offset(center.x - width / 2, center.y - height / 2),
         alpha = alpha
     )
+}
+
+@Composable
+fun rememberTextLayoutResult(
+    textMeasurer: TextMeasurer,
+    text: String,
+    fontSize: TextUnit,
+    color: Color
+): TextLayoutResult {
+    val density = LocalDensity.current
+    return remember(text, fontSize, color, density) {
+        textMeasurer.measure(
+            text = text,
+            style = TextStyle(fontSize = fontSize / density.density, color = color)
+        )
+    }
 }
 
 @Composable

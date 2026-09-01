@@ -70,8 +70,9 @@ actual suspend fun FileKit.pickFileWithPermission(): PlatformFile? {
     return platformFile
 }
 
+var keyEventDispatcher: GlobalKeyEventDispatcher? = null
 actual fun registerGlobalKeyEventDispatcher(keyEventDispatcher: GlobalKeyEventDispatcher) {
-    Logger.w { "Global key event dispatcher not supported on Android yet" }
+    mai_onsyn.open_rhythm.bridge.keyEventDispatcher = keyEventDispatcher
 }
 
 actual fun setupMidiOutput(output: MidiOutput, name: String, context: Any) {}

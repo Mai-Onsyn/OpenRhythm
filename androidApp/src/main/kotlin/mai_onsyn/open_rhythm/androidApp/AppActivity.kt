@@ -1,20 +1,29 @@
 package mai_onsyn.open_rhythm.androidApp
 
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.pm.ActivityInfo
 import android.content.res.Configuration
+import android.view.KeyEvent
 import android.view.WindowManager
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.type
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowInsetsControllerCompat
+import co.touchlab.kermit.Logger
 import io.kmpbits.splash.SplashActivity
 import mai_onsyn.open_rhythm.bridge.Global
 import mai_onsyn.open_rhythm.bridge.initAndroid
+import mai_onsyn.open_rhythm.bridge.keyEventDispatcher
 import mai_onsyn.open_rhythm.core.log.LogManager
 import mai_onsyn.open_rhythm.ui.App
 
@@ -24,6 +33,23 @@ class AppActivity: SplashActivity() {
     }
 
     override suspend fun isReady(): Boolean = true
+
+    private val pressedKey = mutableSetOf<Int>()
+    @SuppressLint("RestrictedApi")
+    override fun dispatchKeyEvent(event: KeyEvent): Boolean {
+        if (event.action == KeyEvent.ACTION_DOWN) {
+            if (!pressedKey.contains(event.keyCode)) {
+                keyEventDispatcher?.push(androidx.compose.ui.input.key.KeyEvent(event))
+                pressedKey.add(event.keyCode)
+            }
+        } else if (event.action == KeyEvent.ACTION_UP) {
+            if (pressedKey.contains(event.keyCode)) {
+                keyEventDispatcher?.push(androidx.compose.ui.input.key.KeyEvent(event))
+                pressedKey.remove(event.keyCode)
+            }
+        }
+        return super.dispatchKeyEvent(event)
+    }
 
     override fun onFinished() {
         initAndroid(this)

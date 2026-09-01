@@ -1,5 +1,10 @@
 package mai_onsyn.open_rhythm.core.midi
 
+import androidx.compose.runtime.State
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.lifecycle.AtomicReference
 import co.touchlab.kermit.Logger
 import io.github.vinceglb.filekit.*
 import kotlinx.coroutines.*
@@ -7,7 +12,10 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.io.IOException
 import mai_onsyn.open_rhythm.bridge.Global
+import mai_onsyn.open_rhythm.core.util.Time
 import mai_onsyn.open_rhythm.core.util.msAtTick
+import kotlin.concurrent.atomics.AtomicInt
+import kotlin.concurrent.atomics.ExperimentalAtomicApi
 
 data class UIMidiData(
     val fileName: String,
@@ -18,6 +26,7 @@ data class UIMidiData(
     val noteCount: Int
 )
 
+@OptIn(ExperimentalAtomicApi::class)
 class MidiFileLoader {
     private val mtx = Mutex()
     private val cachedFolderContentInfos = mutableMapOf<String, List<UIMidiData>>()
@@ -76,43 +85,62 @@ class MidiFileLoader {
         return@withContext deferred.await()
     }
 
+    var loadedFileCount by mutableStateOf(0)
+    var remandingFileCount by mutableStateOf(0)
     private suspend fun _loadFolder(path: String): List<UIMidiData> = withContext(Dispatchers.IO) {
-        val result = mutableListOf<UIMidiData>()
-
         val parentFolder = PlatformFile(path)
         if (!parentFolder.exists() && !parentFolder.isDirectory()) {
-            return@withContext result
+            return@withContext emptyList()
         }
 
-        parentFolder.list().forEach {
-            if (it.isRegularFile() && it.extension == "mid") {
-                try {
-                    val midi = _loadFile(it)
-                    var pianoOnly = true
-                    for (track in midi.tracks) {
-                        val bb = track.trackInst == 0
-                        if (!bb) {
-                            pianoOnly = false
-                            break
-                        }
-                    }
+        mtx.withLock {
+            remandingFileCount = 0
+            loadedFileCount = 0
+        }
+        val allFiles = parentFolder.list()
+        if (allFiles.isEmpty()) return@withContext emptyList()
 
-                    result.add(UIMidiData(
-                        fileName = it.nameWithoutExtension,
-                        path = it.absolutePath(),
-                        duration = midi.msAtTick(midi.totalTicks.toLong()),
-                        pianoOnly = pianoOnly,
-                        trackCount = midi.tracks.size,
-                        midi.totalNotes
-                    ))
-                } catch (e: Exception) {
-                    Logger.w(e) { "Failed to load midi file: ${it.name}" }
-                    return@forEach
+        val midFiles = coroutineScope {
+            allFiles.map { file ->
+                async(Dispatchers.IO) { // isRegularFile在安卓很耗时
+                    if (file.isRegularFile() && file.extension == "mid") file else null
                 }
-            }
+            }.mapNotNull { it.await() }
+        }
+        if (midFiles.isEmpty()) return@withContext emptyList()
+        mtx.withLock {
+            remandingFileCount = midFiles.size
         }
 
-        return@withContext result
+        coroutineScope {
+            midFiles.map { file ->
+                async {     // 并行优化加载
+                    try {
+                        val midi = _loadFile(file)
+                        var pianoOnly = true
+                        for (track in midi.tracks) {
+                            if (track.trackInst != 0) {
+                                pianoOnly = false
+                                break
+                            }
+                        }
+                        UIMidiData(
+                            fileName = file.nameWithoutExtension,
+                            path = file.absolutePath(),
+                            duration = midi.msAtTick(midi.totalTicks.toLong()),
+                            pianoOnly = pianoOnly,
+                            trackCount = midi.tracks.size,
+                            midi.totalNotes
+                        ).also { mtx.withLock {
+                            loadedFileCount++
+                        } }
+                    } catch (e: Exception) {
+                        Logger.w(e) { "Failed to load midi file: ${file.name}" }
+                        null
+                    }
+                }
+            }.mapNotNull { it.await() }
+        }
     }
 
     private suspend fun _loadFile(path: String): Midi = _loadFile(PlatformFile(path))

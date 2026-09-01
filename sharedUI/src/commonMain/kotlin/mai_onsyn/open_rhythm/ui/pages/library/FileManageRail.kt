@@ -8,6 +8,8 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.text.font.FontWeight
@@ -56,15 +58,38 @@ fun FileManageRail(
     when (uiState) {
         is UiState.Loading -> {
             Box(modifier = modifier) {
-                Row(
+                Column(
                     modifier = Modifier.align(Alignment.Center),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(16.dp)
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    LoadingSpinner(Modifier.size(20.dp), strokeWidth = 4.dp)
-                    Text(
-                        text = "Loading...",
-                        style = MaterialTheme.typography.bodyLarge
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
+                        LoadingSpinner(Modifier.size(20.dp), strokeWidth = 4.dp)
+                        Text(
+                            text = "Loading... (${Global.fileLoader.loadedFileCount} / ${Global.fileLoader.remandingFileCount})",
+                            style = MaterialTheme.typography.bodyLarge
+                        )
+                    }
+                    val colorScheme = MaterialTheme.colorScheme
+                    Spacer(Modifier.height(16.dp))
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(8.dp)
+                            .drawBehind {
+                                drawRoundRect(
+                                    cornerRadius = CornerRadius(size.height * 0.5f),
+                                    size = size,
+                                    color = colorScheme.surfaceContainerHighest
+                                )
+                                if (Global.fileLoader.remandingFileCount > 0) drawRoundRect(
+                                    cornerRadius = CornerRadius(size.height * 0.5f),
+                                    size = size.copy(width = size.width * Global.fileLoader.loadedFileCount / Global.fileLoader.remandingFileCount),
+                                    color = colorScheme.primary
+                                )
+                            }
                     )
                 }
             }

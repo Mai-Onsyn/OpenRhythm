@@ -12,6 +12,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import co.touchlab.kermit.Logger
 import mai_onsyn.open_rhythm.ui.modules.PrimaryOperationButton
 
 @Composable
@@ -33,7 +34,6 @@ fun ConfirmDialog(
             contentAlignment = Alignment.Center,
             modifier = Modifier
                 .widthIn(max = 360.dp)
-//                .size(300.dp, 240.dp)
                 .padding(24.dp)
         ) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -66,7 +66,10 @@ fun ConfirmDialog(
 
                 Spacer(Modifier.height(24.dp))
                 Row(horizontalArrangement = Arrangement.spacedBy(24.dp)) {
-                    PrimaryOperationButton("Confirm", onConfirm)
+                    PrimaryOperationButton("Confirm") {
+                        onConfirm()
+                        Logger.i { "Confirmed $title ($message)" }
+                    }
                     if (showCancel) PrimaryOperationButton("Cancel", onDismissRequest)
                 }
             }

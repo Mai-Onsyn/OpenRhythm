@@ -7,32 +7,19 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.draw.blur
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.isUnspecified
 import androidx.compose.ui.input.key.*
 import androidx.compose.ui.input.pointer.PointerEventPass
+import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.max
 import co.touchlab.kermit.Logger
-import coil3.compose.AsyncImage
-import coil3.compose.LocalPlatformContext
-import coil3.request.ImageRequest
-import coil3.size.Size
-import io.github.vinceglb.filekit.PlatformFile
-import io.github.vinceglb.filekit.exists
-import io.github.vinceglb.filekit.isRegularFile
-import io.github.vinceglb.filekit.readBytes
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.IO
-import kotlinx.coroutines.withContext
 import mai_onsyn.open_rhythm.bridge.Global
 import mai_onsyn.open_rhythm.core.midi.Midi
 import mai_onsyn.open_rhythm.ui.utility.BackgroundImage
@@ -47,8 +34,7 @@ fun MidiDownRegion(
     keyboardRatio: Float = 0f,
     onPlayStateChange: (Boolean) -> Unit = {},
     onProgressChange: (Float) -> Unit = {},
-    focusRequester: FocusRequester? = null,
-    //    midiInputDevice: MidiInputDevice? = null
+    focusRequester: FocusRequester? = null
 ) {
     val density = LocalDensity.current
 
@@ -78,7 +64,6 @@ fun MidiDownRegion(
                         for (change in event.changes) {
                             if (change.pressed) {
                                 focusRequester.requestFocus()
-                                Logger.d { "Column request focus" }
                                 break
                             }
                         }
@@ -86,6 +71,7 @@ fun MidiDownRegion(
                 }
                 .onKeyEvent {
                     if (it.key == Key.Spacebar && it.type == KeyEventType.KeyDown) {
+                        Logger.d { "Space bar pressed, switch playback state to ${!currentIsPlaying}" }
                         onPlayStateChange(!currentIsPlaying)
                         return@onKeyEvent true
                     }
@@ -115,8 +101,13 @@ fun MidiDownRegion(
                                     }
 
                                     if (Global.settings.DoubleFingerTapToPlayPause) {
-                                        if (event.changes.size == 2 && event.changes.first().pressed && event.changes.last().pressed) {
-                                            Logger.i { "Double Click Toggle to ${!currentIsPlaying}" }
+                                        if (
+                                            event.changes.size == 2 &&
+                                            event.changes.first().pressed &&
+                                            event.changes.last().pressed &&
+                                            event.type == PointerEventType.Press
+                                        ) {
+                                            Logger.i { "Double finger tap toggle playback state to ${!currentIsPlaying}" }
                                             onPlayStateChange(!currentIsPlaying)
                                         }
                                     }
@@ -128,6 +119,7 @@ fun MidiDownRegion(
                                 Modifier.pointerInput(Unit) {
                                     detectTapGestures(
                                         onDoubleTap = {
+                                            Logger.i { "Double click toggle playback state to ${!currentIsPlaying}" }
                                             onPlayStateChange(!currentIsPlaying)
                                         }
                                     )
@@ -166,6 +158,7 @@ fun MidiDownRegion(
                 focusRequester.requestFocus()
                 Global.player.setMidi(midi, Global.settings.midiFileSettings[midi.path])
                 Global.player.seek(midi.startTick.toLong() - midi.ppq * Global.settings.PlaybackStartDistance)
+                Logger.i { "Set player midi to $midi" }
             }
             LaunchedEffect(isPlaying) {
                 if (isPlaying) {
@@ -174,18 +167,6 @@ fun MidiDownRegion(
                 } else Global.player.pause()
             }
             BindInputDeviceEvents(userActiveKeys)
-//        DisposableEffect(Unit) {
-//            val handler: (KeyEvent) -> Boolean = {
-//                if (it.key == Key.Spacebar && it.type == KeyEventType.KeyDown) {
-//                    onPlayStateChange(!currentIsPlaying)
-//                }
-//                false
-//            }
-//            keyDispatcher?.registerHandler(handler)
-//            onDispose {
-//                keyDispatcher?.unregisterHandler(handler)
-//            }
-//        }
 
             val appendTextMap = appliedOverlayLabels()
 

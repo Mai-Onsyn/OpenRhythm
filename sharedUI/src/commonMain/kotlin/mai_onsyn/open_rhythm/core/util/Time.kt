@@ -10,9 +10,18 @@ import kotlin.time.Duration.Companion.nanoseconds
 import kotlin.time.Instant
 
 object Time {
-    private val timeFormat = LocalDateTime.Format {
+    private val timeFormatFull = LocalDateTime.Format {
         date(LocalDate.Formats.ISO)
         char(' ')
+        time(LocalTime.Format {
+            hour()
+            char(':')
+            minute()
+            char(':')
+            second()
+        })
+    }
+    private val timeFormatShort = LocalDateTime.Format {
         time(LocalTime.Format {
             hour()
             char(':')
@@ -66,17 +75,18 @@ object Time {
         val minutes = (totalSeconds % 3600) / 60
         val seconds = totalSeconds % 60
 
-        return if (hours > 0) "${hours.pad(2)}:${minutes.pad(2)}:${seconds.pad(2)}"//String.format("%02d:%02d:%02d", hours, minutes, seconds)
-        else "${minutes.pad(2)}:${seconds.pad(2)}"//String.format("%02d:%02d", minutes, seconds)
+        return if (hours > 0) "${hours.pad(2)}:${minutes.pad(2)}:${seconds.pad(2)}"
+        else "${minutes.pad(2)}:${seconds.pad(2)}"
     }
 
-    fun formatMillis(timestamp: Long): String {
+    fun formatMillis(timestamp: Long, date: Boolean = true): String {
         val instant = Instant.fromEpochMilliseconds(timestamp)
         val zone = TimeZone.currentSystemDefault()
 
         val localDateTime = instant.toLocalDateTime(zone)
 
-        return timeFormat.format(localDateTime)
+        return if (date) timeFormatFull.format(localDateTime)
+            else timeFormatShort.format(localDateTime)
     }
 }
 

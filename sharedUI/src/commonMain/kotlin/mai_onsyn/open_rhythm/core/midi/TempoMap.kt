@@ -89,21 +89,4 @@ class TempoMap(
 
         return high.coerceAtLeast(0)
     }
-
-//    private fun findTempoByNanos(nanos: Double): Int {
-//        var low = 0
-//        var high = entries.lastIndex
-//
-//        while (low <= high) {
-//            val mid = (low + high) ushr 1
-//
-//            if (entries[mid].nanoAtTick <= nanos) {
-//                low = mid + 1
-//            } else {
-//                high = mid - 1
-//            }
-//        }
-//
-//        return high.coerceAtLeast(0)
-//    }
 }

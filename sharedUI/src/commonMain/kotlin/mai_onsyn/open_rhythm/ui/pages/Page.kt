@@ -101,15 +101,26 @@ fun AppNavigation(
             composable<Home> {
                 HomePage(
                     maxWidth > 840.dp,
-                    { navController.navigate(Library) },
-                    { navController.navigate(FreePlayScreen) },
-                    { navController.navigate(Setting) }
+                    {
+                        navController.navigate(Library)
+                        Logger.d { "Home navigate to Library" }
+                    },
+                    {
+                        navController.navigate(FreePlayScreen)
+                        Logger.d { "Home navigate to FreePlayScreen" }
+                    },
+                    {
+                        navController.navigate(Setting)
+                        Logger.d { "Home navigate to Settings" }
+                    }
                 )
             }
 
             val onBack = {
-                if (!navController.popBackStack())
+                if (!navController.popBackStack()) {
                     navController.navigate(Home)
+                    Logger.d { "Back request navigate to Home" }
+                }
             }
             composable<Library> {
                 LibraryPage(
@@ -131,7 +142,7 @@ fun AppNavigation(
                             currentOperateMidiPath = it.data.path
                         }
                         navController.navigate(PlayScreen)
-                        Logger.i { "Enter play screen $it" }
+                        Logger.i { "Navigate to Play Screen $it" }
                     },
                     {
                         scope.launch(Dispatchers.IO) {
@@ -139,7 +150,7 @@ fun AppNavigation(
                         }
                         currentOperateMidiPath = it.path
                         navController.navigate(TrackEditScreen)
-                        Logger.d { "Enter track edit: ${it.fileName}" }
+                        Logger.d { "Navigate to Track Edit: ${it.fileName}" }
                     }
                 )
             }

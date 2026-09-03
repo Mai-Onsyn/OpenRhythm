@@ -17,6 +17,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.unit.dp
+import co.touchlab.kermit.Logger
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import mai_onsyn.open_rhythm.bridge.Global
@@ -59,6 +60,7 @@ fun RefreshDeviceButton(
             scope.launch {
                 Global.refreshMidiAccess()
                 onRefresh()
+                Logger.d { "Refreshed device list" }
             }
         },
         shape = MaterialTheme.shapes.small,

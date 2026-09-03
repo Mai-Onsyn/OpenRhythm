@@ -56,6 +56,9 @@ class MidiPlayer2(
         buildEventSequence(midi)
     }
 
+    val isPlaying: Boolean
+        get() = state == State.PLAYING
+
     val preciseTick: Double
         get() = when (state) {
             State.PLAYING -> lerpTick()
@@ -66,7 +69,7 @@ class MidiPlayer2(
         val pMidi = midi ?: return
         playbackThread?.cancel()
         launchPlaybackThread(pMidi)
-        Logger.i { "Player Playing ${pMidi.name}" }
+        Logger.i { "Player playing: midi name=${pMidi.name}, offset tick=$offsetTick, event count=${eventList.size}" }
     }
 
     fun pause() {
@@ -76,14 +79,12 @@ class MidiPlayer2(
         }
         releaseAllNotes()
         state = State.PAUSED
-//        Logger.i { "Player Paused" }
     }
 
     fun stop() {
         stopPlayback()
         reset()
         state = State.STOPPED
-//        Logger.i { "Player Stopped" }
     }
 
     fun seek(value: Double, percentage: Boolean = true) {
@@ -160,9 +161,9 @@ class MidiPlayer2(
         // 从记录时刻到当前时刻 现实时间差为
         val realDelta = Time.nanos - offsetNanos
         // speed为时间倍率 意味着播放器内时间流逝速度是现实的speed倍 因此这段时间内播放器内增加的时间为
-        val gameDelta = (speed * realDelta).toDouble()
+        val playerDelta = (speed * realDelta).toDouble()
         // 当前时刻 从tick0起总共经过的播放器内时间为
-        val totalNano = baseNano + gameDelta
+        val totalNano = baseNano + playerDelta
         // 用nanoAtTick的反函数tickAtNanoOffset得到当前tick
         val currentTick = midi!!.tickAtNanoOffset(totalNano)
 
@@ -189,6 +190,7 @@ class MidiPlayer2(
                 else eventList.add(event)
             }
         }
+        Logger.d { "Built ${eventList.size} events for MIDI ${midi.name}" }
         eventList.sortWith(compareBy({ it.tick }, { it.order }))
     }
 

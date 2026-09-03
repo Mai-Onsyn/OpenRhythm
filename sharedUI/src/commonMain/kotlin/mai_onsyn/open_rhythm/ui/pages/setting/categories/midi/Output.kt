@@ -76,11 +76,11 @@ fun MidiOutputSettings() {
                                 })
                                 selectedDeviceIndex = it
                                 Global.settings.SelectedOutputDeviceName = deviceNames.getOrElse(selectedDeviceIndex) { UNKNOWN_DEVICE }
-                                Logger.i { "Switched midi port to ${devices[it].id}" }
+                                Logger.i { "Switched midi output port to ${devices[it].id}: ${devices[it].name}" }
                             } catch (e: Exception) {
-                                Logger.e(e) { "Cannot Open Output: ${devices[it].id}" }
+                                Logger.e(e) { "Cannot open output port ${devices[it].id}: ${devices[it].name}" }
                                 showErrorDialog = true
-                                errorMessage = "Cannot Open Output: ${devices[it].id}(${devices[it].name ?: UNKNOWN_DEVICE}) because: ${e::class.simpleName}: ${e.message}"
+                                errorMessage = "Cannot open output: ${devices[it].id}(${devices[it].name ?: UNKNOWN_DEVICE}) because: ${e::class.simpleName}: ${e.message}"
                             }
                         }
                     },
@@ -118,24 +118,21 @@ fun MidiOutputSettings() {
             name = "SF2 path",
             description = "Set the SF2 file to replace the default Gervill soundfont (Press Enter to load)"
         ) {
-            fun reload() {
-                coroutineScope.launch {
-                    Global.player.midiOutput?.close()
-                    val portDetails = Global.midiAccess.outputs.toList().firstOrNull { it.name == "Gervill" } ?: return@launch
-                    Global.player.setOutput(Global.midiAccess.openOutput(portDetails.id).let { output ->
-                        setupMidiOutput(output, "Gervill", Global.settings.GervillSF2Path)
-                        output
-                    })
-                }
-            }
-
             CompactOutlinedTextField(
                 modifier = Modifier
                     .widthIn(max = 300.dp),
                 value = Global.settings.GervillSF2Path,
                 onValueChange = { Global.settings.GervillSF2Path = it },
                 onConfirm = {
-                    reload()
+                    coroutineScope.launch {
+                        Global.player.midiOutput?.close()
+                        val portDetails = Global.midiAccess.outputs.toList().firstOrNull { it.name == "Gervill" } ?: return@launch
+                        Global.player.setOutput(Global.midiAccess.openOutput(portDetails.id).let { output ->
+                            setupMidiOutput(output, "Gervill", Global.settings.GervillSF2Path)
+                            output
+                        })
+                        Logger.d { "Reloaded Gervill sf2 from ${Global.settings.GervillSF2Path}" }
+                    }
                 }
             )
         }

@@ -10,6 +10,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import co.touchlab.kermit.Logger
 import mai_onsyn.open_rhythm.bridge.Global
 import mai_onsyn.open_rhythm.core.midi.device.KeyboardVirtualMidiInputDevice
 import mai_onsyn.open_rhythm.ui.modules.midi_flow.AppDefaultMidiKeyboard
@@ -58,7 +59,6 @@ fun KeyMappingSettings() {
                     Global.player.noteOn(pitch, velocity)
 
                     selectedKeyCode?.let { code ->
-//                        Singleton.settings.userKeyMappings.removeAll { it.keyCode == code }
                         Global.settings.userKeyMappings.let { list ->
                             val toRemove = list.filter { it.keyCode == code || it.pitch == pitch }
                             toRemove.forEach { list.remove(it) }
@@ -68,6 +68,7 @@ fun KeyMappingSettings() {
                         (Global.midiInputDevices["Virtual Keyboard"] as? KeyboardVirtualMidiInputDevice)?.updateMappings(
                             Global.settings.userKeyMappings.toMappingMap()
                         )
+                        Logger.v { "Bind key mapping: $code to $pitch" }
                     }
                 },
                 onRelease = {
@@ -91,6 +92,7 @@ fun KeyMappingSettings() {
             onSelectChanged = {
                 selectedKeyCode = if (selectedKeyCode == it) null
                 else it
+                Logger.d { selectedKeyCode?.let { code -> "Key code selected: $code" } ?: "Cancelled key selecting" }
             },
             drawControl = true,
             drawNumpad = true

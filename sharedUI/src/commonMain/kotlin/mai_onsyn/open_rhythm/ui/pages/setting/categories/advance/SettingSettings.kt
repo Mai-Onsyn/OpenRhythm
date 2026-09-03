@@ -12,6 +12,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.unit.dp
+import co.touchlab.kermit.Logger
 import mai_onsyn.open_rhythm.bridge.Global
 import mai_onsyn.open_rhythm.ui.icons.ic_build_circle
 import mai_onsyn.open_rhythm.ui.icons.ic_delete
@@ -41,6 +42,7 @@ fun SettingSettings() { // 设置设置的设置
                 onConfirm = {
                     showCleanDialog = false
                     showCleanedDialog = true
+                    Logger.w { "$configCount File settings has been cleaned" }
                     Global.settings.clearUserMidiFileSettings()
                 },
                 title = "Clean up",
@@ -56,7 +58,7 @@ fun SettingSettings() { // 设置设置的设置
                 },
                 onConfirm = { showCleanedDialog = false },
                 title = "Result",
-                message = "Cleared $configCount MIDI file configurations"
+                message = "$configCount File settings has been cleaned"
             )
         }
 
@@ -76,6 +78,7 @@ fun SettingSettings() { // 设置设置的设置
                     resetAllExecuted = true
                     Global.settings.resetAllSettings()
                     showResetAllDialog = false
+                    Logger.w { "All settings has been reset" }
                 },
                 title = "Reset Settings",
                 message = "Are you sure you want to reset all settings? \n(This might never be recoverable!)",

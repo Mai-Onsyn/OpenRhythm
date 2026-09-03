@@ -13,6 +13,7 @@ import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import co.touchlab.kermit.Logger
 import kotlinx.coroutines.runBlocking
 import mai_onsyn.open_rhythm.bridge.Global
 import mai_onsyn.open_rhythm.core.midi.device.KeyboardVirtualMidiInputDevice
@@ -81,10 +82,12 @@ fun MidiInputSettings() {
                                         Global.settings.userKeyMappings.toMappingMap()
                                     )
                                     Global.settings.enabledMidiInputDeviceList.add(virtualKeyboard)
+                                    Logger.i { "Opened MIDI input device: Virtual Keyboard" }
                                 } else {
                                     runBlocking { Global.midiInputDevices[virtualKeyboard]?.close() }
                                     Global.midiInputDevices.remove(virtualKeyboard)
                                     Global.settings.enabledMidiInputDeviceList.remove(virtualKeyboard)
+                                    Logger.i { "Closed MIDI input device: Virtual Keyboard" }
                                 }
                             }
                         )
@@ -101,10 +104,12 @@ fun MidiInputSettings() {
                                     if (it) {
                                         Global.midiInputDevices[id] = KtMidiInputDevice(input, Global.midiAccess)
                                         Global.settings.enabledMidiInputDeviceList.add(name)
+                                        Logger.i { "Opened MIDI input device: $name" }
                                     } else {
                                         runBlocking { Global.midiInputDevices[id]?.close() }
                                         Global.midiInputDevices.remove(id)
                                         Global.settings.enabledMidiInputDeviceList.remove(name)
+                                        Logger.i { "Closed MIDI input device: $name" }
                                     }
                                 }
                             )

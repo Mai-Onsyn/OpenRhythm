@@ -9,6 +9,10 @@ import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Density
 
 /**
+ * AI生成
+ */
+
+/**
  * 保存比例配置的数据类
  * @param xRatio 子组件起点 X 轴占父容器宽度的比例 (0.0 ~ 1.0)
  * @param yRatio 子组件起点 Y 轴占父容器高度的比例 (0.0 ~ 1.0)

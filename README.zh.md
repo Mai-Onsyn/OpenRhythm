@@ -69,20 +69,20 @@ Open Rhythm 是一款钢琴可视化与 MIDI 练习软件，类似 Synthesia。�
 
 基于 JVM 且依赖 Compose Canvas，在播放大型 MIDI（>500KB，同屏 3000+ 音符）时，瀑布流会有明显掉帧。
 
-Android 平台受 FileKit 实现和 JVM 差异影响，MIDI 文件的加载与解析速度比桌面慢 15 倍以上（30 个多轨 MIDI 平均 5~10 秒，桌面端用不到半秒）。
+Android 平台受 FileKit 实现和 JVM 差异影响，MIDI 文件的加载与解析速度比桌面慢 15 倍以上。即使已通过并行提升效率，但加载速度仍大幅被安卓IO速度拖慢。
 
 ### 体积与内存
 
 Compose Multiplatform 依赖 JVM，在 Desktop 需要捆绑 JVM 和 Skia，体积较大。
 
-虽然 JVM 内存（ZGC）控制良好，但 Compose 的 Native 层内存占用较高且回收不及时，整体内存消耗偏高。
+虽然 JVM 内存（ZGC）控制良好，但 Compose 的 Native 层内存占用较高且回收不及时，整体内存消耗偏高。主要由Skia GPU加速渲染缓存占用，使用CPU渲染能降低一倍的内存消耗，但性能低下。
 
 
 
 ## 🗺️未来计划
 
-- 多线程 MIDI 文件加载，以缓解安卓端加载慢的问题
 - 虚拟键盘立体阴影
+- 脱离Canvas预渲染瀑布流画面以大幅优化性能
 - 使用外置脚本语言 (计划 kotlite) 控制 MIDI 瀑布流 / 虚拟键盘的渲染
 
 

@@ -83,12 +83,15 @@ fun TrackTable(
                     Global.player.seek(midi.tracks[playingIndex].tickRange.first.toLong())
                     Global.player.play()
                     Global.player.onCompletion = { playingIndex = -1 }
-                }
-//                Logger.d { "$playingIndex" }
+                    Logger.i { "Playing track $playingIndex in MIDI ${midi.name}" }
+                } else Logger.d { "Stopped playback: idx=-1 (stop flag)" }
             }
             DisposableEffect(Unit) {
                 onDispose {
-                    Global.player.stop()
+                    if (playingIndex != -1) {
+                        Global.player.stop()
+                        Logger.d { "Stopped playback: idx=-1 (stop flag)" }
+                    }
                 }
             }
             key(midi) {

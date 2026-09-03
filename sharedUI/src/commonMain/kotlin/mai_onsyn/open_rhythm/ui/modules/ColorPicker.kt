@@ -18,6 +18,7 @@ import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import co.touchlab.kermit.Logger
 import com.materialkolor.ktx.toHex
 import mai_onsyn.open_rhythm.ui.modules.dialog.DialogPopup
 import kotlin.math.roundToInt
@@ -105,7 +106,10 @@ fun ColorPickerDialog(
             initialColor = initialColor,
             enableAlpha = enableAlpha,
             onColorChanged = onColorChanged,
-            onConfirmRequest = onConfirmRequest,
+            onConfirmRequest = {
+                onConfirmRequest(it)
+                Logger.i { "Picked color: ${it.toHex()}" }
+            },
             onCancelRequest = onDismissRequest,
             modifier = Modifier
                 .width(400.dp)

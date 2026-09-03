@@ -21,6 +21,10 @@ class Midi(
             tracks.forEach { sum += it.notes.size }
             return sum
         }
+
+    override fun toString(): String {
+        return "Midi(name=$name, path=$path, ppq=$ppq, trackCount=${tracks.size}, tempoCount=${tempoEvents.size}, timeSignatureEventCount=${timeSignatureEvents.size}, endTick=$endTick, noteCount=$totalNotes)"
+    }
 }
 
 fun Midi.take(trackNumber: Int): Midi {

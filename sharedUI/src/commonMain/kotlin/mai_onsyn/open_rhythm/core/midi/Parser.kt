@@ -1,5 +1,6 @@
 package mai_onsyn.open_rhythm.core.midi
 
+import co.touchlab.kermit.Logger
 import dev.atsushieno.ktmidi.Midi1CompoundMessage
 import dev.atsushieno.ktmidi.Midi1Music
 import dev.atsushieno.ktmidi.read
@@ -329,7 +330,7 @@ fun parseMidi(name: String, bytes: List<Byte>, path: String? = null): Midi {
         pcChangeTimeline = pcTimeline,
         pbChangeTimeline = pbTimeline,
         path = path ?: ""
-    )
+    ).also { Logger.v { "Parsed $it" } }
 }
 
 private fun mergeToNoteList(group: NoteGroup, minDuration: Long): MutableList<Note> {

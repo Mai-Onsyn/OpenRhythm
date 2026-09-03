@@ -6,7 +6,7 @@ import dev.atsushieno.ktmidi.MidiAccess
 import dev.atsushieno.ktmidi.MidiOutput
 import io.github.vinceglb.filekit.FileKit
 import io.github.vinceglb.filekit.PlatformFile
-import mai_onsyn.open_rhythm.core.GlobalKeyEventDispatcher
+import mai_onsyn.open_rhythm.core.util.GlobalKeyEventDispatcher
 
 expect fun getMidiAccess(): MidiAccess
 

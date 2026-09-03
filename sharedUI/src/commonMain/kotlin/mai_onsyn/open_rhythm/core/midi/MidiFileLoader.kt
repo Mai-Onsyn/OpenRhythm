@@ -1,10 +1,8 @@
 package mai_onsyn.open_rhythm.core.midi
 
-import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.lifecycle.AtomicReference
 import co.touchlab.kermit.Logger
 import io.github.vinceglb.filekit.*
 import kotlinx.coroutines.*
@@ -12,9 +10,7 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.io.IOException
 import mai_onsyn.open_rhythm.bridge.Global
-import mai_onsyn.open_rhythm.core.util.Time
 import mai_onsyn.open_rhythm.core.util.msAtTick
-import kotlin.concurrent.atomics.AtomicInt
 import kotlin.concurrent.atomics.ExperimentalAtomicApi
 
 data class UIMidiData(

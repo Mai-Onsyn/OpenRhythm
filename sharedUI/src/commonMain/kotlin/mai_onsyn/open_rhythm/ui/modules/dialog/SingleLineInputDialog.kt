@@ -10,6 +10,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import co.touchlab.kermit.Logger
 import kotlinx.coroutines.delay
 import mai_onsyn.open_rhythm.ui.modules.CompactOutlinedTextField
 import mai_onsyn.open_rhythm.ui.modules.PrimaryOperationButton
@@ -101,6 +102,7 @@ fun SingleLineInputDialog(
                     PrimaryOperationButton("Confirm") {
                         if (inputText.isNotEmpty()) {
                             onConfirm(inputText)
+                            Logger.i { "Confirmed dialog input: $inputText" }
                         } else isError = true
                     }
                     PrimaryOperationButton("Cancel", onDismissRequest)

@@ -6,9 +6,9 @@ import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.type
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.channels.Channel
-import mai_onsyn.open_rhythm.core.GlobalKeyEventDispatcher
 import mai_onsyn.open_rhythm.core.midi.MidiEvent
 import mai_onsyn.open_rhythm.core.midi.NoteEvent
+import mai_onsyn.open_rhythm.core.util.GlobalKeyEventDispatcher
 
 class KeyboardVirtualMidiInputDevice(
     private val keyInput: GlobalKeyEventDispatcher,

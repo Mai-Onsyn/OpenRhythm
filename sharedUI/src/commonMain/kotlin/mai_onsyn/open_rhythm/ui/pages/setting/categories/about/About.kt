@@ -13,6 +13,7 @@ import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import co.touchlab.kermit.Logger
 import com.mikepenz.aboutlibraries.ui.compose.m3.LibrariesContainer
 import com.mikepenz.aboutlibraries.ui.compose.produceLibraries
 import mai_onsyn.open_rhythm.ui.icons.ic_arrow_back
@@ -68,7 +69,10 @@ private fun BoxScope.AboutMainScreen(onEnter: (Int) -> Unit) {
             )
         }
         val uriHandler = LocalUriHandler.current
-        ListItem("Repository Homepage", { uriHandler.openUri("https://github.com/Mai-Onsyn/OpenRhythm") }) {
+        ListItem("Repository Homepage", {
+            uriHandler.openUri("https://github.com/Mai-Onsyn/OpenRhythm")
+            Logger.i { "Jumped url: https://github.com/Mai-Onsyn/OpenRhythm" }
+        }) {
             Icon(
                 imageVector = ic_open_in_new,
                 contentDescription = "github",

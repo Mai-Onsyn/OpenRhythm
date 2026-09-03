@@ -11,7 +11,7 @@ import io.github.vinceglb.filekit.FileKit
 import io.github.vinceglb.filekit.PlatformFile
 import io.github.vinceglb.filekit.dialogs.openDirectoryPicker
 import io.github.vinceglb.filekit.dialogs.openFilePicker
-import mai_onsyn.open_rhythm.core.GlobalKeyEventDispatcher
+import mai_onsyn.open_rhythm.core.util.GlobalKeyEventDispatcher
 import platform.Foundation.NSUserDefaults
 
 actual fun getMidiAccess(): MidiAccess {

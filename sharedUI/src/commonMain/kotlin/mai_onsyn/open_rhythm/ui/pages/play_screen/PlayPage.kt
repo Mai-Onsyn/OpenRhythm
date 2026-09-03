@@ -24,6 +24,7 @@ import androidx.compose.ui.keepScreenOn
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
+import co.touchlab.kermit.Logger
 import kotlinx.coroutines.delay
 import mai_onsyn.open_rhythm.bridge.Global
 import mai_onsyn.open_rhythm.core.midi.Midi
@@ -42,7 +43,6 @@ fun PlayPage(
     drawStatusBar: Boolean = true
 ) {
     if (drawStatusBar) BackHandler { onBack() }
-//    val trackColors = remember { _testOnly_GenerateTrackColors() }
 
     var isPlaying by remember { mutableStateOf(false) }
     val displayMidi by rememberUpdatedState(
@@ -53,11 +53,15 @@ fun PlayPage(
                     track.visible = !Global.settings.DrumKitHiddenByDefault
                 }
             }
+            val disabled = mutableListOf<Int>()
             Global.settings.midiFileSettings[path]?.trackSettings?.forEach { (track, settings) ->
-//                tracks[track].visible = (settings.visible ?: true)
                 settings.visible?.let {
                     tracks[track].visible = it
+                    if (!it) disabled += track
                 }
+            }
+            if (disabled.isNotEmpty()) {
+                Logger.i { "Disabled track indexes: [${disabled.joinToString()}]" }
             }
         }
     )
@@ -66,7 +70,10 @@ fun PlayPage(
     val focusRequester = remember { FocusRequester() }
 
     DisposableEffect(Unit) {
-        if (Global.settings.AutoStartPlayback && drawStatusBar) isPlaying = true
+        if (Global.settings.AutoStartPlayback && drawStatusBar) {
+            isPlaying = true
+            Logger.i { "Auto play started" }
+        }
         onDispose {
             Global.player.practiceMode = false
         }

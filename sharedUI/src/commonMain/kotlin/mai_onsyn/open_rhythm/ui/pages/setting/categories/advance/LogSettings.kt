@@ -2,7 +2,9 @@ package mai_onsyn.open_rhythm.ui.pages.setting.categories.advance
 
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
-import androidx.compose.material3.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.PointerIcon
@@ -17,14 +19,11 @@ import mai_onsyn.open_rhythm.core.log.LogManager
 import mai_onsyn.open_rhythm.ui.icons.ic_assignment
 import mai_onsyn.open_rhythm.ui.icons.ic_ios_share
 import mai_onsyn.open_rhythm.ui.modules.CompactOutlinedTextField
-import mai_onsyn.open_rhythm.ui.modules.ContextDropDownMenuItem
-import mai_onsyn.open_rhythm.ui.modules.ContextDropdownMenu
 import mai_onsyn.open_rhythm.ui.modules.dialog.ConfirmDialog
 import mai_onsyn.open_rhythm.ui.pages.setting.SettingsCard
 
 @Composable
 fun LogSettings() {
-    val colorScheme = MaterialTheme.colorScheme
     SettingsCard(
         title = "Log",
         icon = ic_assignment,
@@ -34,43 +33,12 @@ fun LogSettings() {
             name = "Log level",
             initial = Global.settings.LogLevel,
             onSelected = { Global.settings.LogLevel = it },
-            items = listOf("Trace", "Debug", "Info", "Warn", "Error", "Assert")
+            items = listOf("Trace", "Debug", "Info", "Warn", "Error", "Fatal")
         )
-//        item("Log level") {
-//            val candidates = remember { listOf(
-//                ContextDropDownMenuItem("Trace", selectedContentColor = colorScheme.primary),
-//                ContextDropDownMenuItem("Debug", selectedContentColor = colorScheme.primary),
-//                ContextDropDownMenuItem("Info", selectedContentColor = colorScheme.primary),
-//                ContextDropDownMenuItem("Warn", selectedContentColor = colorScheme.primary),
-//                ContextDropDownMenuItem("Error", selectedContentColor = colorScheme.primary),
-//                ContextDropDownMenuItem("All", selectedContentColor = colorScheme.primary),
-//            ) }
-//
-//            var expanded by remember { mutableStateOf(false) }
-//            ContextDropdownMenu(
-//                expanded = expanded,
-//                onDismissRequest = { expanded = false },
-//                selectedIndex = Global.settings.LogLevel,
-//                onSelect = { Global.settings.LogLevel = it },
-//                items = candidates,
-//            ) {
-//                OutlinedButton(
-//                    onClick = { expanded = true },
-//                    modifier = Modifier.pointerHoverIcon(PointerIcon.Hand),
-//                    shape = MaterialTheme.shapes.small
-//                ) {
-//                    Text(
-//                        text = candidates[Global.settings.LogLevel].label!!,
-//                        style = MaterialTheme.typography.bodyMedium
-//                    )
-//                }
-//            }
-//        }
 
         item("Log limit", "The current log limit, doesn't affect the logs that have already been output") {
             CompactOutlinedTextField(
-                modifier = Modifier
-                    .size(80.dp, 40.dp),
+                modifier = Modifier.size(80.dp, 40.dp),
                 value = Global.settings.MaxLogCount,
                 onValueChange = { Global.settings.MaxLogCount = it },
             )

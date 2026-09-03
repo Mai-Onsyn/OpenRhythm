@@ -1,8 +1,6 @@
 package mai_onsyn.open_rhythm.core.log
 
-import co.touchlab.kermit.Logger
-import co.touchlab.kermit.Severity
-import co.touchlab.kermit.platformLogWriter
+import co.touchlab.kermit.*
 import io.github.vinceglb.filekit.FileKit
 import io.github.vinceglb.filekit.PlatformFile
 import io.github.vinceglb.filekit.absolutePath
@@ -18,7 +16,7 @@ object LogManager {
 
     fun initialize() {
         Logger.setLogWriters(
-            platformLogWriter(),
+            platformLogWriter(ConsoleLogFormatter()),
             memoryLogWriter
         )
         Logger.setMinSeverity(Severity.entries[Global.settings.LogLevel])
@@ -56,5 +54,11 @@ object LogManager {
 
     fun clearLogs() {
         memoryLogWriter.clear()
+    }
+}
+
+class ConsoleLogFormatter : MessageStringFormatter {
+    override fun formatMessage(severity: Severity?, tag: Tag?, message: Message): String {
+        return "[${Time.formatMillis(Time.millis, false)}] [${severity?.name}] ${message.message}"
     }
 }

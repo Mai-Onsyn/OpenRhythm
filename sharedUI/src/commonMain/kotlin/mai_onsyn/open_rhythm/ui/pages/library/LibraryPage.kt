@@ -15,6 +15,7 @@ import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import co.touchlab.kermit.Logger
 import io.github.vinceglb.filekit.FileKit
 import io.github.vinceglb.filekit.absolutePath
 import io.github.vinceglb.filekit.nameWithoutExtension
@@ -94,7 +95,10 @@ fun LibraryPage(
                             if (Global.settings.libraryFolderList.find { folder -> folder.dir == newFolderDir } != null) {
                                 showNewFolderExistedPopup = true
                             }
-                            else showNewFolderPopup = true
+                            else {
+                                showNewFolderPopup = true
+                                Logger.i { "Picked library folder: $newFolderDir" }
+                            }
                         }
                     }
                 },
@@ -126,6 +130,7 @@ fun LibraryPage(
                     newFolderName = it
                     Global.settings.libraryFolderList.add(UILibraryFolder(newFolderName, newFolderDir))
                     showNewFolderPopup = false
+                    Logger.i { "Added a new library folder: name=$newFolderName, dir=$newFolderDir" }
                 }
             )
 
@@ -295,7 +300,9 @@ private fun FolderRail(
                         onSelect(maxIdx)
                     }
                 }
-                Global.settings.libraryFolderList.removeAt(it)
+                Global.settings.libraryFolderList.removeAt(it).also { folder ->
+                    Logger.i { "Deleted library folder: $folder" }
+                }
             },
             refresher = refreshVersion
         )

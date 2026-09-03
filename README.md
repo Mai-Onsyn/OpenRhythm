@@ -70,20 +70,20 @@ Built on Compose Multiplatform. Currently supported:
 
 Being JVM-based and relying on Compose Canvas, the waterfall can visibly drop frames on very large MIDI files (>500KB, 3000+ notes on screen).
 
-On Android, FileKit implementation and JVM quirks make MIDI loading & parsing 15×+ slower than desktop (30 multi-track MIDIs average 5–10s, vs. under half a second on desktop).
+On Android, FileKit implementation and JVM quirks make MIDI loading & parsing 15×+ slower than desktop. Although parallelism has been employed to improve efficiency, loading speed is still severely bottlenecked by Android I/O performance.
 
 ### Size & Memory
 
 Compose Multiplatform leans on the JVM, so Desktop needs to bundle the JVM and Skia — which makes the package hefty.
 
-JVM memory (ZGC) is well managed, but Compose's native layer holds onto memory fairly aggressively and recycles it late, so overall memory usage runs on the higher side.
+JVM memory (ZGC) is well managed, but Compose's native layer holds onto memory fairly aggressively and recycles it late, so overall memory usage runs on the higher side. This is mainly caused by Skia GPU-accelerated rendering caches. Switching to CPU rendering can reduce memory consumption by half, but at the cost of poor performance.
 
 
 
 ## 🗺️ Roadmap
 
-- Multi-threaded MIDI loading to ease the Android bottleneck
 - 3D shadows on the virtual keyboard
+- Pre-render waterfall flow off the Canvas to significantly improve performance
 - An external scripting language (kotlite planned) to control waterfall / virtual-keyboard rendering
 
 

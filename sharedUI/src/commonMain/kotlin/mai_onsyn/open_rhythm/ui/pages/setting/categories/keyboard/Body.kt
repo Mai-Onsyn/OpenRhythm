@@ -1,7 +1,6 @@
 package mai_onsyn.open_rhythm.ui.pages.setting.categories.keyboard
 
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import mai_onsyn.open_rhythm.bridge.Global
@@ -14,7 +13,6 @@ import mai_onsyn.open_rhythm.ui.pages.setting.SettingsCard
 
 @Composable
 fun Body() {
-    val colorScheme = MaterialTheme.colorScheme
     SettingsCard(
         title = "Body",
         icon = ic_piano,

@@ -20,6 +20,7 @@ import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import co.touchlab.kermit.Logger
 import io.github.vinceglb.filekit.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
@@ -50,6 +51,7 @@ fun FolderManageRail(
     val reorderableLazyListState = rememberReorderableLazyListState(listState) { from, to ->
         Global.settings.libraryFolderList.apply {
             add(to.index, removeAt(from.index))
+            Logger.v { "Folder reordered from index ${from.index} to ${to.index}" }
         }
         hapticFeedback.performHapticFeedback(HapticFeedbackType.SegmentFrequentTick)
         onSelect(to.index)

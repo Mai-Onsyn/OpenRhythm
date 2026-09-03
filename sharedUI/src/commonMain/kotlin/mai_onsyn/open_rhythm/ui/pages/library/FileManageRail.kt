@@ -44,13 +44,14 @@ fun FileManageRail(
         value = UiState.Loading
         value = try {
             val result = Global.fileLoader.loadFolder(path)
+            Logger.i { "Folder loaded: $path, files=${result.size}" }
             ensureActive()
             onFileCountAvailable(result.size)
             UiState.Success(result)
-        } catch (e: CancellationException) {
+        } catch (_: CancellationException) {
             value
         } catch (e: Exception) {
-            e.printStackTrace()
+            Logger.e(e) { "Failed to load folder: $path" }
             UiState.Error(e.message ?: "Failed to load files")
         }
     }
@@ -105,37 +106,39 @@ fun FileManageRail(
         }
         is UiState.Success -> {
             val midiFiles = (uiState as UiState.Success<List<UIMidiData>>).data
-            var isPlaying by remember { mutableStateOf(false) }
+//            var isPlaying by remember { mutableStateOf(false) }
             var playingIdx by remember { mutableStateOf(-1) }
             LaunchedEffect(path) {
-                isPlaying = false
+//                isPlaying = false
                 playingIdx = -1
             }
-            LaunchedEffect(isPlaying, playingIdx, path) {
+            LaunchedEffect(playingIdx, path) {
                 if (playingIdx == -1) {
-                    Global.player.stop()
+                    if (Global.player.isPlaying) {
+                        Global.player.stop()
+                        Logger.d { "Stopped playback: idx=-1 (stop flag)" }
+                    }
                     return@LaunchedEffect
                 }
-
-                if (isPlaying) {
-                    try {
-                        Global.fileLoader.loadFile(midiFiles[playingIdx].path).let {
-                            Global.player.stop()
-                            Global.player.setMidi(it, Global.settings.midiFileSettings[midiFiles[playingIdx].path])
-                            Global.player.seek(it.startTick.toLong())
-                            Global.player.play()
-                            Global.player.onCompletion = { isPlaying = false }
-                        }
-                    } catch (e: Exception) {
-                        Logger.e(e) { "Error loading midi from $path" }
+                try {
+                    Global.fileLoader.loadFile(midiFiles[playingIdx].path).let {
+                        Global.player.stop()
+                        Global.player.setMidi(it, Global.settings.midiFileSettings[midiFiles[playingIdx].path])
+                        Global.player.seek(it.startTick.toLong())
+                        Global.player.play()
+                        Logger.i { "Start playing: idx=$playingIdx, file=${midiFiles[playingIdx].fileName}" }
+                        Global.player.onCompletion = { playingIdx = -1 }
                     }
-                } else {
-                    Global.player.stop()
+                } catch (e: Exception) {
+                    Logger.e(e) { "Error loading \"${midiFiles[playingIdx].fileName}\" from $path" }
                 }
             }
             DisposableEffect(Unit) {
                 onDispose {
-                    if (isPlaying) Global.player.stop()
+                    if (playingIdx != -1) {
+                        Global.player.stop()
+                        Logger.d { "Stop playback: exit page" }
+                    }
                 }
             }
             LazyColumn(
@@ -146,14 +149,9 @@ fun FileManageRail(
                     FileRailItem(
                         modifier = Modifier.fillMaxWidth(),
                         target = midiData,
-                        isPlaying = isPlaying && playingIdx == index,
+                        isPlaying = playingIdx == index,
                         onPlayButtonClick = {
-                            if (it) {
-                                isPlaying = true
-                                playingIdx = index
-                            } else {
-                                isPlaying = false
-                            }
+                            playingIdx = if (it) index else -1
                         },
                         onConfirm = onConfirm,
                         onEnterTrackEdit = onEnterTrackEdit
@@ -177,7 +175,10 @@ fun FileRailItem(
     Surface(
         modifier = modifier.pointerHoverIcon(PointerIcon.Hand),
         shape = MaterialTheme.shapes.medium,
-        onClick = { showModeSelector = true }
+        onClick = {
+            showModeSelector = true
+            Logger.d { "Open mode selector for ${target.fileName}" }
+        }
     ) {
         Row(
             modifier = Modifier.padding(16.dp),
@@ -384,7 +385,7 @@ private fun DialogContent(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            var targetTrack by remember { mutableStateOf(0) }
+            var targetTrack by remember { mutableStateOf(-1) }
             if (selectedMode == 2) {
                 NumberSpinner(
                     value = targetTrack,
@@ -399,6 +400,7 @@ private fun DialogContent(
                     1 -> onConfirm(MidiPlayMethod(data, MidiPlayMethod.PlayMode.PRACTICE, -1))
                     2 -> onConfirm(MidiPlayMethod(data, MidiPlayMethod.PlayMode.PRACTICE_SINGLE, targetTrack))
                 }
+                Logger.i { "Confirm play: mode=${selectedMode}, track=$targetTrack, filename=${data.fileName}" }
                 onCancel()
             }
             PrimaryOperationButton("Cancel", onCancel)

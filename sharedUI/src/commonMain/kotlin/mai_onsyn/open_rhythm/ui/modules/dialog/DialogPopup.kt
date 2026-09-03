@@ -25,8 +25,8 @@ import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.key.*
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.unit.*
-import androidx.compose.ui.window.PopupPositionProvider
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
@@ -38,8 +38,6 @@ fun DialogPopup(
     shadowElevation: Dp = 6.dp,
     content: @Composable BoxScope.() -> Unit
 ) {
-//    val popupPositionProvider = remember { GlobalPopupPositionProvider() }
-
     val showProgress by animateFloatAsState(
         targetValue = if (visible) 1f else 0f,
         animationSpec = tween(durationMillis = 200)
@@ -47,16 +45,7 @@ fun DialogPopup(
 
     if (showProgress == 0f) return
 
-    RootPopup(
-//        popupPositionProvider = popupPositionProvider,
-//        properties = PopupProperties(
-//            focusable = true,
-//            dismissOnBackPress = false,
-//            dismissOnClickOutside = false,
-//            usePlatformDefaultWidth = false,
-//            clippingEnabled = false
-//        )
-    ) {
+    RootPopup {
         val focusRequester = remember { FocusRequester() }
         Box(
             contentAlignment = Alignment.Center,
@@ -104,13 +93,4 @@ fun DialogPopup(
             }
         }
     }
-}
-
-class GlobalPopupPositionProvider : PopupPositionProvider {
-    override fun calculatePosition(
-        anchorBounds: IntRect,
-        windowSize: IntSize,
-        layoutDirection: LayoutDirection,
-        popupContentSize: IntSize
-    ): IntOffset = IntOffset.Zero
 }

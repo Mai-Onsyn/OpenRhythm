@@ -81,10 +81,15 @@ internal fun AppTheme(
     onThemeChanged: @Composable (isDark: Boolean) -> Unit,
     content: @Composable () -> Unit
 ) {
-    val st = Global.settings
     val systemIsDark = isSystemInDarkTheme()
     val isDark = remember(Global.settings.DarkMode, systemIsDark) {
-        Logger.d { "Change darkmode to ${Global.settings.DarkMode}, system isDark: $systemIsDark" }
+        Logger.d { "Change darkmode to ${
+            when (Global.settings.DarkMode) {
+                0 -> "false"
+                1 -> "true"
+                else -> "auto($systemIsDark)"
+            }
+        }, system isDark: $systemIsDark" }
         when (Global.settings.DarkMode) {
             0 -> false
             1 -> true

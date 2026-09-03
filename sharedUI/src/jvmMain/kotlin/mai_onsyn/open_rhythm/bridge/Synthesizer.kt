@@ -34,11 +34,11 @@ fun loadSoundbankToKtmidiOutput(output: MidiOutput, sf2File: File): Boolean {
         }
 
         val success = device.loadAllInstruments(soundbank)
-        Logger.i { "SF2 loaded: $success, internal instruments count: ${device.loadedInstruments.size}" }
+        Logger.i { "SF2 \"${sf2File.absolutePath}\" loaded: $success, internal instruments count: ${device.loadedInstruments.size}" }
         return success
 
     } catch (e: Exception) {
-        e.printStackTrace()
+        Logger.e(e) { "Failed to pick soundbank from ${sf2File.absolutePath}" }
         return false
     }
 }

@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import co.touchlab.kermit.Logger
 import mai_onsyn.open_rhythm.bridge.Global
 import mai_onsyn.open_rhythm.ui.icons.ic_bug_report
 import mai_onsyn.open_rhythm.ui.pages.setting.SettingsCard
@@ -22,6 +23,7 @@ fun DebugSettings() {
             onToggled = {
                 Global.settings.UseParserV1 = it
                 Global.fileLoader.clearCache()
+                Logger.d { "Cleared loaded MIDI files cache" }
             }
         )
 

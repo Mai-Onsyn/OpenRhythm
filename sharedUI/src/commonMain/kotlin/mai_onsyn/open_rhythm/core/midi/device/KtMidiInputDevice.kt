@@ -13,7 +13,7 @@ import kotlinx.coroutines.launch
 import mai_onsyn.open_rhythm.core.midi.MidiEvent
 
 class KtMidiInputDevice(
-    portId: MidiPortDetails,
+    val portId: MidiPortDetails,
     access: MidiAccess
 ) : MidiInputDevice {
     val scope = CoroutineScope(Dispatchers.IO)
@@ -30,6 +30,7 @@ class KtMidiInputDevice(
                         else MidiEvent.parse(0, data.copyOfRange(start, start + length))
                     eventChannel.trySend(event)
                 }
+                Logger.i { "Opened ktmidi input port: ${portId.name}" }
             } catch (e: Exception) {
                 Logger.e(e) { "Cannot open input device: ${portId.name}, id: ${portId.id}" }
             }
@@ -49,5 +50,6 @@ class KtMidiInputDevice(
 
     override suspend fun close() {
         midiInput?.close()
+        Logger.i { "Ktmidi input port: ${portId.name} closed" }
     }
 }

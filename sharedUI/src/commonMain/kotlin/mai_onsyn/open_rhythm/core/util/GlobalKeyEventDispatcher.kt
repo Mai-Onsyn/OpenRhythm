@@ -1,4 +1,4 @@
-package mai_onsyn.open_rhythm.core
+package mai_onsyn.open_rhythm.core.util
 
 import androidx.compose.ui.input.key.KeyEvent
 import kotlinx.coroutines.CoroutineScope
@@ -7,9 +7,12 @@ import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.launch
 
+/**
+ * AI生成
+ */
 class GlobalKeyEventDispatcher(
     private val scope: CoroutineScope = CoroutineScope(Dispatchers.Default),
-    private val capacity: Int = Channel.BUFFERED
+    capacity: Int = Channel.BUFFERED
 ) {
     // 事件通道
     private val eventChannel = Channel<KeyEvent>(capacity, BufferOverflow.DROP_OLDEST)

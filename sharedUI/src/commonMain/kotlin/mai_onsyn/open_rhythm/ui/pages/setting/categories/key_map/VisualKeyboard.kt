@@ -22,7 +22,7 @@ import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.min
 import androidx.compose.ui.unit.times
-import mai_onsyn.open_rhythm.core.GlobalKeyEventDispatcher
+import mai_onsyn.open_rhythm.core.util.GlobalKeyEventDispatcher
 import mai_onsyn.open_rhythm.ui.modules.ProportionalPane
 import mai_onsyn.open_rhythm.ui.modules.ProportionalPaneScope
 

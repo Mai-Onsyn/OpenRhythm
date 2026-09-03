@@ -5,7 +5,6 @@ import android.content.Intent
 import androidx.activity.ComponentActivity
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.core.net.toUri
-import co.touchlab.kermit.Logger
 import com.russhwolf.settings.Settings
 import com.russhwolf.settings.SharedPreferencesSettings
 import dev.atsushieno.ktmidi.AndroidMidiAccess
@@ -17,7 +16,7 @@ import io.github.vinceglb.filekit.dialogs.init
 import io.github.vinceglb.filekit.dialogs.openDirectoryPicker
 import io.github.vinceglb.filekit.dialogs.openFilePicker
 import io.github.vinceglb.filekit.path
-import mai_onsyn.open_rhythm.core.GlobalKeyEventDispatcher
+import mai_onsyn.open_rhythm.core.util.GlobalKeyEventDispatcher
 
 internal lateinit var appContext: Context
 

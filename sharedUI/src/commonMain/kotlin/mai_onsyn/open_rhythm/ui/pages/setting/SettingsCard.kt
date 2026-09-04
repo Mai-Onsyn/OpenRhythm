@@ -21,6 +21,8 @@ import androidx.compose.ui.unit.dp
 import mai_onsyn.open_rhythm.ui.icons.ic_arrow_drop_down
 import mai_onsyn.open_rhythm.ui.modules.ContextDropDownMenuItem
 import mai_onsyn.open_rhythm.ui.modules.ContextDropdownMenu
+import mai_onsyn.open_rhythm.ui.utility.str
+import openrhythm.sharedui.generated.resources.*
 
 class SettingsCardScope(
     private val showDivider: Boolean = true
@@ -197,7 +199,7 @@ class SettingsCardScope(
                     border = BorderStroke(0.25.dp, MaterialTheme.colorScheme.outlineVariant)
                 ) {
                     Text(
-                        text = dropDownItems.getOrNull(value)?.label ?: "Error",
+                        text = dropDownItems.getOrNull(value)?.label ?: str(Res.string.set_itemLabelError),
                         style = MaterialTheme.typography.bodyMedium
                     )
                 }

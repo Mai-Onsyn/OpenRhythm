@@ -4,7 +4,9 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.LocalMinimumInteractiveComponentSize
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Typography
 import androidx.compose.runtime.*
 import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.unit.dp
@@ -107,7 +109,30 @@ internal fun AppTheme(
             seedColor = Global.settings.PrimarySeedColor,
             isDark = isDark,
             style = if (isDark) PaletteStyle.Content else PaletteStyle.TonalSpot,
-            animate = true
+            animate = true,
+//            typography = Typography().run {
+//                copy(
+//                    displayLarge = displayLarge.copy(fontFamily = AppFontFamily),
+//                    displayMedium = displayMedium.copy(fontFamily = AppFontFamily),
+//                    displaySmall = displaySmall.copy(fontFamily = AppFontFamily),
+//
+//                    headlineLarge = headlineLarge.copy(fontFamily = AppFontFamily),
+//                    headlineMedium = headlineMedium.copy(fontFamily = AppFontFamily),
+//                    headlineSmall = headlineSmall.copy(fontFamily = AppFontFamily),
+//
+//                    titleLarge = titleLarge.copy(fontFamily = AppFontFamily),
+//                    titleMedium = titleMedium.copy(fontFamily = AppFontFamily),
+//                    titleSmall = titleSmall.copy(fontFamily = AppFontFamily),
+//
+//                    bodyLarge = bodyLarge.copy(fontFamily = AppFontFamily),
+//                    bodyMedium = bodyMedium.copy(fontFamily = AppFontFamily),
+//                    bodySmall = bodySmall.copy(fontFamily = AppFontFamily),
+//
+//                    labelLarge = labelLarge.copy(fontFamily = AppFontFamily),
+//                    labelMedium = labelMedium.copy(fontFamily = AppFontFamily),
+//                    labelSmall = labelSmall.copy(fontFamily = AppFontFamily),
+//                )
+//            }
         ) {
             RootPopupHost {
                 Surface(content = content)

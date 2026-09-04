@@ -10,6 +10,8 @@ import mai_onsyn.open_rhythm.ui.pages.setting.categories.key_map.KeyMappingSetti
 import mai_onsyn.open_rhythm.ui.pages.setting.categories.keyboard.KeyboardSettings
 import mai_onsyn.open_rhythm.ui.pages.setting.categories.midi.MidiSettings
 import mai_onsyn.open_rhythm.ui.pages.setting.categories.waterfall.WaterfallSettings
+import mai_onsyn.open_rhythm.ui.utility.str
+import openrhythm.sharedui.generated.resources.*
 
 enum class SettingsContent(
     val id: Int,
@@ -26,4 +28,16 @@ enum class SettingsContent(
     KEYBOARD(600, "Keyboard", ic_piano, ::KeyboardSettings),
     ADVANCE(700, "Advanced", ic_plumbing, ::AdvancedSettings),
     ABOUT(800, "About", ic_info, ::About)
+}
+
+@Composable
+fun SettingsContent.navText(): String = when (this) {
+    SettingsContent.GUIDE -> str(Res.string.set_cat_guide)
+    SettingsContent.GENERAL -> str(Res.string.set_cat_general)
+    SettingsContent.MIDI -> str(Res.string.set_cat_midi)
+    SettingsContent.KEY_MAP -> str(Res.string.set_cat_keyMapping)
+    SettingsContent.WATERFALL -> str(Res.string.set_cat_waterfall)
+    SettingsContent.KEYBOARD -> str(Res.string.set_cat_keyboard)
+    SettingsContent.ADVANCE -> str(Res.string.set_cat_advanced)
+    SettingsContent.ABOUT -> str(Res.string.set_cat_about)
 }

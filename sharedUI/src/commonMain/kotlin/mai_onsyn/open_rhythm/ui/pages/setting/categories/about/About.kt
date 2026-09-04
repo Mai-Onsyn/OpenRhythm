@@ -18,8 +18,8 @@ import com.mikepenz.aboutlibraries.ui.compose.m3.LibrariesContainer
 import com.mikepenz.aboutlibraries.ui.compose.produceLibraries
 import mai_onsyn.open_rhythm.ui.icons.ic_arrow_back
 import mai_onsyn.open_rhythm.ui.icons.ic_open_in_new
-import openrhythm.sharedui.generated.resources.Res
-import openrhythm.sharedui.generated.resources.round_256x
+import mai_onsyn.open_rhythm.ui.utility.str
+import openrhythm.sharedui.generated.resources.*
 import org.jetbrains.compose.resources.painterResource
 
 @Composable
@@ -52,14 +52,14 @@ private fun BoxScope.AboutMainScreen(onEnter: (Int) -> Unit) {
             modifier = Modifier.align(Alignment.CenterHorizontally).padding(top = 8.dp)
         )
         HorizontalDivider(Modifier.width(500.dp).padding(top = 16.dp))
-        ListItem("Open Source License") {
+        ListItem(str(Res.string.set_about_openSourceLicense)) {
             Text(
                 text = "GPL-3.0",
                 style = MaterialTheme.typography.labelMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
-        ListItem("Third-Party Library List", { onEnter(1) }) {
+        ListItem(str(Res.string.set_about_thirdPartyLibraryList), { onEnter(1) }) {
             Icon(
                 imageVector = ic_arrow_back,
                 contentDescription = "forward",
@@ -69,7 +69,7 @@ private fun BoxScope.AboutMainScreen(onEnter: (Int) -> Unit) {
             )
         }
         val uriHandler = LocalUriHandler.current
-        ListItem("Repository Homepage", {
+        ListItem(str(Res.string.set_about_repositoryHomepage), {
             uriHandler.openUri("https://github.com/Mai-Onsyn/OpenRhythm")
             Logger.i { "Jumped url: https://github.com/Mai-Onsyn/OpenRhythm" }
         }) {

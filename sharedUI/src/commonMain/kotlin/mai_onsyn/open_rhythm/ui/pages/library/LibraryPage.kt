@@ -32,8 +32,8 @@ import mai_onsyn.open_rhythm.ui.icons.ic_refresh
 import mai_onsyn.open_rhythm.ui.modules.OpacitySurface
 import mai_onsyn.open_rhythm.ui.modules.dialog.ConfirmDialog
 import mai_onsyn.open_rhythm.ui.modules.dialog.SingleLineInputDialog
+import mai_onsyn.open_rhythm.ui.utility.str
 import openrhythm.sharedui.generated.resources.*
-import org.jetbrains.compose.resources.stringResource
 import kotlin.math.min
 
 @OptIn(ExperimentalComposeUiApi::class)
@@ -71,7 +71,7 @@ fun LibraryPage(
             }
             Spacer(Modifier.width(4.dp))
             Text(
-                text = stringResource(Res.string.library_content_title),
+                text = str(Res.string.lib_titleMidiLibrary),
                 style = MaterialTheme.typography.headlineMedium
             )
             Spacer(Modifier.weight(1f))
@@ -110,7 +110,7 @@ fun LibraryPage(
                         modifier = Modifier.size(24.dp)
                     )
                     Text(
-                        text = stringResource(Res.string.library_content_addFolder),
+                        text = str(Res.string.lib_addFolder),
                         style = MaterialTheme.typography.labelLarge
                     )
                 }
@@ -119,7 +119,7 @@ fun LibraryPage(
                 visible = showNewFolderPopup,
                 value = newFolderName,
                 onDismissRequest = { showNewFolderPopup = false },
-                title = stringResource(Res.string.library_popup_addFolder_title),
+                title = str(Res.string.lib_nameNewFolder),
                 onConfirm = {
                     newFolderName = it
                     Global.settings.libraryFolderList.add(UILibraryFolder(newFolderName, newFolderDir))
@@ -131,9 +131,9 @@ fun LibraryPage(
             ConfirmDialog(
                 visible = showNewFolderExistedPopup,
                 onDismissRequest = { showNewFolderExistedPopup = false },
-                title = stringResource(Res.string.universal_error),
+                title = str(Res.string.lib_error),
                 onConfirm = { showNewFolderExistedPopup = false },
-                message = stringResource(Res.string.library_popup_addFolder_addedMessage, newFolderDir)
+                message = str(Res.string.lib_folderAlreadyAdded, newFolderDir)
             )
         }
         HorizontalDivider(Modifier.padding(vertical = 16.dp))
@@ -220,7 +220,7 @@ private fun FolderRail(
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             Text(
-                text = "Library folders",
+                text = str(Res.string.lib_titleLibraryFolders),
                 style = MaterialTheme.typography.titleMedium
             )
 
@@ -256,7 +256,7 @@ private fun FolderRail(
                         modifier = Modifier.size(20.dp).rotate(refreshRotateAnimated)
                     )
                     Text(
-                        text = "Refresh",
+                        text = str(Res.string.lib_refresh),
                         style = MaterialTheme.typography.labelMedium,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
@@ -304,7 +304,7 @@ private fun FileRail(
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             Text(
-                text = "Midi files",
+                text = str(Res.string.lib_filesTitleMidiFiles),
                 style = MaterialTheme.typography.titleMedium
             )
 

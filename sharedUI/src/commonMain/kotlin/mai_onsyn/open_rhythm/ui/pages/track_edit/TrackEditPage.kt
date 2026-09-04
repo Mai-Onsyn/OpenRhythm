@@ -19,6 +19,8 @@ import mai_onsyn.open_rhythm.ui.icons.ic_music_note
 import mai_onsyn.open_rhythm.ui.icons.ic_refresh
 import mai_onsyn.open_rhythm.ui.modules.OpacitySurface
 import mai_onsyn.open_rhythm.ui.modules.dialog.ConfirmDialog
+import mai_onsyn.open_rhythm.ui.utility.str
+import openrhythm.sharedui.generated.resources.*
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
@@ -30,7 +32,7 @@ fun TrackEditPage(
     BackHandler { onBack() }
     if (midi == null) Box(Modifier.fillMaxSize()) {
         Text(
-            text = "Loading MIDI...",
+            text = str(Res.string.track_loadingMidi),
             fontWeight = FontWeight.Bold,
             style = MaterialTheme.typography.titleLarge,
             modifier = Modifier.align(Alignment.Center)
@@ -60,7 +62,7 @@ fun TrackEditPage(
                 }
                 Spacer(Modifier.width(4.dp))
                 Text(
-                    text = "Tracks",
+                    text = str(Res.string.track_pageTitle),
                     style = MaterialTheme.typography.headlineMedium
                 )
 
@@ -104,7 +106,7 @@ fun TrackEditPage(
                             modifier = Modifier.size(20.dp)
                         )
                         Text(
-                            text = "Reset",
+                            text = str(Res.string.track_reset),
                             style = MaterialTheme.typography.labelLarge
                         )
                     }
@@ -118,8 +120,8 @@ fun TrackEditPage(
                         Global.settings.midiFileSettings.remove(midiPath)
                         refreshVersion++
                     },
-                    title = "Reset tracks",
-                    message = "Are you sure you want to reset all the MIDI track settings?",
+                    title = str(Res.string.track_resetTitle),
+                    message = str(Res.string.track_resetMessage),
                     isDangerous = true
                 )
             }

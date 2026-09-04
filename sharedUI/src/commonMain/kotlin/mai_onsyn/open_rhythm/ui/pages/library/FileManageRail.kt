@@ -25,7 +25,10 @@ import mai_onsyn.open_rhythm.ui.icons.ic_edit_square
 import mai_onsyn.open_rhythm.ui.icons.ic_music_note
 import mai_onsyn.open_rhythm.ui.modules.*
 import mai_onsyn.open_rhythm.ui.modules.dialog.DialogPopup
+import mai_onsyn.open_rhythm.ui.utility.str
+import openrhythm.sharedui.generated.resources.Res
 import mai_onsyn.open_rhythm.ui.utility.UiState
+import openrhythm.sharedui.generated.resources.*
 
 @Composable
 fun FileManageRail(
@@ -69,7 +72,7 @@ fun FileManageRail(
                     ) {
                         LoadingSpinner(Modifier.size(20.dp), strokeWidth = 4.dp)
                         Text(
-                            text = "Loading... (${Global.fileLoader.loadedFileCount} / ${Global.fileLoader.remandingFileCount})",
+                            text = str(Res.string.lib_loadingMidi, Global.fileLoader.loadedFileCount, Global.fileLoader.remandingFileCount),
                             style = MaterialTheme.typography.bodyLarge
                         )
                     }
@@ -98,7 +101,7 @@ fun FileManageRail(
         is UiState.Error -> {
             Box(modifier = modifier) {
                 Text(
-                    text = "Failed to load midi from $path because ${(uiState as UiState.Error).message}",
+                    text = str(Res.string.lib_loadFailed, path, (uiState as UiState.Error).message),
                     style = MaterialTheme.typography.bodyLarge,
                     modifier = Modifier.align(Alignment.Center)
                 )
@@ -235,7 +238,7 @@ fun FileRailItem(
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Text(
-                        text = if (target.pianoOnly) "Piano" else "Ensemble",
+                        text = if (target.pianoOnly) str(Res.string.lib_modePiano) else str(Res.string.lib_modeEnsemble),
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.primary,
                         fontWeight = FontWeight.Bold,
@@ -360,7 +363,7 @@ private fun DialogContent(
         var selectedMode by remember { mutableStateOf(0) }
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             listOf(
-                "Auto Play", "Full Exercise", "Single Track Exercise"
+                str(Res.string.lib_playModeAuto), str(Res.string.lib_playModeFullExercise), str(Res.string.lib_playModeSingleExercise)
             ).forEachIndexed { index, title ->
                 PlayModeCard(
                     selected = selectedMode == index,
@@ -372,9 +375,9 @@ private fun DialogContent(
 
         Text(
             text = when (selectedMode) {
-                0 -> "Appreciation mode, automatically played by Open Rhythm"
-                1 -> "The next note only plays after you press the current one"
-                2 -> "Like full exercise, but only practice one track in the MIDI"
+                0 -> str(Res.string.lib_playModeAutoDesc)
+                1 -> str(Res.string.lib_playModeFullExerciseDesc)
+                2 -> str(Res.string.lib_playModeSingleExerciseDesc)
                 else -> "No descriptions"
             },
             style = MaterialTheme.typography.labelMedium
@@ -391,10 +394,10 @@ private fun DialogContent(
                     value = targetTrack,
                     onValueChange = { targetTrack = it },
                     range = 0..<data.trackCount,
-                    label = "Track"
+                    label = str(Res.string.lib_trackLabel)
                 )
             }
-            PrimaryOperationButton("Confirm") {
+            PrimaryOperationButton(str(Res.string.common_confirm)) {
                 when (selectedMode) {
                     0 -> onConfirm(MidiPlayMethod(data, MidiPlayMethod.PlayMode.AUTO, -1))
                     1 -> onConfirm(MidiPlayMethod(data, MidiPlayMethod.PlayMode.PRACTICE, -1))
@@ -403,7 +406,7 @@ private fun DialogContent(
                 Logger.i { "Confirm play: mode=${selectedMode}, track=$targetTrack, filename=${data.fileName}" }
                 onCancel()
             }
-            PrimaryOperationButton("Cancel", onCancel)
+            PrimaryOperationButton(str(Res.string.common_cancel), onCancel)
         }
     }
 }

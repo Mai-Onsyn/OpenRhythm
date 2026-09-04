@@ -17,6 +17,8 @@ import mai_onsyn.open_rhythm.bridge.Global
 import mai_onsyn.open_rhythm.core.midi.Midi
 import mai_onsyn.open_rhythm.core.midi.take
 import mai_onsyn.open_rhythm.core.settings.take
+import mai_onsyn.open_rhythm.ui.utility.str
+import openrhythm.sharedui.generated.resources.*
 
 @Composable
 fun TrackTable(
@@ -30,37 +32,37 @@ fun TrackTable(
                 .fillMaxWidth()
                 .height(40.dp),
             header = { Text(
-                text = "Track",
+                text = str(Res.string.track_columnTrack),
                 style = MaterialTheme.typography.labelMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.align(Alignment.CenterStart)
             ) },
             inst = { Text(
-                text = "Instrument",
+                text = str(Res.string.track_columnInstrument),
                 style = MaterialTheme.typography.labelMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.align(Alignment.CenterStart)
             ) },
             preview = { Text(
-                text = "Preview",
+                text = str(Res.string.track_columnPreview),
                 style = MaterialTheme.typography.labelMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.align(Alignment.CenterStart)
             ) },
             color = { Text(
-                text = "Color",
+                text = str(Res.string.track_columnColor),
                 style = MaterialTheme.typography.labelMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.align(Alignment.CenterStart).padding(start = 8.dp)
             ) },
             volume = { Text(
-                text = "Volume",
+                text = str(Res.string.track_columnVolume),
                 style = MaterialTheme.typography.labelMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.align(Alignment.CenterStart)
             ) },
             enable = { Text(
-                text = "Enabled",
+                text = str(Res.string.track_columnEnabled),
                 style = MaterialTheme.typography.labelMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.align(Alignment.CenterStart)

@@ -14,6 +14,10 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import co.touchlab.kermit.Logger
 import mai_onsyn.open_rhythm.ui.modules.PrimaryOperationButton
+import mai_onsyn.open_rhythm.ui.utility.str
+import openrhythm.sharedui.generated.resources.Res
+import openrhythm.sharedui.generated.resources.common_cancel
+import openrhythm.sharedui.generated.resources.common_confirm
 
 @Composable
 fun ConfirmDialog(
@@ -66,11 +70,11 @@ fun ConfirmDialog(
 
                 Spacer(Modifier.height(24.dp))
                 Row(horizontalArrangement = Arrangement.spacedBy(24.dp)) {
-                    PrimaryOperationButton("Confirm") {
+                    PrimaryOperationButton(str(Res.string.common_confirm)) {
                         onConfirm()
                         Logger.i { "Confirmed $title ($message)" }
                     }
-                    if (showCancel) PrimaryOperationButton("Cancel", onDismissRequest)
+                    if (showCancel) PrimaryOperationButton(str(Res.string.common_cancel), onDismissRequest)
                 }
             }
         }

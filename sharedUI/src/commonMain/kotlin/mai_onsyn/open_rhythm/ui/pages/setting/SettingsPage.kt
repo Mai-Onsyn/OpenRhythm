@@ -28,7 +28,9 @@ import mai_onsyn.open_rhythm.core.midi.parseMidi
 import mai_onsyn.open_rhythm.ui.icons.ic_arrow_back
 import mai_onsyn.open_rhythm.ui.pages.play_screen.PlayPage
 import mai_onsyn.open_rhythm.ui.pages.setting.categories.SettingsContent
-import openrhythm.sharedui.generated.resources.Res
+import mai_onsyn.open_rhythm.ui.pages.setting.categories.navText
+import mai_onsyn.open_rhythm.ui.utility.str
+import openrhythm.sharedui.generated.resources.*
 import org.jetbrains.compose.resources.InternalResourceApi
 
 @OptIn(ExperimentalComposeUiApi::class)
@@ -140,9 +142,7 @@ private fun WideNavigation(onBack: () -> Unit, selectedIndex: Int, onSelected: (
         NavigationHeader(onBack)
         Spacer(Modifier.height(24.dp))
 
-        val choices = remember {
-            SettingsContent.entries.takeLast(SettingsContent.entries.size - 1).map { it.displayName to it.icon }
-        }
+        val choices = SettingsContent.entries.takeLast(SettingsContent.entries.size - 1).map { it.navText() to it.icon }
         ChoiceColumn(
             choices = choices,
             selectedIndex = selectedIndex - 1,
@@ -183,7 +183,7 @@ private fun NarrowNavigation(onBack: () -> Unit, onSelected: (index: Int) -> Uni
                         modifier = Modifier.size(24.dp)
                     )
                     Text(
-                        text = settingsContent.displayName,
+                        text = settingsContent.navText(),
                         style = MaterialTheme.typography.bodyLarge
                     )
                 }
@@ -213,7 +213,7 @@ private fun NavigationHeader(onBack: () -> Unit) {
             )
         }
         Text(
-            text = "Settings",
+            text = str(Res.string.set_title),
             style = MaterialTheme.typography.titleLarge,
             fontWeight = FontWeight.Bold,
             modifier = Modifier.align(Alignment.Center)

@@ -21,6 +21,11 @@ import androidx.compose.ui.unit.sp
 import co.touchlab.kermit.Logger
 import com.materialkolor.ktx.toHex
 import mai_onsyn.open_rhythm.ui.modules.dialog.DialogPopup
+import openrhythm.sharedui.generated.resources.Res
+import openrhythm.sharedui.generated.resources.common_cancel
+import openrhythm.sharedui.generated.resources.common_confirm
+import openrhythm.sharedui.generated.resources.common_hexCode
+import org.jetbrains.compose.resources.stringResource
 import kotlin.math.roundToInt
 
 //private fun parseHexToColor(hex: String): Color? {
@@ -221,7 +226,7 @@ fun ColorPicker(
                         }
                     }
                 },
-                label = { Text("HEX Code") },
+                label = { Text(stringResource(Res.string.common_hexCode)) },
                 onConfirm = {
                     parseHexToColor(hexInput)?.let { parsedColor ->
                         hsv = rgbToHsb(parsedColor)
@@ -232,9 +237,9 @@ fun ColorPicker(
                     .width(114.dp)
             )
             Spacer(Modifier.weight(1f))
-            PrimaryOperationButton("Confirm") { onConfirmRequest(currentColor) }
+            PrimaryOperationButton(stringResource(Res.string.common_confirm)) { onConfirmRequest(currentColor) }
             Spacer(Modifier.width(8.dp))
-            PrimaryOperationButton("Cancel", onCancelRequest)
+            PrimaryOperationButton(stringResource(Res.string.common_cancel), onCancelRequest)
         }
     }
 }

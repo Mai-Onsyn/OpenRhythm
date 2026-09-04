@@ -32,6 +32,8 @@ import mai_onsyn.open_rhythm.ui.modules.ContextDropdownMenu
 import mai_onsyn.open_rhythm.ui.modules.OpacitySurface
 import mai_onsyn.open_rhythm.ui.modules.dialog.ConfirmDialog
 import mai_onsyn.open_rhythm.ui.modules.dialog.SingleLineInputDialog
+import mai_onsyn.open_rhythm.ui.utility.str
+import openrhythm.sharedui.generated.resources.*
 import sh.calvin.reorderable.ReorderableCollectionItemScope
 import sh.calvin.reorderable.ReorderableItem
 import sh.calvin.reorderable.rememberReorderableLazyListState
@@ -178,13 +180,14 @@ private fun ReorderableCollectionItemScope.FolderRow(
             var showPathInfoDialog by remember { mutableStateOf(false) }
             var showDeleteConfirmDialog by remember { mutableStateOf(false) }
 
-            val contextMenuItems = remember {
-                listOf(
-                    ContextDropDownMenuItem("Rename", ic_edit_square),
-                    ContextDropDownMenuItem("Show Path", ic_folder_eye),
-                    ContextDropDownMenuItem("Delete", ic_delete, contentColor = colorScheme.error)
-                )
-            }
+            val strRename = str(Res.string.lib_rename)
+            val strShowPath = str(Res.string.lib_showPath)
+            val strDelete = str(Res.string.lib_delete)
+            val contextMenuItems = listOf(
+                ContextDropDownMenuItem(strRename, ic_edit_square),
+                ContextDropDownMenuItem(strShowPath, ic_folder_eye),
+                ContextDropDownMenuItem(strDelete, ic_delete, contentColor = colorScheme.error)
+            )
             var selectedIndex by remember { mutableStateOf(-1) }
             var expanded by remember { mutableStateOf(false) }
             ContextDropdownMenu(
@@ -216,11 +219,11 @@ private fun ReorderableCollectionItemScope.FolderRow(
 
             SingleLineInputDialog(
                 visible = showRenameDialog,
-                title = "Rename",
+                title = str(Res.string.lib_rename),
                 value = item.name,
                 icon = ic_edit_square,
-                placeholderText = "Input a new name",
-                errorHolderText = "Name can't be empty",
+                placeholderText = str(Res.string.lib_renamePlaceholder),
+                errorHolderText = str(Res.string.lib_renameError),
                 onDismissRequest = { showRenameDialog = false },
                 onConfirm = {
                     showRenameDialog = false
@@ -232,7 +235,7 @@ private fun ReorderableCollectionItemScope.FolderRow(
                 visible = showPathInfoDialog,
                 onDismissRequest = { showPathInfoDialog = false },
                 onConfirm = { showPathInfoDialog = false },
-                title = "Path of ${item.name}",
+                title = str(Res.string.lib_pathOf, item.name),
                 message = item.dir
             )
 
@@ -243,9 +246,9 @@ private fun ReorderableCollectionItemScope.FolderRow(
                     showDeleteConfirmDialog = false
                     onDelete()
                 },
-                title = "Delete ${item.name}?",
+                title = str(Res.string.lib_deleteTitle, item.name),
                 isDangerous = true,
-                message = "Are you sure you want to delete this folder? \n(This won't delete the file on your device.)",
+                message = str(Res.string.lib_deleteMessage),
             )
         }
     }

@@ -23,16 +23,18 @@ import mai_onsyn.open_rhythm.ui.modules.PrimaryOperationButton
 import mai_onsyn.open_rhythm.ui.modules.dialog.DialogPopup
 import mai_onsyn.open_rhythm.ui.pages.setting.SettingsCard
 import mai_onsyn.open_rhythm.ui.pages.setting.categories.key_map.toMappingMap
+import mai_onsyn.open_rhythm.ui.utility.str
+import openrhythm.sharedui.generated.resources.*
 
 
 @Composable
 fun MidiInputSettings() {
     SettingsCard(
-        title = "Input",
+        title = str(Res.string.set_midiInputTitle),
         icon = ic_settings_input_svideo,
         modifier = Modifier.widthIn(400.dp, 800.dp)
     ) {
-        item("Input device") {
+        item(str(Res.string.set_midiInputDevice)) {
             var showDialog by remember { mutableStateOf(false) }
             Button(
                 onClick = { showDialog = true },
@@ -40,7 +42,7 @@ fun MidiInputSettings() {
                 modifier = Modifier.pointerHoverIcon(PointerIcon.Hand)
             ) {
                 Text(
-                    "Configure",
+                    str(Res.string.set_midiConfigure),
                     style = MaterialTheme.typography.bodyMedium
                 )
             }
@@ -56,7 +58,7 @@ fun MidiInputSettings() {
                         .widthIn(max = 580.dp)
                 ) {
                     Text(
-                        text = "MIDI Input Device",
+                        text = str(Res.string.set_midiInputDeviceTitle),
                         style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.Bold,
                         modifier = Modifier.align(Alignment.CenterHorizontally)
@@ -126,34 +128,34 @@ fun MidiInputSettings() {
                             scope = coroutineScope,
                             onRefresh = { inputs = Global.midiAccess.inputs.toList() }
                         )
-                        PrimaryOperationButton("Close", { showDialog = false })
+                        PrimaryOperationButton(str(Res.string.set_midiClose), { showDialog = false })
                     }
                 }
             }
         }
 
-        fold("Events Settings") {
+        fold(str(Res.string.set_midiEventsSettingsTitle)) {
             itemWithSwitch(
-                name = "Receive note events",
-                description = "Enable key events input for notes",
+                name = str(Res.string.set_midiReceiveNoteEvents),
+                description = str(Res.string.set_midiNoteEventsDescription),
                 initial = Global.settings.EnableInputMidiNoteEvent,
                 onToggled = { Global.settings.EnableInputMidiNoteEvent = it }
             )
             itemWithSwitch(
-                name = "Receive CC events",
-                description = "Performance control events, like pressing the pedal",
+                name = str(Res.string.set_midiReceiveCCEvents),
+                description = str(Res.string.set_midiCCEventsDescription),
                 initial = Global.settings.EnableInputMidiCCEvent,
                 onToggled = { Global.settings.EnableInputMidiCCEvent = it }
             )
             itemWithSwitch(
-                name = "Receive PC events",
-                description = "Event for controlling instrument changes",
+                name = str(Res.string.set_midiReceivePCEvents),
+                description = str(Res.string.set_midiPCEventsDescription),
                 initial = Global.settings.EnableInputMidiPCEvent,
                 onToggled = { Global.settings.EnableInputMidiPCEvent = it }
             )
             itemWithSwitch(
-                name = "Receive PB events",
-                description = "Dynamically adjust pitch to achieve glissando, vibrato, and other effects",
+                name = str(Res.string.set_midiReceivePBEvents),
+                description = str(Res.string.set_midiPBEventsDescription),
                 initial = Global.settings.EnableInputMidiPBEvent,
                 onToggled = { Global.settings.EnableInputMidiPBEvent = it }
             )

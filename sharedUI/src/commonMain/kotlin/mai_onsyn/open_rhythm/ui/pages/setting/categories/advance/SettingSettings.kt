@@ -19,17 +19,19 @@ import mai_onsyn.open_rhythm.ui.icons.ic_delete
 import mai_onsyn.open_rhythm.ui.icons.ic_reset_wrench
 import mai_onsyn.open_rhythm.ui.modules.dialog.ConfirmDialog
 import mai_onsyn.open_rhythm.ui.pages.setting.SettingsCard
+import mai_onsyn.open_rhythm.ui.utility.str
+import openrhythm.sharedui.generated.resources.*
 
 @Composable
 fun SettingSettings() { // 设置设置的设置
     SettingsCard(
-        title = "Other",
+        title = str(Res.string.set_other_title),
         icon = ic_build_circle,
         modifier = Modifier.widthIn(400.dp, 800.dp)
     ) {
         item(
-            name = "Reset all MIDI file settings",
-            description = "One-time cleanup of all configurations applied to MIDI files, including those for files that are no longer valid"
+            name = str(Res.string.set_other_resetAllMidiFileSettings),
+            description = str(Res.string.set_other_resetAllMidiFileSettings_desc)
         ) {
             var showCleanDialog by remember { mutableStateOf(false) }
             var showCleanedDialog by remember { mutableStateOf(false) }
@@ -45,8 +47,8 @@ fun SettingSettings() { // 设置设置的设置
                     Logger.w { "$configCount File settings has been cleaned" }
                     Global.settings.clearUserMidiFileSettings()
                 },
-                title = "Clean up",
-                message = "Are you sure you want to clear the settings for all $configCount MIDI files?",
+                title = str(Res.string.set_other_cleanUp),
+                message = str(Res.string.set_other_cleanUpConfirm, configCount),
                 isDangerous = true
             )
 
@@ -57,15 +59,15 @@ fun SettingSettings() { // 设置设置的设置
                     configCount = Global.settings.midiFileSettings.size
                 },
                 onConfirm = { showCleanedDialog = false },
-                title = "Result",
-                message = "$configCount File settings has been cleaned"
+                title = str(Res.string.set_log_result),
+                message = str(Res.string.set_other_cleanedMidiFileSettings, configCount)
             )
         }
 
         var resetAllExecuted by remember { mutableStateOf(false) }
         item(
-            "Reset all settings",
-            if (resetAllExecuted) "You need to restart the application to apply this change" else null,
+            str(Res.string.set_other_resetAllSettings),
+            if (resetAllExecuted) str(Res.string.set_other_resetAllSettings_desc) else null,
             descColor = MaterialTheme.colorScheme.error
         ) {
             var showResetAllDialog by remember { mutableStateOf(false) }
@@ -80,8 +82,8 @@ fun SettingSettings() { // 设置设置的设置
                     showResetAllDialog = false
                     Logger.w { "All settings has been reset" }
                 },
-                title = "Reset Settings",
-                message = "Are you sure you want to reset all settings? \n(This might never be recoverable!)",
+                title = str(Res.string.set_other_resetSettingsTitle),
+                message = str(Res.string.set_other_resetSettingsConfirm),
                 isDangerous = true
             )
         }

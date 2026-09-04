@@ -21,22 +21,24 @@ import mai_onsyn.open_rhythm.ui.icons.ic_ios_share
 import mai_onsyn.open_rhythm.ui.modules.CompactOutlinedTextField
 import mai_onsyn.open_rhythm.ui.modules.dialog.ConfirmDialog
 import mai_onsyn.open_rhythm.ui.pages.setting.SettingsCard
+import mai_onsyn.open_rhythm.ui.utility.str
+import openrhythm.sharedui.generated.resources.*
 
 @Composable
 fun LogSettings() {
     SettingsCard(
-        title = "Log",
+        title = str(Res.string.set_log_title),
         icon = ic_assignment,
         modifier = Modifier.widthIn(400.dp, 800.dp)
     ) {
         itemWithDropDownMenu(
-            name = "Log level",
+            name = str(Res.string.set_log_level),
             initial = Global.settings.LogLevel,
             onSelected = { Global.settings.LogLevel = it },
             items = listOf("Trace", "Debug", "Info", "Warn", "Error", "Fatal")
         )
 
-        item("Log limit", "The current log limit, doesn't affect the logs that have already been output") {
+        item(str(Res.string.set_log_limit), str(Res.string.set_log_limit_desc)) {
             CompactOutlinedTextField(
                 modifier = Modifier.size(80.dp, 40.dp),
                 value = Global.settings.MaxLogCount,
@@ -46,19 +48,20 @@ fun LogSettings() {
 
         val scope = rememberCoroutineScope()
         var showResultDialog by remember { mutableStateOf(false) }
-        var dialogMessage by remember { mutableStateOf("") }
-        item("Export logs") {
+        var exportSuccess by remember { mutableStateOf<Pair<Int, String>?>(null) }
+        var exportFailure by remember { mutableStateOf<Pair<String, String>?>(null) }
+        item(str(Res.string.set_log_exportLogs)) {
             Button(
                 onClick = {
                     scope.launch(Dispatchers.IO) {
                         LogManager.export(
                             onCompleted = { file, count ->
                                 showResultDialog = true
-                                dialogMessage = "Successfully exported $count logs to ${file.absolutePath()}"
+                                exportSuccess = count to file.absolutePath()
                             },
                             onFailed = { _, e ->
                                 showResultDialog = true
-                                dialogMessage = "Failed to export logs: ${e::class.simpleName}: ${e.message}"
+                                exportFailure = (e::class.simpleName ?: "null") to (e.message ?: "null")
                             }
                         )
                     }
@@ -74,11 +77,17 @@ fun LogSettings() {
             }
         }
 
+        val dialogMessage = exportSuccess?.let { (count, path) ->
+            str(Res.string.set_log_exportSuccess, count, path)
+        } ?: exportFailure?.let { (exceptionType, exceptionMessage) ->
+            str(Res.string.set_log_exportFailed, exceptionType, exceptionMessage)
+        } ?: ""
+
         ConfirmDialog(
             visible = showResultDialog,
             onDismissRequest = { showResultDialog = false },
             onConfirm = { showResultDialog = false },
-            title = "Result",
+            title = str(Res.string.set_log_result),
             message = dialogMessage
         )
     }

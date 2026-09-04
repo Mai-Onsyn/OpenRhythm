@@ -13,17 +13,19 @@ import mai_onsyn.open_rhythm.ui.icons.ic_page_header
 import mai_onsyn.open_rhythm.ui.modules.ColorSelector
 import mai_onsyn.open_rhythm.ui.pages.setting.ChoiceRow
 import mai_onsyn.open_rhythm.ui.pages.setting.SettingsCard
+import mai_onsyn.open_rhythm.ui.utility.str
+import openrhythm.sharedui.generated.resources.*
 
 @Composable
 fun HeadAppearance() {
     SettingsCard(
-        title = "Head",
+        title = str(Res.string.set_kbd_title_head),
         icon = ic_page_header,
         modifier = Modifier.fillMaxWidth()
     ) {
         itemWithSwitch(
-            name = "Show drag area",
-            description = "Drag this area to adjust the height of midi keyboard",
+            name = str(Res.string.set_kbd_show_drag_area),
+            description = str(Res.string.set_kbd_show_drag_area_desc),
             initial = Global.settings.EnableKeyboardDragArea,
             onToggled = { Global.settings.EnableKeyboardDragArea = it }
         )
@@ -31,13 +33,15 @@ fun HeadAppearance() {
         var showCustomColorSetting by remember { mutableStateOf(Global.settings.KeyboardDragAreaColor.isSpecified) }
         animatedItem(
             visible = Global.settings.EnableKeyboardDragArea,
-            name = "Drag area color"
+            name = str(Res.string.set_kbd_drag_area_color)
         ) {
             var selected by remember { mutableStateOf(if (Global.settings.KeyboardDragAreaColor.isSpecified) 1 else 0) }
+            val themeText = str(Res.string.set_kbd_drag_area_theme)
+            val customText = str(Res.string.set_kbd_drag_area_custom)
             val choices = remember {
                 listOf(
-                    "Theme" to null,
-                    "Custom" to null
+                    themeText to null,
+                    customText to null
                 )
             }
             ChoiceRow(
@@ -61,7 +65,7 @@ fun HeadAppearance() {
 
         animatedItem(
             visible = Global.settings.EnableKeyboardDragArea && showCustomColorSetting,
-            name = "Custom drag area color"
+            name = str(Res.string.set_kbd_custom_drag_area_color)
         ) {
             ColorSelector(
                 enableAlpha = true,
@@ -74,7 +78,7 @@ fun HeadAppearance() {
         }
 
         itemWithSwitch(
-            name = "Draw red split line",
+            name = str(Res.string.set_kbd_draw_red_split_line),
             initial = Global.settings.DrawRedSplitLine,
             onToggled = { Global.settings.DrawRedSplitLine = it }
         )

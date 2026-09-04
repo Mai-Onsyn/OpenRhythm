@@ -22,21 +22,25 @@ import mai_onsyn.open_rhythm.ui.modules.ColorSelector
 import mai_onsyn.open_rhythm.ui.modules.SliderWithSuffix
 import mai_onsyn.open_rhythm.ui.pages.setting.ChoiceRow
 import mai_onsyn.open_rhythm.ui.pages.setting.SettingsCard
+import mai_onsyn.open_rhythm.ui.utility.str
+import openrhythm.sharedui.generated.resources.*
 
 @Composable
 fun WaterfallBackground() {
     SettingsCard(
-        title = "Background",
+        title = str(Res.string.set_waterfall_title),
         icon = ic_wallpaper,
         modifier = Modifier.fillMaxWidth()
     ) {
         var showCustomColorSetting by remember { mutableStateOf(Global.settings.WaterfallBackgroundColor.isSpecified) }
-        item("Color") {
+        item(str(Res.string.set_waterfall_color)) {
             var selected by remember { mutableStateOf(if (Global.settings.WaterfallBackgroundColor.isSpecified) 1 else 0) }
+            val themeText = str(Res.string.set_waterfall_colorTheme)
+            val customText = str(Res.string.set_waterfall_colorCustom)
             val choices = remember {
                 listOf(
-                    "Theme" to null,
-                    "Custom" to null
+                    themeText to null,
+                    customText to null
                 )
             }
             ChoiceRow(
@@ -57,7 +61,7 @@ fun WaterfallBackground() {
             )
         }
 
-        animatedItem(showCustomColorSetting, "Custom Color") {
+        animatedItem(showCustomColorSetting, str(Res.string.set_waterfall_customColor)) {
             ColorSelector(
                 initialColor = Global.settings.CustomWaterfallBackgroundColor,
                 onColorSelected = {
@@ -68,7 +72,7 @@ fun WaterfallBackground() {
         }
 
         var bgImageDir by remember { mutableStateOf(Global.settings.BackgroundImageDir.let { it.ifBlank { null } }) }
-        item("Image", bgImageDir) {
+        item(str(Res.string.set_waterfall_image), bgImageDir) {
             Row {
                 IconButton(
                     onClick ={
@@ -100,7 +104,7 @@ fun WaterfallBackground() {
                     modifier = Modifier.pointerHoverIcon(PointerIcon.Hand)
                 ) {
                     Text(
-                        text = "Select",
+                        text = str(Res.string.set_waterfall_select),
                         style = MaterialTheme.typography.bodyMedium,
                     )
                 }
@@ -108,20 +112,20 @@ fun WaterfallBackground() {
         }
 
         val showBgImageSetting by derivedStateOf { !bgImageDir.isNullOrBlank() }
-        animatedFold(showBgImageSetting, "Image Settings") {
+        animatedFold(showBgImageSetting, str(Res.string.set_waterfall_imageSettings)) {
             itemWithSwitch(
-                name = "Original image size",
-                description = "This can use a lot of memory for big images",  // 这得吃不少内存，先生
+                name = str(Res.string.set_waterfall_imageOriginalSize),
+                description = str(Res.string.set_waterfall_imageOriginalSize_desc),  // 这得吃不少内存，先生
                 initial = Global.settings.OriginalBackgroundImageSize,
                 onToggled = { Global.settings.OriginalBackgroundImageSize = it }
             )
             itemWithSwitch(
-                name = "Expand to keyboard region",
-                description = "It's recommended to use with a semi-transparent keyboard",
+                name = str(Res.string.set_waterfall_imageExpandToKeyboard),
+                description = str(Res.string.set_waterfall_imageExpandToKeyboard_desc),
                 initial = Global.settings.ImageExpandToKeyboard,
                 onToggled = { Global.settings.ImageExpandToKeyboard = it }
             )
-            item("Image opacity", verticalLayout = true) {
+            item(str(Res.string.set_waterfall_imageOpacity), verticalLayout = true) {
                 var value by remember { mutableStateOf((Global.settings.BackgroundImageOpacity * 100).toInt()) }
                 SliderWithSuffix(
                     value = value,
@@ -134,7 +138,7 @@ fun WaterfallBackground() {
                     extraSuffix = "%"
                 )
             }
-            item("Image blur", verticalLayout = true) {
+            item(str(Res.string.set_waterfall_imageBlur), verticalLayout = true) {
                 val valueMappingList = remember {
                     val breakPoints = listOf(
                         0 to 1,
@@ -173,21 +177,21 @@ fun WaterfallBackground() {
             }
         }
 
-        fold("Octave lines") {
+        fold(str(Res.string.set_waterfall_octaveLines)) {
             itemWithSwitch(
-                name = "Enable",
+                name = str(Res.string.set_waterfall_enable),
                 initial = Global.settings.DrawOctaveLines,
                 onToggled = { Global.settings.DrawOctaveLines = it }
             )
 
-            item("Color") {
+            item(str(Res.string.set_waterfall_color)) {
                 ColorSelector(
                     initialColor = Global.settings.OctaveLineColor,
                     onColorSelected = { Global.settings.OctaveLineColor = it }
                 )
             }
 
-            item("Thickness", verticalLayout = true) {
+            item(str(Res.string.set_waterfall_thickness), verticalLayout = true) {
                 var mappedValue by remember { mutableStateOf((Global.settings.OctaveLineThickness * 10).toInt()) }
                 SliderWithSuffix(
                     value = mappedValue,
@@ -203,21 +207,21 @@ fun WaterfallBackground() {
             }
         }
 
-        fold("Section lines") {
+        fold(str(Res.string.set_waterfall_sectionLines)) {
             itemWithSwitch(
-                name = "Enable",
+                name = str(Res.string.set_waterfall_enable),
                 initial = Global.settings.DrawSectionLines,
                 onToggled = { Global.settings.DrawSectionLines = it }
             )
 
-            item("Color") {
+            item(str(Res.string.set_waterfall_color)) {
                 ColorSelector(
                     initialColor = Global.settings.SectionLineColor,
                     onColorSelected = { Global.settings.SectionLineColor = it }
                 )
             }
 
-            item("Thickness", verticalLayout = true) {
+            item(str(Res.string.set_waterfall_thickness), verticalLayout = true) {
                 var mappedValue by remember { mutableStateOf((Global.settings.SectionLineThickness * 10).toInt()) }
                 SliderWithSuffix(
                     value = mappedValue,

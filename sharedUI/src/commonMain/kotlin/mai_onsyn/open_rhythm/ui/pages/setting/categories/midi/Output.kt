@@ -22,6 +22,15 @@ import mai_onsyn.open_rhythm.ui.modules.ContextDropDownMenuItem
 import mai_onsyn.open_rhythm.ui.modules.ContextDropdownMenu
 import mai_onsyn.open_rhythm.ui.modules.dialog.ConfirmDialog
 import mai_onsyn.open_rhythm.ui.pages.setting.SettingsCard
+import mai_onsyn.open_rhythm.ui.utility.str
+import openrhythm.sharedui.generated.resources.*
+
+private data class OpenOutputFailure(
+    val portId: String,
+    val portName: String,
+    val exceptionType: String,
+    val exceptionMessage: String,
+)
 
 
 @Composable
@@ -29,13 +38,13 @@ fun MidiOutputSettings() {
     val colorScheme = MaterialTheme.colorScheme
     var gervillSelected by remember { mutableStateOf(Global.settings.SelectedOutputDeviceName == "Gervill") }
     SettingsCard(
-        title = "Output",
+        title = str(Res.string.set_midiOutputTitle),
         icon = ic_graphic_eq,
         modifier = Modifier.widthIn(400.dp, 800.dp)
     ) {
         val coroutineScope = rememberCoroutineScope()
 
-        item("Output device") {
+        item(str(Res.string.set_midiOutputDevice)) {
             var devices by remember {
                 mutableStateOf(Global.midiAccess.outputs.toList())
             }
@@ -53,7 +62,7 @@ fun MidiOutputSettings() {
 
             var dropDownMenuExpanded by remember { mutableStateOf(false) }
             var showErrorDialog by remember { mutableStateOf(false) }
-            var errorMessage by remember { mutableStateOf("No Message") }
+            var openOutputFailure by remember { mutableStateOf<OpenOutputFailure?>(null) }
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 RefreshDeviceButton(
                     scope = coroutineScope,
@@ -80,7 +89,12 @@ fun MidiOutputSettings() {
                             } catch (e: Exception) {
                                 Logger.e(e) { "Cannot open output port ${devices[it].id}: ${devices[it].name}" }
                                 showErrorDialog = true
-                                errorMessage = "Cannot open output: ${devices[it].id}(${devices[it].name ?: UNKNOWN_DEVICE}) because: ${e::class.simpleName}: ${e.message}"
+                                openOutputFailure = OpenOutputFailure(
+                                    devices[it].id,
+                                    devices[it].name ?: UNKNOWN_DEVICE,
+                                    e::class.simpleName ?: "null",
+                                    e.message ?: "null"
+                                )
                             }
                         }
                     },
@@ -102,11 +116,14 @@ fun MidiOutputSettings() {
                 }
             }
 
+            val outputErrorMessage = openOutputFailure?.let { f ->
+                str(Res.string.set_midiCannotOpenOutput, f.portId, f.portName, f.exceptionType, f.exceptionMessage)
+            } ?: ""
             ConfirmDialog(
                 visible = showErrorDialog,
                 onDismissRequest = { showErrorDialog = false },
-                title = "Error",
-                message = errorMessage,
+                title = str(Res.string.set_midiErrorTitle),
+                message = outputErrorMessage,
                 isDangerous = true,
                 showCancel = false,
                 onConfirm = { showErrorDialog = false },
@@ -115,8 +132,8 @@ fun MidiOutputSettings() {
 
         animatedItem(
             visible = gervillSelected,
-            name = "SF2 path",
-            description = "Set the SF2 file to replace the default Gervill soundfont (Press Enter to load)"
+            name = str(Res.string.set_midiSF2Path),
+            description = str(Res.string.set_midiSF2PathDescription)
         ) {
             CompactOutlinedTextField(
                 modifier = Modifier
@@ -137,10 +154,10 @@ fun MidiOutputSettings() {
             )
         }
 
-        fold("Events Settings") {
+        fold(str(Res.string.set_midiEventsSettingsTitle)) {
             itemWithSwitch(
-                name = "Send note events",
-                description = "Enable key events input for notes",
+                name = str(Res.string.set_midiSendNoteEvents),
+                description = str(Res.string.set_midiNoteEventsDescription),
                 initial = Global.settings.EnableOutputMidiNoteEvent,
                 onToggled = {
                     Global.settings.EnableOutputMidiNoteEvent = it
@@ -148,8 +165,8 @@ fun MidiOutputSettings() {
                 }
             )
             itemWithSwitch(
-                name = "Send CC events",
-                description = "Performance control events, like pressing the pedal",
+                name = str(Res.string.set_midiSendCCEvents),
+                description = str(Res.string.set_midiCCEventsDescription),
                 initial = Global.settings.EnableOutputMidiCCEvent,
                 onToggled = {
                     Global.settings.EnableOutputMidiCCEvent = it
@@ -157,8 +174,8 @@ fun MidiOutputSettings() {
                 }
             )
             itemWithSwitch(
-                name = "Send PC events",
-                description = "Event for controlling instrument changes",
+                name = str(Res.string.set_midiSendPCEvents),
+                description = str(Res.string.set_midiPCEventsDescription),
                 initial = Global.settings.EnableOutputMidiPCEvent,
                 onToggled = {
                     Global.settings.EnableOutputMidiPCEvent = it
@@ -166,8 +183,8 @@ fun MidiOutputSettings() {
                 }
             )
             itemWithSwitch(
-                name = "Send PB events",
-                description = "Dynamically adjust pitch to achieve glissando, vibrato, and other effects",
+                name = str(Res.string.set_midiSendPBEvents),
+                description = str(Res.string.set_midiPBEventsDescription),
                 initial = Global.settings.EnableOutputMidiPBEvent,
                 onToggled = {
                     Global.settings.EnableOutputMidiPBEvent = it

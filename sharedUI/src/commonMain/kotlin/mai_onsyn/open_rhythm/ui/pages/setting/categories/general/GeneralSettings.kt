@@ -22,6 +22,8 @@ import mai_onsyn.open_rhythm.ui.modules.getContrastTextColor
 import mai_onsyn.open_rhythm.ui.pages.setting.ChoiceRow
 import mai_onsyn.open_rhythm.ui.pages.setting.SettingsCard
 import mai_onsyn.open_rhythm.ui.utility.orderLocale
+import mai_onsyn.open_rhythm.ui.utility.str
+import openrhythm.sharedui.generated.resources.*
 
 @Composable
 fun GeneralSettings() {
@@ -43,12 +45,12 @@ fun GeneralSettings() {
 @Composable
 private fun AppearanceSettings() {
     SettingsCard(
-        title = "Appearance",
+        title = str(Res.string.set_general_titleAppearance),
         icon = ic_palette,
         modifier = Modifier
             .widthIn(400.dp, 800.dp)
     ) {
-        item("Theme") {
+        item(str(Res.string.set_general_theme)) {
             var selected by remember { mutableStateOf(Global.settings.DarkMode) }
             val choices = remember {
                 listOf(
@@ -72,7 +74,7 @@ private fun AppearanceSettings() {
             )
         }
 
-        item("Primary Color") {
+        item(str(Res.string.set_general_primaryColor)) {
             val colors = remember {
                 listOf(
                     Color(0xFF485F84),
@@ -164,7 +166,7 @@ private fun AppearanceSettings() {
         }
 
         itemWithDropDownMenu(
-            name = "Language",
+            name = str(Res.string.set_general_language),
             initial = Global.settings.Language,
             onSelected = {
                 Global.settings.Language = it
@@ -175,14 +177,14 @@ private fun AppearanceSettings() {
         )
 
         itemWithSwitch(
-            name = "Status bar shadow",
-            description = "Turn off to get a perfectly hidden status bar",
+            name = str(Res.string.set_general_statusBarShadow),
+            description = str(Res.string.set_general_statusBarShadow_desc),
             initial = Global.settings.StatusBarShadow,
             onToggled = { Global.settings.StatusBarShadow = it }
         )
 
         itemWithSwitch(
-            name = "Show MIDI device infos in Home",
+            name = str(Res.string.set_general_showMidiDeviceInfos),
             initial = Global.settings.ShowMidiDeviceInfoInHome,
             onToggled = { Global.settings.ShowMidiDeviceInfoInHome = it }
         )
@@ -192,37 +194,42 @@ private fun AppearanceSettings() {
 @Composable
 private fun InteractionSettings() {
     SettingsCard(
-        title = "Interaction",
+        title = str(Res.string.set_general_titleInteraction),
         icon = ic_arrow_selector_tool,
         modifier = Modifier.widthIn(400.dp, 800.dp)
     ) {
         itemWithDropDownMenu(
-            name = "Screen rotation",
-            description = "Not valid on desktop, for mobile, set the screen orientation",
+            name = str(Res.string.set_general_screenRotation),
+            description = str(Res.string.set_general_screenRotation_desc),
             initial = Global.settings.MobileScreenOrientation,
             onSelected = { Global.settings.MobileScreenOrientation = it },
-            items = listOf("Portrait", "Landscape", "Free", "System"),
+            items = listOf(
+                str(Res.string.set_general_orientationPortrait),
+                str(Res.string.set_general_orientationLandscape),
+                str(Res.string.set_general_orientationFree),
+                str(Res.string.set_general_orientationSystem)
+            ),
             fixedWidth = 120.dp
         )
         itemWithSwitch(
-            name = "Double tap to play/pause",
-            description = "This is pretty easy to trigger by accident",
+            name = str(Res.string.set_general_doubleTapToPlayPause),
+            description = str(Res.string.set_general_doubleTapToPlayPause_desc),
             initial = Global.settings.DoubleClickToPlayPause,
             onToggled = { Global.settings.DoubleClickToPlayPause = it }
         )
         itemWithSwitch(
-            name = "Tap with two fingers to play/pause",
-            description = "This might be tricky to handle",
+            name = str(Res.string.set_general_twoFingerTapToPlayPause),
+            description = str(Res.string.set_general_twoFingerTapToPlayPause_desc),
             initial = Global.settings.DoubleFingerTapToPlayPause,
             onToggled = { Global.settings.DoubleFingerTapToPlayPause = it }
         )
         itemWithSwitch(
-            name = "Play automatically",
-            description = "Automatically start playing when entering the MIDI waterfall page",
+            name = str(Res.string.set_general_autoPlay),
+            description = str(Res.string.set_general_autoPlay_desc),
             initial = Global.settings.AutoStartPlayback,
             onToggled = { Global.settings.AutoStartPlayback = it }
         )
-        item("Playback start distance", "Distance to the first note when entering the waterfall page (unit: quarter note)") {
+        item(str(Res.string.set_general_playbackStartDistance), str(Res.string.set_general_playbackStartDistance_desc)) {
             NumberSpinner(
                 value = Global.settings.PlaybackStartDistance,
                 onValueChange = { Global.settings.PlaybackStartDistance = it },
@@ -235,13 +242,13 @@ private fun InteractionSettings() {
 @Composable
 fun SecuritySettings() {
     SettingsCard(
-        title = "Security",
+        title = str(Res.string.set_general_titleSecurity),
         icon = ic_security,
         modifier = Modifier.widthIn(400.dp, 800.dp)
     ) {
         itemWithSwitch(
-            name = "Show folder path in Library",
-            description = "Control the path display under each Folder on the left side of the Library Page",
+            name = str(Res.string.set_general_showFolderPathInLibrary),
+            description = str(Res.string.set_general_showFolderPathInLibrary_desc),
             initial = Global.settings.ShowFolderPathInLibrary,
             onToggled = { Global.settings.ShowFolderPathInLibrary = it }
         )

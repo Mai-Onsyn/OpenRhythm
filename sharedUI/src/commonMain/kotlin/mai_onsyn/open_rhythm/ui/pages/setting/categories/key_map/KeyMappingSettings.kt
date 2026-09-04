@@ -15,6 +15,8 @@ import mai_onsyn.open_rhythm.bridge.Global
 import mai_onsyn.open_rhythm.core.midi.device.KeyboardVirtualMidiInputDevice
 import mai_onsyn.open_rhythm.ui.modules.midi_flow.AppDefaultMidiKeyboard
 import mai_onsyn.open_rhythm.ui.utility.BindInputDeviceEvents
+import mai_onsyn.open_rhythm.ui.utility.str
+import openrhythm.sharedui.generated.resources.*
 
 @Composable
 fun KeyMappingSettings() {
@@ -25,13 +27,13 @@ fun KeyMappingSettings() {
     ) {
         Row {
             Text(
-                text = "Tip: ",
+                text = str(Res.string.set_keymap_tip_label),
                 color = MaterialTheme.colorScheme.primary,
                 style = MaterialTheme.typography.bodyMedium,
                 fontWeight = FontWeight.Bold
             )
             Text(
-                text = "Click a keyboard key with the mouse to select it, click again to deselect it; while selected, click a MIDI keyboard key to bind it to the current keyboard key",
+                text = str(Res.string.set_keymap_tip_content),
                 style = MaterialTheme.typography.bodyMedium
             )
         }

@@ -10,25 +10,27 @@ import mai_onsyn.open_rhythm.ui.modules.ColorSelector
 import mai_onsyn.open_rhythm.ui.modules.LabeledSliderWithPrefixSuffix
 import mai_onsyn.open_rhythm.ui.modules.SliderWithSuffix
 import mai_onsyn.open_rhythm.ui.pages.setting.SettingsCard
+import mai_onsyn.open_rhythm.ui.utility.str
+import openrhythm.sharedui.generated.resources.*
 
 @Composable
 fun Body() {
     SettingsCard(
-        title = "Body",
+        title = str(Res.string.set_kbd_title_body),
         icon = ic_piano,
         modifier = Modifier.fillMaxWidth()
     ) {
         itemWithSwitch(
-            name = "Auto aspect ratio",
-            description = "Auto adjust the aspect ratio when the window size changed",
+            name = str(Res.string.set_kbd_auto_aspect_ratio),
+            description = str(Res.string.set_kbd_auto_aspect_ratio_desc),
             initial = Global.settings.KeyboardAutoAspect,
             onToggled = { Global.settings.KeyboardAutoAspect = it }
         )
 
         animatedItem(
             visible = Global.settings.KeyboardAutoAspect,
-            name = "Aspect ratio",
-            description = "The keyboard aspect ratio for auto aspect",
+            name = str(Res.string.set_kbd_aspect_ratio),
+            description = str(Res.string.set_kbd_aspect_ratio_desc),
             verticalLayout = true
         ) {
             var aspectRatio by remember { mutableStateOf(Global.settings.KeyboardAspectRatio.toInt()) }
@@ -43,7 +45,7 @@ fun Body() {
             )
         }
 
-        item("White key color") {
+        item(str(Res.string.set_kbd_white_key_color)) {
             ColorSelector(
                 enableAlpha = true,
                 initialColor = Global.settings.WhiteKeyColor,
@@ -51,7 +53,7 @@ fun Body() {
             )
         }
 
-        item("Black key color") {
+        item(str(Res.string.set_kbd_black_key_color)) {
             ColorSelector(
                 enableAlpha = true,
                 initialColor = Global.settings.BlackKeyColor,
@@ -60,14 +62,14 @@ fun Body() {
         }
 
         itemWithDropDownMenu(
-            name = "Overlay labels",
-            description = "The append text to show the pitch of key",
+            name = str(Res.string.set_kbd_overlay_labels),
+            description = str(Res.string.set_kbd_overlay_labels_desc),
             initial = Global.settings.OverlayLabelsMode,
             onSelected = { Global.settings.OverlayLabelsMode = it },
             items = listOf("None", "Major", "White", "All")
         )
 
-        item("Default pitch range", verticalLayout = true) {
+        item(str(Res.string.set_kbd_default_pitch_range), verticalLayout = true) {
             LabeledSliderWithPrefixSuffix(
                 lValue = Global.settings.MinPitch,
                 rValue = Global.settings.MaxPitch,

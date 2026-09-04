@@ -7,26 +7,28 @@ import mai_onsyn.open_rhythm.bridge.Global
 import mai_onsyn.open_rhythm.ui.icons.ic_music_note
 import mai_onsyn.open_rhythm.ui.modules.SliderWithSuffix
 import mai_onsyn.open_rhythm.ui.pages.setting.SettingsCard
+import mai_onsyn.open_rhythm.ui.utility.str
+import openrhythm.sharedui.generated.resources.*
 import kotlin.math.roundToInt
 
 @Composable
 fun NoteAppearance() {
     SettingsCard(
-        title = "Note",
+        title = str(Res.string.set_note_title),
         icon = ic_music_note,
         modifier = Modifier.fillMaxWidth()
     ) {
         itemWithSwitch(
-            name = "Draw pitch labels",
+            name = str(Res.string.set_note_drawPitchLabels),
             initial = Global.settings.DrawPitchLabels,
             onToggled = { Global.settings.DrawPitchLabels = it }
         )
         itemWithSwitch(
-            name = "Draw note shadow",
+            name = str(Res.string.set_note_drawShadow),
             initial = Global.settings.DrawNoteShadow,
             onToggled = { Global.settings.DrawNoteShadow = it }
         )
-        item("Opacity", verticalLayout = true) {
+        item(str(Res.string.set_note_opacity), verticalLayout = true) {
             var opacity by remember { mutableStateOf((Global.settings.NoteOpacity * 100).roundToInt()) }
             SliderWithSuffix(
                 value = opacity,
@@ -41,12 +43,12 @@ fun NoteAppearance() {
         }
         animatedSwitch(
             visible = Global.settings.NoteOpacity < 1f,
-            name = "Apply opacity to keyboard",
-            description = "Make the notes that light up on the keyboard have the same opacity",
+            name = str(Res.string.set_note_opacityToKeyboard),
+            description = str(Res.string.set_note_opacityToKeyboard_desc),
             initial = Global.settings.OpacityAffectKeyboard,
             onToggled = { Global.settings.OpacityAffectKeyboard = it }
         )
-        item("Round coner percent", verticalLayout = true) {
+        item(str(Res.string.set_note_cornerPercent), verticalLayout = true) {
             var value by remember { mutableStateOf((Global.settings.NoteRoundConerPercent * 100).roundToInt()) }
             SliderWithSuffix(
                 value = value,
@@ -59,7 +61,7 @@ fun NoteAppearance() {
                 extraSuffix = "%"
             )
         }
-        item("Quarter note height", verticalLayout = true) {
+        item(str(Res.string.set_note_quarterHeight), verticalLayout = true) {
             var value by remember { mutableStateOf(Global.settings.QuarterNoteDpHeight.roundToInt()) }
             SliderWithSuffix(
                 value = value,
@@ -72,7 +74,7 @@ fun NoteAppearance() {
                 extraSuffix = "dp"
             )
         }
-        item("Minium note duration", verticalLayout = true) {
+        item(str(Res.string.set_note_minDuration), verticalLayout = true) {
             var value by remember { mutableStateOf(Global.settings.BasicNoteMiniumDuration.let { if (it == 31) 8 else it }) }
             SliderWithSuffix(
                 value = value,
@@ -89,7 +91,7 @@ fun NoteAppearance() {
                 }
             )
         }
-        item("Minium drum kit note duration", verticalLayout = true) {
+        item(str(Res.string.set_note_minDrumDuration), verticalLayout = true) {
             var value by remember { mutableStateOf(Global.settings.DrumNoteMiniumDuration.let { if (it == 31) 8 else it }) }
             SliderWithSuffix(
                 value = value,

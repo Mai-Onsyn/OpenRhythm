@@ -14,6 +14,10 @@ import co.touchlab.kermit.Logger
 import kotlinx.coroutines.delay
 import mai_onsyn.open_rhythm.ui.modules.CompactOutlinedTextField
 import mai_onsyn.open_rhythm.ui.modules.PrimaryOperationButton
+import mai_onsyn.open_rhythm.ui.utility.str
+import openrhythm.sharedui.generated.resources.Res
+import openrhythm.sharedui.generated.resources.common_cancel
+import openrhythm.sharedui.generated.resources.common_confirm
 import kotlin.time.Duration.Companion.milliseconds
 
 
@@ -99,13 +103,13 @@ fun SingleLineInputDialog(
 
                 Spacer(Modifier.height(24.dp))
                 Row(horizontalArrangement = Arrangement.spacedBy(24.dp)) {
-                    PrimaryOperationButton("Confirm") {
+                    PrimaryOperationButton(str(Res.string.common_confirm)) {
                         if (inputText.isNotEmpty()) {
                             onConfirm(inputText)
                             Logger.i { "Confirmed dialog input: $inputText" }
                         } else isError = true
                     }
-                    PrimaryOperationButton("Cancel", onDismissRequest)
+                    PrimaryOperationButton(str(Res.string.common_cancel), onDismissRequest)
                 }
             }
         }

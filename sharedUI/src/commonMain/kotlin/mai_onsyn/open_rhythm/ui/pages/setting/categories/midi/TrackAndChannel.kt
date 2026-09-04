@@ -33,6 +33,8 @@ import mai_onsyn.open_rhythm.ui.modules.PrimaryOperationButton
 import mai_onsyn.open_rhythm.ui.modules.dialog.ConfirmDialog
 import mai_onsyn.open_rhythm.ui.modules.dialog.DialogPopup
 import mai_onsyn.open_rhythm.ui.pages.setting.SettingsCard
+import mai_onsyn.open_rhythm.ui.utility.str
+import openrhythm.sharedui.generated.resources.*
 import sh.calvin.reorderable.ReorderableCollectionItemScope
 import sh.calvin.reorderable.ReorderableItem
 import sh.calvin.reorderable.rememberReorderableLazyListState
@@ -41,11 +43,11 @@ import kotlin.uuid.Uuid
 @Composable
 fun TrackAndChannel() {
     SettingsCard(
-        title = "Track and channel",
+        title = str(Res.string.set_midiTrackAndChannelTitle),
         icon = ic_flowchart,
         modifier = Modifier.widthIn(400.dp, 800.dp)
     ) {
-        item("Track default colors") {
+        item(str(Res.string.set_midiTrackDefaultColors)) {
             var showDialog by remember { mutableStateOf(false) }
             Button(
                 onClick = { showDialog = true },
@@ -53,7 +55,7 @@ fun TrackAndChannel() {
                 modifier = Modifier.pointerHoverIcon(PointerIcon.Hand)
             ) {
                 Text(
-                    text = "Configure",
+                    text = str(Res.string.set_midiConfigure),
                     style = MaterialTheme.typography.bodyMedium
                 )
             }
@@ -71,19 +73,25 @@ fun TrackAndChannel() {
                 ) {
                     DefaultTrackColorDialogContent()
                     Spacer(Modifier.height(8.dp))
-                    PrimaryOperationButton("Close") { showDialog = false }
+                    PrimaryOperationButton(str(Res.string.set_midiClose)) { showDialog = false }
                 }
             }
         }
 
-        item("Trigger color", "The color that lights up on the virtual keyboard and rising notes when the mouse or MIDI device is pressed") {
+        item(
+            str(Res.string.set_midiTriggerColor),
+            str(Res.string.set_midiTriggerColorDescription)
+        ) {
             ColorSelector(
                 initialColor = Global.settings.MidiInteractionColor,
                 onColorSelected = { Global.settings.MidiInteractionColor = it }
             )
         }
 
-        item("Trigger channel", "The channel for sending user-generated MIDI events") {
+        item(
+            str(Res.string.set_midiTriggerChannel),
+            str(Res.string.set_midiTriggerChannelDescription)
+        ) {
             NumberSpinner(
                 value = Global.settings.MidiInteractionChannel,
                 onValueChange = {
@@ -98,13 +106,13 @@ fun TrackAndChannel() {
         }
 
         itemWithSwitch(
-            name = "Hidden drum kit by default",
-            description = "The track sent to channel 10 will be invisible by default",
+            name = str(Res.string.set_midiDrumKitHiddenByDefault),
+            description = str(Res.string.set_midiDrumKitHiddenDescription),
             initial = Global.settings.DrumKitHiddenByDefault,
             onToggled = { Global.settings.DrumKitHiddenByDefault = it }
         )
 
-        item("Sort tracks by pitch") {
+        item(str(Res.string.set_midiSortTracksByPitch)) {
             var showWarnDialog by remember { mutableStateOf(false) }
             Switch(
                 checked = Global.settings.SortTracksByPitch,
@@ -120,8 +128,8 @@ fun TrackAndChannel() {
             ConfirmDialog(
                 visible = showWarnDialog,
                 onDismissRequest = { showWarnDialog = false },
-                title = "Warning",
-                message = "This action will delete all MIDI file settings (${Global.settings.midiFileSettings.size} files). Do you want to continue?",
+                title = str(Res.string.set_midiWarningTitle),
+                message = str(Res.string.set_midiSortTracksWarningMessage, Global.settings.midiFileSettings.size),
                 onConfirm = {
                     showWarnDialog = false
                     Global.settings.SortTracksByPitch = !Global.settings.SortTracksByPitch
@@ -252,7 +260,7 @@ private fun ReorderableCollectionItemScope.TrackColorRow(
                 }
                 Spacer(Modifier.width(8.dp))
                 Text(
-                    text = "Track ${order + 1}",
+                    text = str(Res.string.set_midiTrackNumber, order + 1),
                     color = MaterialTheme.colorScheme.primary,
                     style = MaterialTheme.typography.bodyMedium
                 )

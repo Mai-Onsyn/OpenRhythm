@@ -8,17 +8,19 @@ import co.touchlab.kermit.Logger
 import mai_onsyn.open_rhythm.bridge.Global
 import mai_onsyn.open_rhythm.ui.icons.ic_bug_report
 import mai_onsyn.open_rhythm.ui.pages.setting.SettingsCard
+import mai_onsyn.open_rhythm.ui.utility.str
+import openrhythm.sharedui.generated.resources.*
 
 @Composable
 fun DebugSettings() {
     SettingsCard(
-        title = "Debug",
+        title = str(Res.string.set_debug_title),
         icon = ic_bug_report,
         modifier = Modifier.widthIn(400.dp, 800.dp)
     ) {
         itemWithSwitch(
-            name = "Don't parse midi",
-            description = "NOT RECOMMENDED: Only you want the original track",
+            name = str(Res.string.set_debug_dontParseMidi),
+            description = str(Res.string.set_debug_dontParseMidi_desc),
             initial = Global.settings.UseParserV1,
             onToggled = {
                 Global.settings.UseParserV1 = it
@@ -27,34 +29,34 @@ fun DebugSettings() {
             }
         )
 
-        fold("Overlay layer") {
+        fold(str(Res.string.set_debug_overlayLayer)) {
             itemWithSwitch(
-                name = "Show current tick",
-                description = "The MIDI tick position at the bottom boundary of the waterfall",
+                name = str(Res.string.set_debug_showCurrentTick),
+                description = str(Res.string.set_debug_showCurrentTick_desc),
                 initial = Global.settings.ShowCurrentTick,
                 onToggled = { Global.settings.ShowCurrentTick = it }
             )
             itemWithSwitch(
-                name = "Show FPS",
-                description = "Frame per second of midi waterfall",
+                name = str(Res.string.set_debug_showFps),
+                description = str(Res.string.set_debug_showFps_desc),
                 initial = Global.settings.ShowFps,
                 onToggled = { Global.settings.ShowFps = it }
             )
             itemWithSwitch(
-                name = "Show frame time",
-                description = "The interval millisecond time between two waterfall frames",
+                name = str(Res.string.set_debug_showFrameTime),
+                description = str(Res.string.set_debug_showFrameTime_desc),
                 initial = Global.settings.ShowFrameTime,
                 onToggled = { Global.settings.ShowFrameTime = it }
             )
             itemWithSwitch(
-                name = "Show rendering note count",
-                description = "The total number of notes currently rendered on the screen",
+                name = str(Res.string.set_debug_showRenderingNoteCount),
+                description = str(Res.string.set_debug_showRenderingNoteCount_desc),
                 initial = Global.settings.ShowRenderingNoteCount,
                 onToggled = { Global.settings.ShowRenderingNoteCount = it }
             )
             itemWithSwitch(
-                name = "Show active note count",
-                description = "Total number of notes currently active",
+                name = str(Res.string.set_debug_showActiveNoteCount),
+                description = str(Res.string.set_debug_showActiveNoteCount_desc),
                 initial = Global.settings.ShowActiveNoteCount,
                 onToggled = { Global.settings.ShowActiveNoteCount = it }
             )

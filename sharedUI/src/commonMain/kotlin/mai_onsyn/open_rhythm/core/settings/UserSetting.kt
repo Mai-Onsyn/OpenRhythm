@@ -16,6 +16,7 @@ class UserSetting(
     var DarkMode                        by st.observable("DarkMode",                        2)  // 0 = light; 1 = dark; 2 = system default
     var PrimarySeedColor                by st.observable("PrimarySeedColor",                Color(0xFF485F84))
     var UserSpecifiedPrimarySeedColor   by st.observable("UserSpecifiedPrimarySeedColor",   Color(0xFFCD20ED))
+    var Language                        by st.observable("Language",                        -1)
     var StatusBarShadow                 by st.observable("StatusBarShadow",                 true)
     var ShowMidiDeviceInfoInHome        by st.observable("ShowMidiDeviceInfoInHome",        true)
 

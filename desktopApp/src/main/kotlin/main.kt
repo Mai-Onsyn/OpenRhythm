@@ -18,7 +18,7 @@ fun main() = application {
     LogManager.initialize()
     val pressedKey = remember { mutableSetOf<Key>() }
     Window(
-        title = "OpenRhythm",
+        title = "Open Rhythm",
         state = rememberWindowState(width = 800.dp, height = 600.dp),
         onCloseRequest = ::exitApplication,
         icon = painterResource("icons/OpenRhythm.png"),

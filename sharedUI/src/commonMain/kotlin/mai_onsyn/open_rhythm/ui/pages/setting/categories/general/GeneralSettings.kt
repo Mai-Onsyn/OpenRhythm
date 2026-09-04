@@ -13,6 +13,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.unit.dp
+import io.github.sudarshanmhasrup.localina.api.LocaleUpdater
 import mai_onsyn.open_rhythm.bridge.Global
 import mai_onsyn.open_rhythm.ui.icons.*
 import mai_onsyn.open_rhythm.ui.modules.ColorPickerDialog
@@ -20,6 +21,7 @@ import mai_onsyn.open_rhythm.ui.modules.NumberSpinner
 import mai_onsyn.open_rhythm.ui.modules.getContrastTextColor
 import mai_onsyn.open_rhythm.ui.pages.setting.ChoiceRow
 import mai_onsyn.open_rhythm.ui.pages.setting.SettingsCard
+import mai_onsyn.open_rhythm.ui.utility.orderLocale
 
 @Composable
 fun GeneralSettings() {
@@ -160,6 +162,17 @@ private fun AppearanceSettings() {
                 )
             }
         }
+
+        itemWithDropDownMenu(
+            name = "Language",
+            initial = Global.settings.Language,
+            onSelected = {
+                Global.settings.Language = it
+                LocaleUpdater.updateLocale(orderLocale(it))
+            },
+            items = listOf("English", "简体中文"),
+            fixedWidth = 120.dp
+        )
 
         itemWithSwitch(
             name = "Status bar shadow",

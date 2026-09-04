@@ -30,9 +30,9 @@ class KtMidiInputDevice(
                         else MidiEvent.parse(0, data.copyOfRange(start, start + length))
                     eventChannel.trySend(event)
                 }
-                Logger.i { "Opened ktmidi input port: ${portId.name}" }
+//                Logger.i { "Opened ktmidi input port: ${portId.name}" }
             } catch (e: Exception) {
-                Logger.e(e) { "Cannot open input device: ${portId.name}, id: ${portId.id}" }
+                Logger.e(e) { "Cannot open ktmidi input device: ${portId.name}, id: ${portId.id}" }
             }
         }
     }
@@ -50,6 +50,6 @@ class KtMidiInputDevice(
 
     override suspend fun close() {
         midiInput?.close()
-        Logger.i { "Ktmidi input port: ${portId.name} closed" }
+//        Logger.i { "Ktmidi input port: ${portId.name} closed" }
     }
 }

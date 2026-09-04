@@ -1,0 +1,8 @@
+<resources>
+    <string name="home_title_explorer">浏览文件</string>
+    <string name="home_title_freePlay">自由演奏</string>
+    <string name="home_title_settings">设置</string>
+    <string name="home_desc_explorer">打开 MIDI 文件</string>
+    <string name="home_desc_freePlay">可视化虚拟键盘</string>
+    <string name="home_desc_settings">设备与外观</string>
+</resources>

@@ -20,9 +20,17 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import mai_onsyn.open_rhythm.bridge.Global
 import mai_onsyn.open_rhythm.ui.icons.*
+import mai_onsyn.open_rhythm.ui.utility.str
 import openrhythm.sharedui.generated.resources.Res
 import openrhythm.sharedui.generated.resources.foreground_512x
+import openrhythm.sharedui.generated.resources.home_desc_explorer
+import openrhythm.sharedui.generated.resources.home_desc_freePlay
+import openrhythm.sharedui.generated.resources.home_desc_settings
+import openrhythm.sharedui.generated.resources.home_title_explorer
+import openrhythm.sharedui.generated.resources.home_title_freePlay
+import openrhythm.sharedui.generated.resources.home_title_settings
 import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun HomePage(
@@ -123,30 +131,26 @@ private fun NavigationList(
     onGotoSettings: () -> Unit
 ) {
     NavigationCard(
-        title = "Explorer",
-        description = "Open MIDI file",
+        title = str(Res.string.home_title_explorer),
+        description = str(Res.string.home_desc_explorer),
         icon = ic_library_music,
         onClick = onGotoExplorer
     )
     NavigationCard(
-        title = "Performance",
-        description = "Play on keyboard",
+        title = str(Res.string.home_title_freePlay),
+        description = str(Res.string.home_desc_freePlay),
         icon = ic_piano,
         onClick = onGotoFreePlay
     )
     NavigationCard(
-        title = "Settings",
-        description = "Device and Appearance",
+        title = str(Res.string.home_title_settings),
+        description = str(Res.string.home_desc_settings),
         icon = ic_settings,
         onClick = onGotoSettings
     )
-//    NavigationButton(
-//        displayText = "退出",
-//        icon = ic_exit_to_app,
-//        onClick = onExit
-//    )
 }
 
+@Deprecated("Use NavigationCard instead")
 @Composable
 private fun NavigationButton(
     displayText: String,

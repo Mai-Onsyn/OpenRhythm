@@ -1,7 +1,8 @@
 <resources>
-    <string name="cyclone">Cyclone</string>
-    <string name="open_github">Open github</string>
-    <string name="run">Run</string>
-    <string name="stop">Stop</string>
-    <string name="theme">Theme</string>
+    <string name="home_title_explorer">Explorer</string>
+    <string name="home_title_freePlay">Performance</string>
+    <string name="home_title_settings">Settings</string>
+    <string name="home_desc_explorer">Open MIDI file</string>
+    <string name="home_desc_freePlay">Play on keyboard</string>
+    <string name="home_desc_settings">Device and appearance</string>
 </resources>

@@ -59,6 +59,8 @@ kotlin {
             implementation("com.mikepenz:aboutlibraries-compose-m3:14.2.1")
             implementation("sh.calvin.reorderable:reorderable:3.1.0")
 //            implementation("dev.chrisbanes.haze:haze-blur:2.0.0-alpha05")
+
+            implementation("io.github.sudarshanmhasrup.localina:localina:1.0.0-beta2")
         }
 
         commonTest.dependencies {

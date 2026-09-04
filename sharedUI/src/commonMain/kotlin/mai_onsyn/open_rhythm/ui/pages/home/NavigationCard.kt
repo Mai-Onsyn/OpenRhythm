@@ -10,13 +10,9 @@ import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import mai_onsyn.open_rhythm.ui.icons.ic_arrow_back
-import openrhythm.sharedui.generated.resources.Res
-import openrhythm.sharedui.generated.resources.msyh
-import org.jetbrains.compose.resources.Font
 
 @Composable
 fun NavigationCard(

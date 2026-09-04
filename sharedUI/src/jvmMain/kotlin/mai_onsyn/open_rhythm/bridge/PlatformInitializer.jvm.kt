@@ -1,6 +1,12 @@
 package mai_onsyn.open_rhythm.bridge
 
 import androidx.compose.ui.input.pointer.PointerIcon
+import androidx.compose.ui.text.ExperimentalTextApi
+import androidx.compose.ui.text.font.Font
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.GenericFontFamily
+import androidx.compose.ui.text.platform.Font
+import androidx.compose.ui.text.platform.SystemFont
 import co.touchlab.kermit.Logger
 import com.russhwolf.settings.PropertiesSettings
 import com.russhwolf.settings.Settings
@@ -12,6 +18,9 @@ import io.github.vinceglb.filekit.PlatformFile
 import io.github.vinceglb.filekit.dialogs.openDirectoryPicker
 import io.github.vinceglb.filekit.dialogs.openFilePicker
 import mai_onsyn.open_rhythm.core.util.GlobalKeyEventDispatcher
+import openrhythm.sharedui.generated.resources.Res
+import openrhythm.sharedui.generated.resources.msyh
+import org.jetbrains.compose.resources.Font
 import java.awt.Cursor
 import java.io.File
 import java.util.*
@@ -70,4 +79,14 @@ actual fun setupMidiOutput(output: MidiOutput, name: String, context: Any) {
             loadSoundbankToKtmidiOutput(output, file)
         }
     }
+}
+
+@OptIn(ExperimentalTextApi::class)
+actual fun createFontFamily(): FontFamily {
+    return FontFamily(
+        SystemFont("Microsoft YaHei UI"),
+        SystemFont("PingFang SC"),
+        SystemFont("Noto Sans CJK SC"),
+        SystemFont("Yu Gothic UI")
+    )
 }

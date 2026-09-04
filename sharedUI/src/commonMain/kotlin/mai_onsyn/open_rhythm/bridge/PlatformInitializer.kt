@@ -1,6 +1,7 @@
 package mai_onsyn.open_rhythm.bridge
 
 import androidx.compose.ui.input.pointer.PointerIcon
+import androidx.compose.ui.text.font.FontFamily
 import com.russhwolf.settings.Settings
 import dev.atsushieno.ktmidi.MidiAccess
 import dev.atsushieno.ktmidi.MidiOutput
@@ -24,3 +25,5 @@ expect suspend fun FileKit.pickFileWithPermission(): PlatformFile?
 expect fun registerGlobalKeyEventDispatcher(keyEventDispatcher: GlobalKeyEventDispatcher)
 
 expect fun setupMidiOutput(output: MidiOutput, name: String, context: Any)
+
+expect fun createFontFamily(): FontFamily

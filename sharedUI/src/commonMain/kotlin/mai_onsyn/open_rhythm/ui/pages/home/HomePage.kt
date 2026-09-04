@@ -50,7 +50,7 @@ fun HomePage(
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
-                    text = Global.settings.enabledMidiInputDeviceList.joinToString(),
+                    text = Global.settings.enabledMidiInputDeviceList.joinToString().ifEmpty { "No Input" },
                     style = MaterialTheme.typography.labelLarge,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -60,7 +60,7 @@ fun HomePage(
                 modifier = Modifier.align(Alignment.BottomEnd)
             ) {
                 Text(
-                    text = Global.settings.SelectedOutputDeviceName,
+                    text = Global.settings.SelectedOutputDeviceName.ifEmpty { "No Output" },
                     style = MaterialTheme.typography.labelLarge,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )

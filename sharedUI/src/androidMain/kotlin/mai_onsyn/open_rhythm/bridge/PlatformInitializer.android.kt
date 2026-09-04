@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.Intent
 import androidx.activity.ComponentActivity
 import androidx.compose.ui.input.pointer.PointerIcon
+import androidx.compose.ui.text.font.FontFamily
 import androidx.core.net.toUri
 import com.russhwolf.settings.Settings
 import com.russhwolf.settings.SharedPreferencesSettings
@@ -75,3 +76,6 @@ actual fun registerGlobalKeyEventDispatcher(keyEventDispatcher: GlobalKeyEventDi
 }
 
 actual fun setupMidiOutput(output: MidiOutput, name: String, context: Any) {}
+actual fun createFontFamily(): FontFamily {
+    return FontFamily.Default
+}

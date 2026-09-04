@@ -4,7 +4,6 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.LocalMinimumInteractiveComponentSize
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Typography
 import androidx.compose.runtime.*
@@ -14,6 +13,7 @@ import co.touchlab.kermit.Logger
 import com.materialkolor.DynamicMaterialTheme
 import com.materialkolor.PaletteStyle
 import mai_onsyn.open_rhythm.bridge.Global
+import mai_onsyn.open_rhythm.bridge.createFontFamily
 import mai_onsyn.open_rhythm.ui.modules.dialog.LocalPopupHostState
 import mai_onsyn.open_rhythm.ui.modules.dialog.PopupHostState
 import mai_onsyn.open_rhythm.ui.modules.dialog.RootPopupHost
@@ -100,6 +100,7 @@ internal fun AppTheme(
     }
 
     val popupHostState = remember { PopupHostState() }
+    val appFontFamily = remember { createFontFamily() }
     CompositionLocalProvider(
         LocalPopupHostState provides popupHostState,
         LocalMinimumInteractiveComponentSize provides 0.dp
@@ -110,29 +111,29 @@ internal fun AppTheme(
             isDark = isDark,
             style = if (isDark) PaletteStyle.Content else PaletteStyle.TonalSpot,
             animate = true,
-//            typography = Typography().run {
-//                copy(
-//                    displayLarge = displayLarge.copy(fontFamily = AppFontFamily),
-//                    displayMedium = displayMedium.copy(fontFamily = AppFontFamily),
-//                    displaySmall = displaySmall.copy(fontFamily = AppFontFamily),
-//
-//                    headlineLarge = headlineLarge.copy(fontFamily = AppFontFamily),
-//                    headlineMedium = headlineMedium.copy(fontFamily = AppFontFamily),
-//                    headlineSmall = headlineSmall.copy(fontFamily = AppFontFamily),
-//
-//                    titleLarge = titleLarge.copy(fontFamily = AppFontFamily),
-//                    titleMedium = titleMedium.copy(fontFamily = AppFontFamily),
-//                    titleSmall = titleSmall.copy(fontFamily = AppFontFamily),
-//
-//                    bodyLarge = bodyLarge.copy(fontFamily = AppFontFamily),
-//                    bodyMedium = bodyMedium.copy(fontFamily = AppFontFamily),
-//                    bodySmall = bodySmall.copy(fontFamily = AppFontFamily),
-//
-//                    labelLarge = labelLarge.copy(fontFamily = AppFontFamily),
-//                    labelMedium = labelMedium.copy(fontFamily = AppFontFamily),
-//                    labelSmall = labelSmall.copy(fontFamily = AppFontFamily),
-//                )
-//            }
+            typography = Typography().run {
+                copy(
+                    displayLarge = displayLarge.copy(fontFamily = appFontFamily),
+                    displayMedium = displayMedium.copy(fontFamily = appFontFamily),
+                    displaySmall = displaySmall.copy(fontFamily = appFontFamily),
+
+                    headlineLarge = headlineLarge.copy(fontFamily = appFontFamily),
+                    headlineMedium = headlineMedium.copy(fontFamily = appFontFamily),
+                    headlineSmall = headlineSmall.copy(fontFamily = appFontFamily),
+
+                    titleLarge = titleLarge.copy(fontFamily = appFontFamily),
+                    titleMedium = titleMedium.copy(fontFamily = appFontFamily),
+                    titleSmall = titleSmall.copy(fontFamily = appFontFamily),
+
+                    bodyLarge = bodyLarge.copy(fontFamily = appFontFamily),
+                    bodyMedium = bodyMedium.copy(fontFamily = appFontFamily),
+                    bodySmall = bodySmall.copy(fontFamily = appFontFamily),
+
+                    labelLarge = labelLarge.copy(fontFamily = appFontFamily),
+                    labelMedium = labelMedium.copy(fontFamily = appFontFamily),
+                    labelSmall = labelSmall.copy(fontFamily = appFontFamily),
+                )
+            }
         ) {
             RootPopupHost {
                 Surface(content = content)

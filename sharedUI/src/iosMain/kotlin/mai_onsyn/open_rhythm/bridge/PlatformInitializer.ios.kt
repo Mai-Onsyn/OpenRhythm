@@ -1,6 +1,7 @@
 package mai_onsyn.open_rhythm.bridge
 
 import androidx.compose.ui.input.pointer.PointerIcon
+import androidx.compose.ui.text.font.FontFamily
 import co.touchlab.kermit.Logger
 import com.russhwolf.settings.NSUserDefaultsSettings
 import com.russhwolf.settings.Settings
@@ -44,3 +45,6 @@ actual fun registerGlobalKeyEventDispatcher(keyEventDispatcher: GlobalKeyEventDi
 }
 
 actual fun setupMidiOutput(output: MidiOutput, name: String, context: Any) {}
+actual fun createFontFamily(): FontFamily {
+    return FontFamily.Default
+}

@@ -1,8 +1,15 @@
 <resources>
+    <string name="universal_error">Error</string>
+
     <string name="home_title_explorer">Explorer</string>
     <string name="home_title_freePlay">Performance</string>
     <string name="home_title_settings">Settings</string>
     <string name="home_desc_explorer">Open MIDI file</string>
     <string name="home_desc_freePlay">Play on keyboard</string>
     <string name="home_desc_settings">Device and appearance</string>
+
+    <string name="library_content_title">MIDI library</string>
+    <string name="library_content_addFolder">Add folder</string>
+    <string name="library_popup_addFolder_title">Name for this new folder</string>
+    <string name="library_popup_addFolder_addedMessage">Folder "%1$s has" been added</string>
 </resources>

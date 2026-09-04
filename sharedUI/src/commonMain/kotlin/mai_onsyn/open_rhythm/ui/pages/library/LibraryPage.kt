@@ -32,6 +32,8 @@ import mai_onsyn.open_rhythm.ui.icons.ic_refresh
 import mai_onsyn.open_rhythm.ui.modules.OpacitySurface
 import mai_onsyn.open_rhythm.ui.modules.dialog.ConfirmDialog
 import mai_onsyn.open_rhythm.ui.modules.dialog.SingleLineInputDialog
+import openrhythm.sharedui.generated.resources.*
+import org.jetbrains.compose.resources.stringResource
 import kotlin.math.min
 
 @OptIn(ExperimentalComposeUiApi::class)
@@ -69,16 +71,9 @@ fun LibraryPage(
             }
             Spacer(Modifier.width(4.dp))
             Text(
-                text = "MIDI library",
+                text = stringResource(Res.string.library_content_title),
                 style = MaterialTheme.typography.headlineMedium
             )
-//                Column {
-//                    Text(
-//                        text = "Manage your MIDI folders and files",
-//                        style = MaterialTheme.typography.labelMedium,
-//                        color = MaterialTheme.colorScheme.onSurfaceVariant
-//                    )
-//                }
             Spacer(Modifier.weight(1f))
 
             var showNewFolderExistedPopup by remember { mutableStateOf(false) }
@@ -111,12 +106,11 @@ fun LibraryPage(
                 ) {
                     Icon(
                         imageVector = ic_add,
-                        contentDescription = "Add folder",
-                        modifier = Modifier
-                            .size(24.dp)
+                        contentDescription = "add folder",
+                        modifier = Modifier.size(24.dp)
                     )
                     Text(
-                        text = "Add folder",
+                        text = stringResource(Res.string.library_content_addFolder),
                         style = MaterialTheme.typography.labelLarge
                     )
                 }
@@ -125,7 +119,7 @@ fun LibraryPage(
                 visible = showNewFolderPopup,
                 value = newFolderName,
                 onDismissRequest = { showNewFolderPopup = false },
-                title = "Name for this new folder",
+                title = stringResource(Res.string.library_popup_addFolder_title),
                 onConfirm = {
                     newFolderName = it
                     Global.settings.libraryFolderList.add(UILibraryFolder(newFolderName, newFolderDir))
@@ -137,9 +131,9 @@ fun LibraryPage(
             ConfirmDialog(
                 visible = showNewFolderExistedPopup,
                 onDismissRequest = { showNewFolderExistedPopup = false },
-                title = "Error",
+                title = stringResource(Res.string.universal_error),
                 onConfirm = { showNewFolderExistedPopup = false },
-                message = "Folder \"$newFolderDir\" has been added"
+                message = stringResource(Res.string.library_popup_addFolder_addedMessage, newFolderDir)
             )
         }
         HorizontalDivider(Modifier.padding(vertical = 16.dp))
@@ -148,22 +142,6 @@ fun LibraryPage(
             WideLayout(onEnterPlayMidiScreen, onEnterTrackEditScreen, selectedFolderIndex) { selectedFolderIndex = it }
         } else NarrowLayout(onEnterPlayMidiScreen, onEnterTrackEditScreen, selectedFolderIndex) { selectedFolderIndex = it }
     }
-//    Box(Modifier) {
-//        Box(Modifier.padding(top = 8.dp, start = 8.dp)) {
-//            IconButton(
-//                onClick = onBack,
-//                shape = MaterialTheme.shapes.small,
-//                modifier = Modifier
-//                    .size(56.dp, 32.dp)
-//            ) {
-//                Icon(
-//                    imageVector = ic_arrow_back,
-//                    contentDescription = "Back",
-//                    modifier = Modifier.size(24.dp).pointerHoverIcon(PointerIcon.Hand)
-//                )
-//            }
-//        }
-//    }
 }
 
 @Composable

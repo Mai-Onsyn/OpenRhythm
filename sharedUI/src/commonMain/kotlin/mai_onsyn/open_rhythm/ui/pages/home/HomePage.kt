@@ -20,15 +20,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import mai_onsyn.open_rhythm.bridge.Global
 import mai_onsyn.open_rhythm.ui.icons.*
-import mai_onsyn.open_rhythm.ui.utility.str
-import openrhythm.sharedui.generated.resources.Res
-import openrhythm.sharedui.generated.resources.foreground_512x
-import openrhythm.sharedui.generated.resources.home_desc_explorer
-import openrhythm.sharedui.generated.resources.home_desc_freePlay
-import openrhythm.sharedui.generated.resources.home_desc_settings
-import openrhythm.sharedui.generated.resources.home_title_explorer
-import openrhythm.sharedui.generated.resources.home_title_freePlay
-import openrhythm.sharedui.generated.resources.home_title_settings
+import openrhythm.sharedui.generated.resources.*
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 
@@ -131,20 +123,20 @@ private fun NavigationList(
     onGotoSettings: () -> Unit
 ) {
     NavigationCard(
-        title = str(Res.string.home_title_explorer),
-        description = str(Res.string.home_desc_explorer),
+        title = stringResource(Res.string.home_title_explorer),
+        description = stringResource(Res.string.home_desc_explorer),
         icon = ic_library_music,
         onClick = onGotoExplorer
     )
     NavigationCard(
-        title = str(Res.string.home_title_freePlay),
-        description = str(Res.string.home_desc_freePlay),
+        title = stringResource(Res.string.home_title_freePlay),
+        description = stringResource(Res.string.home_desc_freePlay),
         icon = ic_piano,
         onClick = onGotoFreePlay
     )
     NavigationCard(
-        title = str(Res.string.home_title_settings),
-        description = str(Res.string.home_desc_settings),
+        title = stringResource(Res.string.home_title_settings),
+        description = stringResource(Res.string.home_desc_settings),
         icon = ic_settings,
         onClick = onGotoSettings
     )

@@ -37,7 +37,7 @@ import kotlin.math.roundToLong
 import kotlin.time.Duration.Companion.seconds
 
 @Composable
-fun MidiWaterFall(
+fun MidiWaterfall(
     modifier: Modifier = Modifier,
     currTick: Double = 0.0,
     midi: Midi,
@@ -134,20 +134,7 @@ fun MidiWaterFall(
             if (drawSectionLine) drawSectionLines(midi, currTick, currTick + visibleTickCount, pxPerTick)
 //            val LINES_END = Time.nanos
 
-            val toDrawNotes = mutableListOf<DrawableNote>()
-            for ((i, track) in midi.tracks.withIndex()) {
-                if (!track.visible || !track.enable) continue
-                findVisibleNotes(
-                    currTick.toLong(),
-                    (currTick + visibleTickCount).toLong(),
-                    maxNoteDurationList[i],
-                    track.notes
-                ).forEach {
-                    toDrawNotes.add(DrawableNote(it, trackColors[i % trackColors.size], i))
-                }
-            }
-//            val FIND_DRAW_NOTES_END = Time.nanos
-            toDrawNotes.sortWith(compareBy({ it.note.tick }, { it.trackNum }))
+            val toDrawNotes = filterWindowNotes(midi, currTick, visibleTickCount, maxNoteDurationList, trackColors)
             renderingNoteCount = toDrawNotes.size
 //            val SORT_END = Time.nanos
 
@@ -228,6 +215,29 @@ fun MidiWaterFall(
             }
         }
     }
+}
+
+fun filterWindowNotes(
+    midi: Midi,
+    currTick: Double,
+    visibleTickCount: Int,
+    maxNoteDurationList: List<Long>,
+    trackColors: List<Color>
+): MutableList<DrawableNote> {
+    val toDrawNotes = mutableListOf<DrawableNote>()
+    for ((i, track) in midi.tracks.withIndex()) {
+        if (!track.visible || !track.enable) continue
+        findVisibleNotes(
+            currTick.toLong(),
+            (currTick + visibleTickCount).toLong(),
+            maxNoteDurationList[i],
+            track.notes
+        ).forEach {
+            toDrawNotes.add(DrawableNote(it, trackColors[i % trackColors.size], i))
+        }
+    }
+    toDrawNotes.sortWith(compareBy({ it.note.tick }, { it.trackNum }))
+    return toDrawNotes
 }
 
 //fun logDurations(title: String, labels: List<String>, vararg timestamps: Long) {

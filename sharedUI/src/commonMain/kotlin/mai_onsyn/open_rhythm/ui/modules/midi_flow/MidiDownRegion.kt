@@ -85,7 +85,7 @@ fun MidiDownRegion(
 
             Box(Modifier.weight(1f)) {
                 if (!Global.settings.ImageExpandToKeyboard) BackgroundImage()
-                MidiWaterFall(
+                CachedMidiWaterfall(
                     modifier = Modifier
                         .fillMaxSize()
                         .pointerInput(Unit) {

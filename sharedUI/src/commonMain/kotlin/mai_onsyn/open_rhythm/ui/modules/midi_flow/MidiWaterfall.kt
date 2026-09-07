@@ -236,7 +236,7 @@ fun filterWindowNotes(
             toDrawNotes.add(DrawableNote(it, trackColors[i % trackColors.size], i))
         }
     }
-    toDrawNotes.sortWith(compareBy({ it.note.tick }, { it.trackNum }))
+    toDrawNotes.sortWith(compareBy({ isBlackKey(it.note.pitch) }, { it.note.tick }, { it.trackNum }))
     return toDrawNotes
 }
 

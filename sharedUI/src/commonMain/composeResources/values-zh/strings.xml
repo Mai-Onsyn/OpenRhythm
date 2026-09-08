@@ -204,6 +204,10 @@
     <string name="set_log_exportSuccess">成功导出 %1$d 条日志到 %2$s</string>
     <string name="set_log_exportFailed">导出日志失败：%1$s：%2$s</string>
 
+    <string name="set_experiment_title">实验性功能</string>
+    <string name="set_experiment_useCachedWaterfall">静态瀑布流渲染</string>
+    <string name="set_experiment_useCachedWaterfall_desc">使用静态帧缓存替代实时瀑布流渲染，可极大地提升性能，但会造成难以置信的内存消耗！</string>
+
     <string name="set_other_title">其他</string>
     <string name="set_other_resetAllMidiFileSettings">重置所有MIDI文件配置</string>
     <string name="set_other_resetAllMidiFileSettings_desc">清理包括已失效文件在内的所有自定义MIDI文件配置</string>

@@ -24,6 +24,7 @@ fun AdvancedSettings() {
         Spacer(Modifier.weight(1f))
 
         DebugSettings()
+        ExperimentSettings()
         LogSettings()
         SettingSettings()
 

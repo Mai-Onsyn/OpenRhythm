@@ -204,6 +204,10 @@
     <string name="set_log_exportSuccess">Successfully exported %1$d logs to %2$s</string>
     <string name="set_log_exportFailed">Failed to export logs: %1$s: %2$s</string>
 
+    <string name="set_experiment_title">Experiments</string>
+    <string name="set_experiment_useCachedWaterfall">Static waterfall rendering</string>
+    <string name="set_experiment_useCachedWaterfall_desc">Using a static framebuffer instead of real-time rendering works really well performance-wise, but it can lead to crazy memory usage</string>
+
     <string name="set_other_title">Other</string>
     <string name="set_other_resetAllMidiFileSettings">Reset all MIDI file settings</string>
     <string name="set_other_resetAllMidiFileSettings_desc">Clear all custom settings for MIDI files, including those for missing files</string>

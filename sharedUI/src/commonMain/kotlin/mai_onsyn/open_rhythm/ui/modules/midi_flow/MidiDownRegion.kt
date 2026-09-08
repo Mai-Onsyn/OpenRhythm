@@ -85,47 +85,62 @@ fun MidiDownRegion(
 
             Box(Modifier.weight(1f)) {
                 if (!Global.settings.ImageExpandToKeyboard) BackgroundImage()
-                CachedMidiWaterfall(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .pointerInput(Unit) {
-                            awaitPointerEventScope {
-                                while (true) {
-                                    val event = awaitPointerEvent(PointerEventPass.Initial)
+                val waterfallModifier = Modifier
+                    .fillMaxSize()
+                    .pointerInput(Unit) {
+                        awaitPointerEventScope {
+                            while (true) {
+                                val event = awaitPointerEvent(PointerEventPass.Initial)
 
-                                    for (change in event.changes) {
-                                        if (change.pressed) {
-                                            focusRequester.requestFocus()
-                                            break
-                                        }
+                                for (change in event.changes) {
+                                    if (change.pressed) {
+                                        focusRequester.requestFocus()
+                                        break
                                     }
+                                }
 
-                                    if (Global.settings.DoubleFingerTapToPlayPause) {
-                                        if (
-                                            event.changes.size == 2 &&
-                                            event.changes.first().pressed &&
-                                            event.changes.last().pressed &&
-                                            event.type == PointerEventType.Press
-                                        ) {
-                                            Logger.i { "Double finger tap toggle playback state to ${!currentIsPlaying}" }
-                                            onPlayStateChange(!currentIsPlaying)
-                                        }
+                                if (Global.settings.DoubleFingerTapToPlayPause) {
+                                    if (
+                                        event.changes.size == 2 &&
+                                        event.changes.first().pressed &&
+                                        event.changes.last().pressed &&
+                                        event.type == PointerEventType.Press
+                                    ) {
+                                        Logger.i { "Double finger tap toggle playback state to ${!currentIsPlaying}" }
+                                        onPlayStateChange(!currentIsPlaying)
                                     }
                                 }
                             }
                         }
-                        .then(
-                            if (Global.settings.DoubleClickToPlayPause)
-                                Modifier.pointerInput(Unit) {
-                                    detectTapGestures(
-                                        onDoubleTap = {
-                                            Logger.i { "Double click toggle playback state to ${!currentIsPlaying}" }
-                                            onPlayStateChange(!currentIsPlaying)
-                                        }
-                                    )
-                                }
-                            else Modifier
-                        ),
+                    }
+                    .then(
+                        if (Global.settings.DoubleClickToPlayPause)
+                            Modifier.pointerInput(Unit) {
+                                detectTapGestures(
+                                    onDoubleTap = {
+                                        Logger.i { "Double click toggle playback state to ${!currentIsPlaying}" }
+                                        onPlayStateChange(!currentIsPlaying)
+                                    }
+                                )
+                            }
+                        else Modifier
+                    )
+                if (Global.settings.UseCachedWaterfall) CachedMidiWaterfall(
+                    modifier = waterfallModifier,
+                    trackColors = trackColors,
+                    currTick = currentTick,
+                    minPitch = Global.settings.MinPitch,
+                    maxPitch = Global.settings.MaxPitch,
+                    midi = midi,
+                    hpb = hpb,
+                    activeNoteOutput = midiActiveKeys,
+                    onVerticalDragged = { deltaYpx += it },
+                    drawOctaveLine = Global.settings.DrawOctaveLines,
+                    drawSectionLine = Global.settings.DrawSectionLines,
+                    noteRoundPercent = Global.settings.NoteRoundConerPercent,
+                    drawPitchLabel = Global.settings.DrawPitchLabels
+                ) else MidiWaterfall(
+                    modifier = waterfallModifier,
                     trackColors = trackColors,
                     currTick = currentTick,
                     minPitch = Global.settings.MinPitch,

@@ -108,6 +108,9 @@ class UserSetting(
     var ShowRenderingNoteCount  by st.observable("ShowRenderingNoteCount",      false)
     var ShowActiveNoteCount     by st.observable("ShowActiveNoteCount",         false)
 
+    // =====Experiment=====
+    var UseCachedWaterfall      by st.observable("UseCachedWaterfall",          false)
+
     // =====User Data=====
     val libraryFolderList by st.list("LibraryFolderList", mutableListOf(), UILibraryFolder.serializer())
     val midiFileSettings by st.map("MidiFileSettings", mutableMapOf(), String.serializer(), MidiFileSettings.serializer())

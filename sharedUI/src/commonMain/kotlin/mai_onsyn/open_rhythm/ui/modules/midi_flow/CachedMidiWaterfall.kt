@@ -3,42 +3,24 @@ package mai_onsyn.open_rhythm.ui.modules.midi_flow
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.key
-import androidx.compose.runtime.mutableStateMapOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.FilterQuality
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.input.pointer.positionChanged
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.IntSize
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import androidx.compose.ui.unit.toSize
+import androidx.compose.ui.unit.*
 import androidx.compose.ui.util.fastForEachReversed
-import co.touchlab.kermit.Logger
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import mai_onsyn.open_rhythm.core.midi.Midi
 import mai_onsyn.open_rhythm.core.midi.Note
-import mai_onsyn.open_rhythm.core.util.Time
-import mai_onsyn.open_rhythm.ui.utility.countWhiteKeys
-import mai_onsyn.open_rhythm.ui.utility.drawOctaveLines
-import mai_onsyn.open_rhythm.ui.utility.drawSectionLines
-import mai_onsyn.open_rhythm.ui.utility.reMeasure
-import mai_onsyn.open_rhythm.ui.utility.rememberTextLayoutResult
+import mai_onsyn.open_rhythm.ui.utility.*
 
 @Composable
 fun CachedMidiWaterfall(
@@ -71,12 +53,22 @@ fun CachedMidiWaterfall(
         result
     }
 
+    var renderedTimes by remember { mutableStateOf(0) }
     val pxPerTick = with(density) { hpb.toPx() / midi.ppq }
     var canvasSize by remember { mutableStateOf(IntSize.Zero) }
     val imageBitmapCache = remember(midi, canvasSize, hpb) {
-        WaterfallCache(canvasSize.toSize(), pxPerTick)
+        if (canvasSize.width == 0 || canvasSize.height == 0) null
+        else WaterfallCache(canvasSize.toSize(), pxPerTick).apply {
+            cache(
+                currTick,
+                midi,
+                maxNoteDurationList,
+                trackColors,
+                gridPos,
+                noteRoundPercent
+            )
+        }
     }
-//    var cacheVersion by remember { mutableStateOf(-1) }
 
     val whiteKeyCount = countWhiteKeys(minPitch, maxPitch)
     var whiteKeyWidth by remember { mutableStateOf(0f) }
@@ -101,8 +93,8 @@ fun CachedMidiWaterfall(
                 .clip(RectangleShape)
                 .onSizeChanged { size ->
                     whiteKeyWidth = (size.width - (whiteKeyCount - 1) * spacingPx) / whiteKeyCount
-                    canvasSize = size
                     reMeasure(gridPos, size, spacingPx, minPitch, maxPitch, blackHorizontalPercentage)
+                    canvasSize = size
                 }
                 .pointerInput(Unit) {
                     awaitPointerEventScope {
@@ -123,30 +115,31 @@ fun CachedMidiWaterfall(
             if (drawSectionLine) drawSectionLines(midi, currTick, currTick + visibleTickCount, pxPerTick)
         }
 
-        LaunchedEffect(currTick, midi, canvasSize, hpb) {
-            if (canvasSize.width > 0 && canvasSize.height > 0) {
-                withContext(Dispatchers.Default) {
-                    imageBitmapCache.cacheRange(
-                        currTick,
-                        midi,
-                        maxNoteDurationList,
-                        trackColors,
-                        gridPos,
-                        noteRoundPercent
-                    )
-                }
+        LaunchedEffect(currTick, canvasSize, midi, hpb) {
+            if (imageBitmapCache?.cache(
+                    currTick,
+                    midi,
+                    maxNoteDurationList,
+                    trackColors,
+                    gridPos,
+                    noteRoundPercent
+                ) == true
+            ) {
+                renderedTimes++
             }
         }
-        imageBitmapCache.getBitmaps(currTick).fastForEachReversed { (offset, bitmap) ->
-            Image(
-                bitmap = bitmap,
-                contentDescription = null,
-                modifier = Modifier
-                    .matchParentSize()
-                    .graphicsLayer {
-                        translationY = offset * pxPerTick
-                    }
-            )
+        imageBitmapCache?.getBitmaps(currTick)?.forEachIndexed { idx, (offset, bitmap) ->
+            key(renderedTimes) {
+                Image(
+                    bitmap = bitmap,
+                    contentDescription = null,
+                    modifier = Modifier
+                        .matchParentSize()
+                        .graphicsLayer {
+                            translationY = offset * pxPerTick + idx
+                        }
+                )
+            }
         }
         val notes = filterWindowNotes(midi, currTick, 0, maxNoteDurationList, trackColors)
         activeNoteOutput.clear()

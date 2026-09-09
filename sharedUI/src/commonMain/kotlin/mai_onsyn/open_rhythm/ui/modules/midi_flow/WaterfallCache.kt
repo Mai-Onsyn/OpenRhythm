@@ -1,53 +1,33 @@
 package mai_onsyn.open_rhythm.ui.modules.midi_flow
 
-import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.Canvas
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.*
 import com.materialkolor.ktx.darken
 import mai_onsyn.open_rhythm.core.midi.Midi
 import mai_onsyn.open_rhythm.ui.utility.isBlackKey
 
-data class WaterfallChunk(
-    val chunkIndex: Int,
-    val offsetTicks: Float,
-    val bitmap: ImageBitmap
+data class BitmapChunk(
+    var bitmap: ImageBitmap,
+    var chunkIndex: Int,
+    var needRefresh: Boolean = false
 )
 
 class WaterfallCache(
     val windowSize: Size,
     val pxPerTick: Float
 ) {
-    private val cachedMap = mutableStateMapOf<Int, ImageBitmap>()
     private val tickWindowSize
         get() = windowSize.height / pxPerTick
 
-    fun cacheRange(
-        centerTick: Double,
-        midi: Midi,
-        maxNoteDurationList: List<Long>,
-        trackColors: List<Color>,
-        gridPos: Map<Int, Pair<Float, Float>>,
-        noteRoundPercent: Float
-    ): Int {
-        val rangeStart = indexAt(centerTick)
-        val range = (rangeStart - 1) .. (rangeStart + 2)
-        for (i in range) {
-            cache(
-                i.toDouble() * tickWindowSize,
-                midi,
-                maxNoteDurationList,
-                trackColors,
-                gridPos,
-                noteRoundPercent
-            )
-        }
-        cachedMap.keys.removeAll { it !in range }
-        return rangeStart
+    private var bitmapArray = Array(4) {
+        BitmapChunk(
+            ImageBitmap(windowSize.width.toInt(), windowSize.height.toInt()),
+            it - 1
+        )
     }
+    private var currChunk = Int.MIN_VALUE
 
     fun cache(
         tick: Double,
@@ -56,20 +36,105 @@ class WaterfallCache(
         trackColors: List<Color>,
         gridPos: Map<Int, Pair<Float, Float>>,
         noteRoundPercent: Float
+    ): Boolean {
+        val cachePoint = chunkAt(tick)
+
+        when (if (currChunk == Int.MAX_VALUE) 0xFF else cachePoint - currChunk) {
+            0 -> return false
+            1 -> bitmapArray = arrayOf(
+                bitmapArray[1],
+                bitmapArray[2],
+                bitmapArray[3],
+                bitmapArray[0]
+            ).apply { this[3].needRefresh = true }
+            2 -> bitmapArray = arrayOf(
+                bitmapArray[2],
+                bitmapArray[3],
+                bitmapArray[0],
+                bitmapArray[1]
+            ).apply {
+                this[2].needRefresh = true
+                this[3].needRefresh = true
+            }
+            3 -> bitmapArray = arrayOf(
+                bitmapArray[3],
+                bitmapArray[0],
+                bitmapArray[1],
+                bitmapArray[2]
+            ).apply {
+                this[1].needRefresh = true
+                this[2].needRefresh = true
+                this[3].needRefresh = true
+            }
+            -1 -> bitmapArray = arrayOf(
+                bitmapArray[3],
+                bitmapArray[0],
+                bitmapArray[1],
+                bitmapArray[2]
+            ).apply { this[0].needRefresh = true }
+            -2 -> bitmapArray = arrayOf(
+                bitmapArray[2],
+                bitmapArray[3],
+                bitmapArray[0],
+                bitmapArray[1]
+            ).apply {
+                this[0].needRefresh = true
+                this[1].needRefresh = true
+            }
+            -3 -> bitmapArray = arrayOf(
+                bitmapArray[1],
+                bitmapArray[2],
+                bitmapArray[3],
+                bitmapArray[0],
+            ).apply {
+                this[0].needRefresh = true
+                this[1].needRefresh = true
+                this[2].needRefresh = true
+            }
+            else -> bitmapArray.forEach { it.needRefresh = true }
+        }
+        currChunk = cachePoint
+        bitmapArray.forEachIndexed { index, chunk ->
+            chunk.chunkIndex = currChunk - 1 + index
+            if (chunk.needRefresh) {
+                writeCache(
+                    chunk,
+                    midi,
+                    maxNoteDurationList,
+                    trackColors,
+                    gridPos,
+                    noteRoundPercent
+                )
+                chunk.needRefresh = false
+            }
+        }
+        return true
+    }
+
+    private val TRANSPARENT_PAINT = Paint().apply {
+        color = Color.Transparent
+        blendMode = BlendMode.Clear
+        isAntiAlias = false
+    }
+    private fun writeCache(
+        chunk: BitmapChunk,
+        midi: Midi,
+        maxNoteDurationList: List<Long>,
+        trackColors: List<Color>,
+        gridPos: Map<Int, Pair<Float, Float>>,
+        noteRoundPercent: Float
     ) {
-        val cachePoint = indexAt(tick)
-        if (cachedMap.containsKey(cachePoint)) return
-
-        val notes = filterWindowNotes(midi, tick, tickWindowSize.toInt(), maxNoteDurationList, trackColors)
+        val canvas = Canvas(chunk.bitmap)
+        canvas.drawRect(
+            Rect(Offset.Zero, Size(chunk.bitmap.width.toFloat(), chunk.bitmap.height.toFloat())),
+            TRANSPARENT_PAINT
+        )
+        val startTick = chunk.chunkIndex * tickWindowSize
+        val notes = filterWindowNotes(midi, startTick.toDouble(), tickWindowSize.toInt(), maxNoteDurationList, trackColors)
         if (notes.isEmpty()) return
-        if (windowSize.width.toInt() == 0 || windowSize.height.toInt() == 0) return
-
-        val bitmap = ImageBitmap(windowSize.width.toInt(), windowSize.height.toInt())
-        val canvas = Canvas(bitmap)
-
         notes.forEach { note ->
             val (x, w) = gridPos[note.note.pitch] ?: return@forEach
-            val pixelPos = ((note.note.tick - tick) * pxPerTick).toFloat()
+            val pixelPos = ((note.note.tick - startTick) * pxPerTick)
             val durationPx = note.note.duration * pxPerTick
             val noteRect = Rect(Offset(x, ((windowSize.height - pixelPos - durationPx))), Size(w, durationPx))
             val blackKey = isBlackKey(note.note.pitch)
@@ -80,29 +145,21 @@ class WaterfallCache(
                 w * 0.5f * noteRoundPercent
             )
         }
-        cachedMap[cachePoint] = bitmap
     }
 
     fun getBitmaps(
         tick: Double
     ): List<Pair<Float, ImageBitmap>> {
         val result = mutableListOf<Pair<Float, ImageBitmap>>()
-        val point = indexAt(tick)
-        cachedMap[point]?.let { result.add(getBitmapOffsetTicks(tick) to it) }
-        cachedMap[point + 1]?.let { result.add((getBitmapOffsetTicks(tick) - tickWindowSize) to it) }
-        return result
-    }
+        val point = chunkAt(tick)
 
-    fun getChunks(tick: Double): List<WaterfallChunk> {
-        val result = mutableListOf<WaterfallChunk>()
-        val point = indexAt(tick)
+        bitmapArray.getOrNull(point - currChunk + 1)?.let {
+            result.add(getBitmapOffsetTicks(tick) to it.bitmap)
+        }
+        bitmapArray.getOrNull(point - currChunk + 2)?.let {
+            result.add((getBitmapOffsetTicks(tick) - tickWindowSize) to it.bitmap)
+        }
 
-        cachedMap[point]?.let {
-            result.add(WaterfallChunk(point, getBitmapOffsetTicks(tick), it))
-        }
-        cachedMap[point + 1]?.let {
-            result.add(WaterfallChunk(point + 1, getBitmapOffsetTicks(tick) - tickWindowSize.toFloat(), it))
-        }
         return result
     }
 
@@ -113,5 +170,5 @@ class WaterfallCache(
         return (preciseIndex - preciseIndex.toInt()).toFloat() * tickWindowSize
     }
 
-    fun indexAt(tick: Double): Int = (tick / tickWindowSize).toInt()
+    fun chunkAt(tick: Double): Int = (tick / tickWindowSize).toInt()
 }

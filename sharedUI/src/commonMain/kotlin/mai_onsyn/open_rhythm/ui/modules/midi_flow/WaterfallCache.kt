@@ -7,6 +7,7 @@ import androidx.compose.ui.graphics.*
 import com.materialkolor.ktx.darken
 import mai_onsyn.open_rhythm.core.midi.Midi
 import mai_onsyn.open_rhythm.ui.utility.isBlackKey
+import kotlin.concurrent.Volatile
 
 data class BitmapChunk(
     var bitmap: ImageBitmap,
@@ -27,6 +28,7 @@ class WaterfallCache(
             it - 1
         )
     }
+    @Volatile
     private var currChunk = Int.MIN_VALUE
 
     fun cache(
@@ -152,7 +154,11 @@ class WaterfallCache(
     ): List<Pair<Float, ImageBitmap>> {
         val result = mutableListOf<Pair<Float, ImageBitmap>>()
         val point = chunkAt(tick)
-
+        val idx1 = point - currChunk + 1
+        val idx2 = point - currChunk + 2
+        val b1 = bitmapArray.getOrNull(idx1)
+        val b2 = bitmapArray.getOrNull(idx2)
+        println("getBitmaps: point=$point, currChunk=$currChunk, idx1=$idx1, idx2=$idx2, b1=${b1?.bitmap}, b2=${b2?.bitmap}")
         bitmapArray.getOrNull(point - currChunk + 1)?.let {
             result.add(getBitmapOffsetTicks(tick) to it.bitmap)
         }

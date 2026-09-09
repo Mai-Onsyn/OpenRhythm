@@ -87,10 +87,9 @@ fun CachedMidiWaterfall(
         )
     } else null
 
-    Box {
+    Box(Modifier.clip(RectangleShape)) {
         Canvas(
             modifier = modifier
-                .clip(RectangleShape)
                 .onSizeChanged { size ->
                     whiteKeyWidth = (size.width - (whiteKeyCount - 1) * spacingPx) / whiteKeyCount
                     reMeasure(gridPos, size, spacingPx, minPitch, maxPitch, blackHorizontalPercentage)
@@ -116,31 +115,46 @@ fun CachedMidiWaterfall(
         }
 
         LaunchedEffect(currTick, canvasSize, midi, hpb) {
-            if (imageBitmapCache?.cache(
+            if (withContext(Dispatchers.Default) {
+                imageBitmapCache?.cache(
                     currTick,
                     midi,
                     maxNoteDurationList,
                     trackColors,
                     gridPos,
                     noteRoundPercent
-                ) == true
+                ) } != false
             ) {
                 renderedTimes++
             }
         }
-        imageBitmapCache?.getBitmaps(currTick)?.forEachIndexed { idx, (offset, bitmap) ->
-            key(renderedTimes) {
-                Image(
-                    bitmap = bitmap,
-                    contentDescription = null,
-                    modifier = Modifier
-                        .matchParentSize()
-                        .graphicsLayer {
-                            translationY = offset * pxPerTick + idx
-                        }
-                )
-            }
+        val bitmaps = remember(renderedTimes, currTick, canvasSize, hpb, midi) {
+            imageBitmapCache?.getBitmaps(currTick) ?: emptyList()
         }
+        bitmaps.forEachIndexed { idx, (offset, bitmap) ->
+            Image(
+                bitmap = bitmap,
+                contentDescription = null,
+                modifier = Modifier
+                    .matchParentSize()
+                    .graphicsLayer {
+                        translationY = offset * pxPerTick + idx
+                    }
+            )
+        }
+//        imageBitmapCache?.getBitmaps(currTick)?.forEachIndexed { idx, (offset, bitmap) ->
+//            key(renderedTimes) {
+//                Image(
+//                    bitmap = bitmap,
+//                    contentDescription = null,
+//                    modifier = Modifier
+//                        .matchParentSize()
+//                        .graphicsLayer {
+//                            translationY = offset * pxPerTick + idx
+//                        }
+//                )
+//            }
+//        }
         val notes = filterWindowNotes(midi, currTick, 0, maxNoteDurationList, trackColors)
         activeNoteOutput.clear()
         notes.forEach { note ->

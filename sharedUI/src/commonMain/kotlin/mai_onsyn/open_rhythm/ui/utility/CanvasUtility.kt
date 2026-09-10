@@ -3,6 +3,7 @@ package mai_onsyn.open_rhythm.ui.utility
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Canvas
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.platform.LocalDensity
@@ -18,7 +19,7 @@ import mai_onsyn.open_rhythm.core.midi.TimeSignatureEvent
 fun DrawScope.drawTextCentered(
     layoutResult: TextLayoutResult,
     center: Offset,
-    alpha: Float = 1.0f,
+    alpha: Float = 1.0f
 ) {
     val width = layoutResult.size.width
     val height = layoutResult.size.height
@@ -27,6 +28,26 @@ fun DrawScope.drawTextCentered(
         topLeft = Offset(center.x - width / 2, center.y - height / 2),
         alpha = alpha
     )
+}
+
+fun drawTextCentered(
+    canvas: Canvas,
+    layoutResult: TextLayoutResult,
+    center: Offset,
+    alpha: Float = 1.0f
+) {
+    val width = layoutResult.size.width
+    val height = layoutResult.size.height
+//    drawText(
+//        textLayoutResult = layoutResult,
+//        topLeft = Offset(center.x - width / 2, center.y - height / 2),
+//        alpha = alpha
+//    )
+    val topLeft = Offset(center.x - width / 2, center.y - height / 2)
+    canvas.save()
+    canvas.translate(topLeft.x, topLeft.y)
+    layoutResult.multiParagraph.paint(canvas)
+    canvas.restore()
 }
 
 @Composable

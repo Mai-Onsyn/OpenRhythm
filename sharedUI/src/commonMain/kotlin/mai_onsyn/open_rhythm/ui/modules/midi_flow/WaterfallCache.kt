@@ -4,8 +4,10 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.*
+import androidx.compose.ui.text.TextLayoutResult
 import com.materialkolor.ktx.darken
 import mai_onsyn.open_rhythm.core.midi.Midi
+import mai_onsyn.open_rhythm.ui.utility.drawTextCentered
 import mai_onsyn.open_rhythm.ui.utility.isBlackKey
 import kotlin.concurrent.Volatile
 
@@ -37,6 +39,7 @@ class WaterfallCache(
         maxNoteDurationList: List<Long>,
         trackColors: List<Color>,
         gridPos: Map<Int, Pair<Float, Float>>,
+        pitchLabels: Map<Int, TextLayoutResult>?,
         noteRoundPercent: Float
     ): Boolean {
         val cachePoint = chunkAt(tick)
@@ -105,6 +108,7 @@ class WaterfallCache(
                     maxNoteDurationList,
                     trackColors,
                     gridPos,
+                    pitchLabels,
                     noteRoundPercent
                 )
                 chunk.needRefresh = false
@@ -124,6 +128,7 @@ class WaterfallCache(
         maxNoteDurationList: List<Long>,
         trackColors: List<Color>,
         gridPos: Map<Int, Pair<Float, Float>>,
+        pitchLabels: Map<Int, TextLayoutResult>?,
         noteRoundPercent: Float
     ) {
         val canvas = Canvas(chunk.bitmap)
@@ -146,6 +151,14 @@ class WaterfallCache(
                 noteRect,
                 w * 0.5f * noteRoundPercent
             )
+            pitchLabels?.get(note.note.pitch)?.let {
+                val labelCenterPos = noteRect.bottomCenter.let { offset -> offset.copy(y = offset.y - noteRect.width * 0.5f) }
+                drawTextCentered(
+                    canvas,
+                    it,
+                    labelCenterPos,
+                )
+            }
         }
     }
 
@@ -154,11 +167,11 @@ class WaterfallCache(
     ): List<Pair<Float, ImageBitmap>> {
         val result = mutableListOf<Pair<Float, ImageBitmap>>()
         val point = chunkAt(tick)
-        val idx1 = point - currChunk + 1
-        val idx2 = point - currChunk + 2
-        val b1 = bitmapArray.getOrNull(idx1)
-        val b2 = bitmapArray.getOrNull(idx2)
-        println("getBitmaps: point=$point, currChunk=$currChunk, idx1=$idx1, idx2=$idx2, b1=${b1?.bitmap}, b2=${b2?.bitmap}")
+//        val idx1 = point - currChunk + 1
+//        val idx2 = point - currChunk + 2
+//        val b1 = bitmapArray.getOrNull(idx1)
+//        val b2 = bitmapArray.getOrNull(idx2)
+//        println("getBitmaps: point=$point, currChunk=$currChunk, idx1=$idx1, idx2=$idx2, b1=${b1?.bitmap}, b2=${b2?.bitmap}")
         bitmapArray.getOrNull(point - currChunk + 1)?.let {
             result.add(getBitmapOffsetTicks(tick) to it.bitmap)
         }

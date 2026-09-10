@@ -35,7 +35,7 @@ compose.desktop {
             "-Dfile.encoding=UTF-8",
             "-XX:+UseZGC",
             "-Xms512m",
-            "-Xmx2048m",
+            "-XX:MaxRAMPercentage=80.0",
             "--enable-native-access=ALL-UNNAMED",
 //            "-Xlog:gc"
         )

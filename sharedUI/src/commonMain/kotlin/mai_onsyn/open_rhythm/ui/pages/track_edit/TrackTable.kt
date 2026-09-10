@@ -75,7 +75,8 @@ fun TrackWideTable(
             modifier = Modifier
                 .verticalScroll(rememberScrollState())
         ) {
-            var playingIndex by bindPlayable(midi, midiPath)
+            var playingIndex by remember { mutableStateOf(-1) }
+            BindTrackPlay(midi, midiPath, playingIndex) { playingIndex = it }
             key(midi) {
                 midi.tracks.forEachIndexed { index, track ->
                     TrackTableRow(
@@ -96,32 +97,34 @@ fun TrackWideTable(
         }
     }
 }
-
 @Composable
-private fun bindPlayable(midi: Midi, midiPath: String): MutableState<Int> {
-    val playingIndex = remember { mutableStateOf(-1) }
+fun BindTrackPlay(
+    midi: Midi,
+    midiPath: String,
+    playingIndex: Int,
+    onChanged: (Int) -> Unit
+) {
     LaunchedEffect(playingIndex) {
         Global.player.stop()
-        if (playingIndex.value != -1) {
+        if (playingIndex != -1) {
             Global.player.setMidi(
-                midi.take(playingIndex.value),
-                Global.settings.midiFileSettings[midiPath]?.take(playingIndex.value)
+                midi.take(playingIndex),
+                Global.settings.midiFileSettings[midiPath]?.take(playingIndex)
             )
-            Global.player.seek(midi.tracks[playingIndex.value].tickRange.first.toLong())
+            Global.player.seek(midi.tracks[playingIndex].tickRange.first.toLong())
             Global.player.play()
-            Global.player.onCompletion = { playingIndex.value = -1 }
-            Logger.i { "Playing track ${playingIndex.value} in MIDI ${midi.name}" }
+            Global.player.onCompletion = { onChanged(-1) }
+            Logger.i { "Playing track $playingIndex in MIDI ${midi.name}" }
         } else Logger.d { "Stopped playback: idx=-1 (stop flag)" }
     }
     DisposableEffect(Unit) {
         onDispose {
-            if (playingIndex.value != -1) {
+            if (playingIndex != -1) {
                 Global.player.stop()
                 Logger.d { "Stopped playback: idx=-1 (stop flag)" }
             }
         }
     }
-    return playingIndex
 }
 
 @Composable
@@ -136,7 +139,8 @@ fun TrackNarrowTable(
         modifier = modifier
             .verticalScroll(rememberScrollState())
     ) {
-        var playingIndex by bindPlayable(midi, midiPath)
+        var playingIndex by remember { mutableStateOf(-1) }
+        BindTrackPlay(midi, midiPath, playingIndex) { playingIndex = it }
         key(midi) {
             midi.tracks.forEachIndexed { index, track ->
                 TrackTableCard(

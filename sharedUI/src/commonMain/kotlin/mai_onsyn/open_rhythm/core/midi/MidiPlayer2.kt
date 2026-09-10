@@ -3,6 +3,7 @@ package mai_onsyn.open_rhythm.core.midi
 import co.touchlab.kermit.Logger
 import dev.atsushieno.ktmidi.MidiOutput
 import kotlinx.coroutines.*
+import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.channels.Channel
 import mai_onsyn.open_rhythm.core.settings.MidiFileSettings
 import mai_onsyn.open_rhythm.core.util.NoteBlocker
@@ -18,7 +19,7 @@ class MidiPlayer2(
     private val scope = CoroutineScope(Dispatchers.IO)
     private var senderThread: Job? = null
     private var playbackThread: Job? = null
-    private val eventChannel = Channel<ByteArray>(Channel.UNLIMITED)
+    private val eventChannel = Channel<ByteArray>(512, BufferOverflow.DROP_LATEST)
 
     private var midi: Midi? = null
     private var config: MidiFileSettings? = null

@@ -455,7 +455,7 @@ fun LabeledSliderWithPrefixSuffix(
 
 @Composable
 private fun LabelRow(value: String, extraSuffix: String?) {
-    Row(Modifier.width(44.dp), horizontalArrangement = Arrangement.Center) {
+    Row(Modifier.width(48.dp), horizontalArrangement = Arrangement.Center) {
         Text(
             text = value,
             style = MaterialTheme.typography.labelMedium

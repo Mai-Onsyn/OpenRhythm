@@ -97,6 +97,7 @@ fun TrackWideTable(
         }
     }
 }
+
 @Composable
 fun BindTrackPlay(
     midi: Midi,

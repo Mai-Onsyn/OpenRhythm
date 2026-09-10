@@ -27,6 +27,7 @@ import openrhythm.sharedui.generated.resources.*
 fun TrackEditPage(
     midi: Midi?,
     midiPath: String,
+    useWideLayout: Boolean,
     onBack: () -> Unit,
 ) {
     BackHandler { onBack() }
@@ -128,8 +129,14 @@ fun TrackEditPage(
         }
         HorizontalDivider(Modifier.padding(vertical = 16.dp))
 
-        key(refreshVersion) {
-            TrackTable(
+        key(refreshVersion, useWideLayout) {
+            if (useWideLayout) TrackWideTable(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f),
+                midiPath = midiPath,
+                midi = midi
+            ) else TrackNarrowTable(
                 modifier = Modifier
                     .fillMaxWidth()
                     .weight(1f),

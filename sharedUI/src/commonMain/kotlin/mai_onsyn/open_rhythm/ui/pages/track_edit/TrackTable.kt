@@ -1,5 +1,6 @@
 package mai_onsyn.open_rhythm.ui.pages.track_edit
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -21,7 +22,7 @@ import mai_onsyn.open_rhythm.ui.utility.str
 import openrhythm.sharedui.generated.resources.*
 
 @Composable
-fun TrackTable(
+fun TrackWideTable(
     modifier: Modifier = Modifier,
     midiPath: String,
     midi: Midi
@@ -74,38 +75,16 @@ fun TrackTable(
             modifier = Modifier
                 .verticalScroll(rememberScrollState())
         ) {
-            var playingIndex by remember { mutableStateOf(-1) }
-            LaunchedEffect(playingIndex) {
-                Global.player.stop()
-                if (playingIndex != -1) {
-                    Global.player.setMidi(
-                        midi.take(playingIndex),
-                        Global.settings.midiFileSettings[midiPath]?.take(playingIndex)
-                    )
-                    Global.player.seek(midi.tracks[playingIndex].tickRange.first.toLong())
-                    Global.player.play()
-                    Global.player.onCompletion = { playingIndex = -1 }
-                    Logger.i { "Playing track $playingIndex in MIDI ${midi.name}" }
-                } else Logger.d { "Stopped playback: idx=-1 (stop flag)" }
-            }
-            DisposableEffect(Unit) {
-                onDispose {
-                    if (playingIndex != -1) {
-                        Global.player.stop()
-                        Logger.d { "Stopped playback: idx=-1 (stop flag)" }
-                    }
-                }
-            }
+            var playingIndex by bindPlayable(midi, midiPath)
             key(midi) {
                 midi.tracks.forEachIndexed { index, track ->
-                    TrackTableItem(
+                    TrackTableRow(
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(56.dp),
                         index = index,
                         track = track,
                         midiPath = midiPath,
-                        totalTracks = midi.tracks.size,
                         midiTickRange = midi.startTick..midi.endTick,
                         isPlaying = index == playingIndex,
                         onPlayPauseRequest = {
@@ -113,6 +92,66 @@ fun TrackTable(
                         }
                     )
                 }
+            }
+        }
+    }
+}
+
+@Composable
+private fun bindPlayable(midi: Midi, midiPath: String): MutableState<Int> {
+    val playingIndex = remember { mutableStateOf(-1) }
+    LaunchedEffect(playingIndex) {
+        Global.player.stop()
+        if (playingIndex.value != -1) {
+            Global.player.setMidi(
+                midi.take(playingIndex.value),
+                Global.settings.midiFileSettings[midiPath]?.take(playingIndex.value)
+            )
+            Global.player.seek(midi.tracks[playingIndex.value].tickRange.first.toLong())
+            Global.player.play()
+            Global.player.onCompletion = { playingIndex.value = -1 }
+            Logger.i { "Playing track ${playingIndex.value} in MIDI ${midi.name}" }
+        } else Logger.d { "Stopped playback: idx=-1 (stop flag)" }
+    }
+    DisposableEffect(Unit) {
+        onDispose {
+            if (playingIndex.value != -1) {
+                Global.player.stop()
+                Logger.d { "Stopped playback: idx=-1 (stop flag)" }
+            }
+        }
+    }
+    return playingIndex
+}
+
+@Composable
+fun TrackNarrowTable(
+    modifier: Modifier = Modifier,
+    midiPath: String,
+    midi: Midi
+) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(16.dp),
+        modifier = modifier
+            .verticalScroll(rememberScrollState())
+    ) {
+        var playingIndex by bindPlayable(midi, midiPath)
+        key(midi) {
+            midi.tracks.forEachIndexed { index, track ->
+                TrackTableCard(
+                    modifier = Modifier
+                        .fillMaxWidth(),
+//                        .height(144.dp),
+                    index = index,
+                    track = track,
+                    midiPath = midiPath,
+                    midiTickRange = midi.startTick..midi.endTick,
+                    isPlaying = index == playingIndex,
+                    onPlayPauseRequest = {
+                        playingIndex = if (it) index else -1
+                    }
+                )
             }
         }
     }

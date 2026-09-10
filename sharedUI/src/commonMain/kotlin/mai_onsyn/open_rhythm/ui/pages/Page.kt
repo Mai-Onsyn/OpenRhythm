@@ -169,7 +169,7 @@ fun AppNavigation(
             }
 
             composable<TrackEditScreen> {
-                TrackEditPage(currentOperateMidi, currentOperateMidiPath, onBack)
+                TrackEditPage(currentOperateMidi, currentOperateMidiPath, maxWidth > 600.dp, onBack)
             }
         }
     }

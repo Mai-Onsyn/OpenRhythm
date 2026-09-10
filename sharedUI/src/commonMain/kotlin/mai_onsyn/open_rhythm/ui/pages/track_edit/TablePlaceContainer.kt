@@ -1,10 +1,15 @@
 package mai_onsyn.open_rhythm.ui.pages.track_edit
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import mai_onsyn.open_rhythm.ui.modules.getContrastTextColor
 
 @Composable
 fun TablePlaceRow(
@@ -43,6 +48,47 @@ fun TablePlaceRow(
                 Box(Modifier.weight(1f).fillMaxHeight().padding(end = 16.dp)) { volume() }
                 Box(Modifier.width(56.dp).fillMaxHeight()) { enable() }
                 Box(Modifier.width(56.dp).fillMaxHeight()) { play() }
+            }
+        }
+    }
+}
+
+@Composable
+fun TablePlaceCard(
+    modifier: Modifier = Modifier,
+    bgColor: Color,
+    header: @Composable BoxScope.() -> Unit,
+    inst: @Composable BoxScope.() -> Unit,
+    preview: @Composable BoxScope.() -> Unit,
+    color: @Composable BoxScope.() -> Unit,
+    volume: @Composable BoxScope.() -> Unit,
+    enable: @Composable BoxScope.() -> Unit,
+    play: @Composable BoxScope.() -> Unit
+) {
+    Card(
+        modifier = modifier,
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceContainer,
+            contentColor = MaterialTheme.colorScheme.onSurface
+        )
+    ) {
+        Column(
+            modifier = Modifier
+                .padding(16.dp)
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Box(Modifier.size(56.dp)) { header() }
+                Box(Modifier.height(56.dp).weight(1f)) { inst() }
+                Box(Modifier.size(56.dp)) { play() }
+            }
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Box(Modifier.height(56.dp)) { enable() }
+                Box(Modifier.size(120.dp, 56.dp)) { color() }
+                Box(Modifier.weight(1f).height(56.dp)) { volume() }
             }
         }
     }

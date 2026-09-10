@@ -48,7 +48,7 @@ Built on Compose Multiplatform. Currently supported:
 
 ### UI Customization
 
-- UI adapts to landscape & portrait (track-edit page isn't portrait-ready yet)
+- UI adapts to landscape & portrait
 - Light / Dark / System theme with a fully customizable primary color
 - Waterfall background: follow-theme, solid color, or custom image (with opacity & blur)
 - Octave & bar lines with customizable color and thickness

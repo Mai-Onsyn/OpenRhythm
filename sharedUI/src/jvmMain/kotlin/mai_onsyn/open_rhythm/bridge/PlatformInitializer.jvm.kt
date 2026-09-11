@@ -69,7 +69,7 @@ actual fun registerGlobalKeyEventDispatcher(keyEventDispatcher: GlobalKeyEventDi
 actual fun setupMidiOutput(output: MidiOutput, name: String, context: Any) {
     if (context is String && name == "Gervill") {
         val file = File(context)
-        if (file.exists()) {
+        if (context.isNotBlank() && file.isFile) {
             loadSoundbankToKtmidiOutput(output, file)
         }
     }

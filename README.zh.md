@@ -82,7 +82,7 @@ Compose Multiplatform 依赖 JVM，在 Desktop 需要捆绑 JVM 和 Skia，体�
 ## 🗺️未来计划
 
 - 虚拟键盘立体阴影
-- 脱离Canvas预渲染瀑布流画面以大幅优化性能
+- MIDI 视频渲染
 - 使用外置脚本语言 (计划 kotlite) 控制 MIDI 瀑布流 / 虚拟键盘的渲染
 
 

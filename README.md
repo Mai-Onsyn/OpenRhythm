@@ -83,7 +83,7 @@ JVM memory (ZGC) is well managed, but Compose's native layer holds onto memory f
 ## 🗺️ Roadmap
 
 - 3D shadows on the virtual keyboard
-- Pre-render waterfall flow off the Canvas to significantly improve performance
+- MIDI video rendering
 - An external scripting language (kotlite planned) to control waterfall / virtual-keyboard rendering
 
 

@@ -92,9 +92,8 @@ Compose Multiplatform 依赖 JVM，在 Desktop 需要捆绑 JVM 和 Skia，体�
 在项目根目录：
 
 ```bash
-./gradlew build run
+./gradlew run
 ```
-
 
 
 ## 📄 许可证

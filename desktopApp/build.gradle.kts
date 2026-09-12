@@ -27,7 +27,7 @@ compose.desktop {
             }
             macOS {
                 iconFile.set(project.file("appIcons/OpenRhythm.icns"))
-                bundleID = "mai_onsyn.open_rhythm.desktopApp"
+                bundleID = "mai-onsyn.open-rhythm.desktopApp"
             }
         }
 
@@ -41,9 +41,7 @@ compose.desktop {
         )
 
         buildTypes.release.proguard {
-            if (!org.gradle.internal.os.OperatingSystem.current().isMacOsX) {
-                isEnabled = true
-            }
+            isEnabled = !(org.gradle.internal.os.OperatingSystem.current().isMacOsX)
             version = "7.9.1"
             configurationFiles.from("proguard.txt")
             obfuscate = false  // 混淆

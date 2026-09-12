@@ -93,9 +93,8 @@ JVM memory (ZGC) is well managed, but Compose's native layer holds onto memory f
 Just fire it up from the project root:
 
 ```bash
-./gradlew build run
+./gradlew run
 ```
-
 
 
 ## 📄 License

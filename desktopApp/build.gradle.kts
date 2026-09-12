@@ -41,11 +41,13 @@ compose.desktop {
         )
 
         buildTypes.release.proguard {
-            version.set("7.9.1")
+            if (!org.gradle.internal.os.OperatingSystem.current().isMacOsX) {
+                isEnabled = true
+            }
+            version = "7.9.1"
             configurationFiles.from("proguard.txt")
-            isEnabled.set(true)
-            obfuscate.set(false)  // 混淆
-            optimize.set(true)   // 优化
+            obfuscate = false  // 混淆
+            optimize = true    // 优化
         }
     }
 }

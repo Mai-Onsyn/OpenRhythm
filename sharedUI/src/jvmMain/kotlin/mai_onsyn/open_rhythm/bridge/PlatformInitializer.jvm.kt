@@ -33,7 +33,7 @@ actual object AppCursors {
 }
 
 actual fun createSetting(): Settings {
-    val configFile = File(System.getProperty("user.dir"), "settings.properties")
+    val configFile = settingsFile()
 
     val props = Properties().apply {
         if (configFile.exists()) {
@@ -45,8 +45,13 @@ actual fun createSetting(): Settings {
     return PropertiesSettings(
         delegate = props,
         onModify = {
-            configFile.outputStream().use { outputStream ->
-                props.store(outputStream, "App Settings")
+            try {
+                configFile.parentFile?.mkdirs()
+                configFile.outputStream().use { outputStream ->
+                    props.store(outputStream, "App Settings")
+                }
+            } catch (e: Exception) {
+                Logger.e(e) { "Cannot save settings to ${configFile.absolutePath}" }
             }
         }
     )

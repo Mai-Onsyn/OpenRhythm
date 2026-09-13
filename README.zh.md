@@ -77,6 +77,11 @@ Compose Multiplatform 依赖 JVM，在 Desktop 需要捆绑 JVM 和 Skia，体�
 
 虽然 JVM 内存（ZGC）控制良好，但 Compose 的 Native 层内存占用较高且回收不及时，整体内存消耗偏高。主要由Skia GPU加速渲染缓存占用，使用CPU渲染能降低一倍的内存消耗，但性能低下。
 
+### 平台局限
+
+作为开发者，我只有 Windows 和 Android 设备；Linux 和 macOS 版本是通过虚拟机构建的，因此只能构建 x64 版本。如果你使用的是 ARM 架构的 macOS/Linux 设备，请在 Apple Silicon Mac 上运行 x64 版本，或自行构建 ARM 版本。此外，通过虚拟机构建存在局限性，我无法保证 Linux 和 macOS 上不会出现未知 bug（例如，我的 macOS 虚拟机没有音频输出设备，无法打开 Gervill 合成器；理论上在实体机上可以使用）。
+
+对于 iOS 设备，我目前完全无法适配。
 
 
 ## 🗺️未来计划
@@ -89,10 +94,20 @@ Compose Multiplatform 依赖 JVM，在 Desktop 需要捆绑 JVM 和 Skia，体�
 
 ## 🚀快速开始 (构建 & 运行)
 
-在项目根目录：
+### 🔨 在项目根目录：
 
 ```bash
+# 启动
 ./gradlew run
+
+# 构建 Windows / macOS / Linux 可执行程序
+./gradlew createReleaseDistributable # 通用绿色程序
+./gradlew pakcageReleaseDmg # macOS 安装包
+./gradlew pakcageReleaseMsi # Windows 安装包
+./gradlew pakcageReleaseDeb # Linux 安装包
+
+# 构建 Android 安装包：
+# 使用 Android Studio 或 IDEA 的 Generate App Bundles or APKs 工具
 ```
 
 

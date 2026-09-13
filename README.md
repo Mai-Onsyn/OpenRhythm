@@ -78,7 +78,11 @@ Compose Multiplatform leans on the JVM, so Desktop needs to bundle the JVM and S
 
 JVM memory (ZGC) is well managed, but Compose's native layer holds onto memory fairly aggressively and recycles it late, so overall memory usage runs on the higher side. This is mainly caused by Skia GPU-accelerated rendering caches. Switching to CPU rendering can reduce memory consumption by half, but at the cost of poor performance.
 
+### Platform Limitations
 
+As the developer, I only have Windows and Android devices. The Linux and macOS builds are produced in virtual machines, so I can only build x64 versions. If you are using an ARM-based macOS/Linux device, please run the x64 build on Apple Silicon (macOS), or build an ARM version yourself. In addition, building in virtual machines has limitations, so I cannot guarantee that unknown bugs will not occur on Linux and macOS. (For example, my macOS virtual machine has no audio output device, so I cannot open the Gervill synthesizer; in theory, it should work on a physical machine.)
+
+As for iOS devices, I currently have no way to support them at all.
 
 ## 🗺️ Roadmap
 
@@ -93,9 +97,18 @@ JVM memory (ZGC) is well managed, but Compose's native layer holds onto memory f
 Just fire it up from the project root:
 
 ```bash
+# Launch
 ./gradlew run
-```
 
+# Build Windows / macOS / Linux executable programs
+./gradlew createReleaseDistributable # Universal portable program
+./gradlew pakcageReleaseDmg # macOS installer
+./gradlew pakcageReleaseMsi # Windows installer
+./gradlew pakcageReleaseDeb # Linux installer
+
+# Build Android apk
+# Please use the Generate App Bundles or APKs tool from Android Studio or IDEA
+```
 
 ## 📄 License
 

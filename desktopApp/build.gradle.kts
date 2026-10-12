@@ -27,7 +27,7 @@ compose.desktop {
             }
             macOS {
                 iconFile.set(project.file("appIcons/OpenRhythm.icns"))
-                bundleID = "mai_onsyn.open_rhythm.desktopApp"
+                bundleID = "mai-onsyn.open-rhythm.desktopApp"
             }
         }
 
@@ -35,17 +35,17 @@ compose.desktop {
             "-Dfile.encoding=UTF-8",
             "-XX:+UseZGC",
             "-Xms512m",
-            "-Xmx2048m",
+            "-XX:MaxRAMPercentage=80.0",
             "--enable-native-access=ALL-UNNAMED",
 //            "-Xlog:gc"
         )
 
         buildTypes.release.proguard {
-            version.set("7.9.1")
+            isEnabled = !(org.gradle.internal.os.OperatingSystem.current().isMacOsX)
+            version = "7.9.1"
             configurationFiles.from("proguard.txt")
-            isEnabled.set(true)
-            obfuscate.set(false)  // 混淆
-            optimize.set(true)   // 优化
+            obfuscate = false  // 混淆
+            optimize = true    // 优化
         }
     }
 }

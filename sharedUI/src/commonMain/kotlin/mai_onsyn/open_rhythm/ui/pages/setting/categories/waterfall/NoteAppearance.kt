@@ -62,16 +62,40 @@ fun NoteAppearance() {
             )
         }
         item(str(Res.string.set_note_quarterHeight), verticalLayout = true) {
-            var value by remember { mutableStateOf(Global.settings.QuarterNoteDpHeight.roundToInt()) }
+            val mappingArray = remember {
+                mutableListOf<Int>().apply {
+                    repeat(4) {
+                        add(5 * it + 5)
+                    }
+                    repeat(8) {
+                        add(30 + 10 * it)
+                    }
+                    repeat(15) {
+                        add(120 + 20 * it)
+                    }
+                    repeat(16) {
+                        add(500 + 100 * it)
+                    }
+                }
+            }
+            var value by remember { mutableStateOf(
+                mappingArray.indexOf(
+                    Global.settings.QuarterNoteDpHeight.roundToInt()
+                ).let { if (it != -1) it else 0 }
+            ) }
             SliderWithSuffix(
                 value = value,
                 onValueChanged = {
                     value = it
-                    Global.settings.QuarterNoteDpHeight = it.toFloat()
+                    Global.settings.QuarterNoteDpHeight = mappingArray[it].toFloat()
                 },
-                steps = 10,
-                range = 10..480,
-                extraSuffix = "dp"
+                steps = 1,
+                range = mappingArray.indices,
+                extraSuffix = "dp",
+                valueMapping = {
+                    if (mappingArray[it] >= 1000) "${mappingArray[it] / 1000f}k"
+                    else mappingArray[it].toString()
+                }
             )
         }
         item(str(Res.string.set_note_minDuration), verticalLayout = true) {

@@ -5,8 +5,10 @@ import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.*
 import androidx.compose.ui.text.TextLayoutResult
+import co.touchlab.kermit.Logger
 import com.materialkolor.ktx.darken
 import mai_onsyn.open_rhythm.core.midi.Midi
+import mai_onsyn.open_rhythm.core.util.Time
 import mai_onsyn.open_rhythm.ui.utility.drawTextCentered
 import mai_onsyn.open_rhythm.ui.utility.isBlackKey
 import kotlin.concurrent.Volatile
@@ -102,6 +104,7 @@ class WaterfallCache(
         bitmapArray.forEachIndexed { index, chunk ->
             chunk.chunkIndex = currChunk - 1 + index
             if (chunk.needRefresh) {
+                val cacheStart = Time.nanos
                 writeCache(
                     chunk,
                     midi,
@@ -112,6 +115,7 @@ class WaterfallCache(
                     noteRoundPercent
                 )
                 chunk.needRefresh = false
+                Logger.v { "Cache chunk ${chunk.chunkIndex} cost ${(Time.nanos - cacheStart) * 0.000001}ms" }
             }
         }
         return true
@@ -143,7 +147,7 @@ class WaterfallCache(
             val (x, w) = gridPos[note.note.pitch] ?: return@forEach
             val pixelPos = ((note.note.tick - startTick) * pxPerTick)
             val durationPx = note.note.duration * pxPerTick
-            val noteRect = Rect(Offset(x, ((windowSize.height - pixelPos - durationPx))), Size(w, durationPx))
+            val noteRect = Rect(Offset(x, windowSize.height - pixelPos - durationPx), Size(w, durationPx))
             val blackKey = isBlackKey(note.note.pitch)
             drawNoteGraphics(
                 canvas,
@@ -160,6 +164,42 @@ class WaterfallCache(
                 )
             }
         }
+    }
+
+
+    private val tiledDrawer = TiledDrawer(windowSize.height, pxPerTick)
+    private fun writeCacheMultiThread(
+        chunk: BitmapChunk,
+        midi: Midi,
+        maxNoteDurationList: List<Long>,
+        trackColors: List<Color>,
+        gridPos: Map<Int, Pair<Float, Float>>,
+        pitchLabels: Map<Int, TextLayoutResult>?,
+        noteRoundPercent: Float
+    ) {
+        val canvas = Canvas(chunk.bitmap)
+        canvas.drawRect(
+            Rect(Offset.Zero, Size(chunk.bitmap.width.toFloat(), chunk.bitmap.height.toFloat())),
+            TRANSPARENT_PAINT
+        )
+        val startTick = chunk.chunkIndex * tickWindowSize
+        val notes = filterWindowNotes(midi, startTick.toDouble(), tickWindowSize.toInt(), maxNoteDurationList, trackColors)
+        if (notes.isEmpty()) return
+
+        val pitchTiles = notes.groupConsecutiveBy { it.note.pitch }
+        pitchTiles.forEach { (pitch, subNotes) ->
+            val (x, w) = gridPos[pitch] ?: return@forEach
+            tiledDrawer.addDrawCall(
+                pitch = pitch,
+                x = x,
+                width = w,
+                startTick = startTick,
+                noteRoundPercent = noteRoundPercent,
+                notes = subNotes
+            )
+        }
+
+        tiledDrawer.draw(canvas)
     }
 
     fun getBitmaps(
@@ -185,4 +225,23 @@ class WaterfallCache(
     }
 
     fun chunkAt(tick: Double): Int = (tick / tickWindowSize).toInt()
+}
+
+private fun <A, K> List<A>.groupConsecutiveBy(keySelector: (A) -> K): Map<K, List<A>> {
+    val result = mutableMapOf<K, List<A>>()
+    if (isEmpty()) return result
+
+    var start = 0
+    var currentKey = keySelector(this[0])
+
+    for (i in 1 until size) {
+        val key = keySelector(this[i])
+        if (key != currentKey) {
+            result[currentKey] = subList(start, i) // 零开销视图
+            start = i
+            currentKey = key
+        }
+    }
+    result[currentKey] = subList(start, size) // 最后一段
+    return result
 }

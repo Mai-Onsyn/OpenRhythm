@@ -217,6 +217,9 @@ fun MidiWaterfall(
     }
 }
 
+/**
+ * 确保按音高排列 且所有黑键在白键后面
+ */
 fun filterWindowNotes(
     midi: Midi,
     currTick: Double,
@@ -236,7 +239,7 @@ fun filterWindowNotes(
             toDrawNotes.add(DrawableNote(it, trackColors[i % trackColors.size], i))
         }
     }
-    toDrawNotes.sortWith(compareBy({ isBlackKey(it.note.pitch) }, { it.note.tick }, { it.trackNum }))
+    toDrawNotes.sortWith(compareBy({ isBlackKey(it.note.pitch) }, { -it.note.pitch }, { it.note.tick }, { it.trackNum }))
     return toDrawNotes
 }
 

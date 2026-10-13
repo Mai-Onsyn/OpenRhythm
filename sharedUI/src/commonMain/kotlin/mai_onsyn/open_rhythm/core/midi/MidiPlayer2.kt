@@ -177,11 +177,19 @@ class MidiPlayer2(
             return
         }
 
+        val velocityCount = HashMap<Int, Int>()
+        var noteCount = 0
+        var filteredCount = 0
+
         for ((i, track) in midi.tracks.withIndex()) {
             if (!(config?.trackSettings[i]?.audible ?: true)) continue
             if (enableNote) for (note in track.notes) {
-                eventList.add(NoteEvent.noteOn(note.tick, note.pitch, note.velocity, note.channel))
-                eventList.add(NoteEvent.noteOff(note.tick + note.duration, note.pitch, note.velocity, note.channel))
+                velocityCount[note.velocity] = (velocityCount[note.velocity] ?: 0) + 1
+                noteCount++
+                if (note.velocity > 20) {
+                    eventList.add(NoteEvent.noteOn(note.tick, note.pitch, note.velocity, note.channel))
+                    eventList.add(NoteEvent.noteOff(note.tick + note.duration, note.pitch, note.velocity, note.channel))
+                } else filteredCount++
             }
             val volume = config?.trackSettings[i]?.volume
             if (enableCC) for (event in track.controllerEvents) {
@@ -191,6 +199,17 @@ class MidiPlayer2(
                 else eventList.add(event)
             }
         }
+
+        val topN = 10
+        val velocityDist = velocityCount.entries
+            .sortedByDescending { it.value }
+            .take(topN)
+            .joinToString(", ") { "${it.key}:${it.value}" }
+        if (noteCount != 0) {
+            Logger.d { "Velocity distribution (top $topN) [$velocityDist]" }
+            Logger.d { "Filtered $filteredCount of $noteCount (${filteredCount.toFloat() / noteCount}%)" }
+        }
+
         Logger.d { "Built ${eventList.size} events for MIDI ${midi.name}" }
         eventList.sortWith(compareBy({ it.tick }, { it.order }))
     }

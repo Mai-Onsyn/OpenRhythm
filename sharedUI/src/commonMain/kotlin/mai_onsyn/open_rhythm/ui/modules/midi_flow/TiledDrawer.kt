@@ -3,19 +3,17 @@ package mai_onsyn.open_rhythm.ui.modules.midi_flow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.BlendMode
-import androidx.compose.ui.graphics.Canvas
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ImageBitmap
-import androidx.compose.ui.graphics.Paint
+import androidx.compose.ui.graphics.*
 import com.materialkolor.ktx.darken
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import mai_onsyn.open_rhythm.core.util.Time
 import mai_onsyn.open_rhythm.ui.utility.isBlackKey
 import kotlin.concurrent.atomics.AtomicInt
 import kotlin.concurrent.atomics.ExperimentalAtomicApi
+import kotlin.math.max
 import kotlin.math.roundToInt
 
 private val TRANSPARENT_PAINT = Paint().apply {
@@ -57,7 +55,7 @@ class TiledDrawer (
     ) {
         tiles.getOrPut(pitch) {
             // 带阴影容差
-            val buffer = ImageBitmap((width * 1.2f).roundToInt(), bufferHeight.roundToInt())
+            val buffer = ImageBitmap(max(1, (width * 1.2f).roundToInt()), max(1, bufferHeight.roundToInt()))
             Tile(
                 pitch = pitch,
                 bitmap = buffer,
@@ -92,9 +90,10 @@ class TiledDrawer (
     fun draw(
         canvas: Canvas,
     ) {
+        val drawStart = Time.nanos
         val batch = dirty.mapNotNull { tiles[it] }
         runBlocking {
-            executeAll(batch, 8) { tile ->
+            executeAll(batch, 10) { tile ->
                 // clear
                 tile.canvas.drawRect(
                     Rect(Offset.Zero, Size(tile.bitmap.width.toFloat(), tile.bitmap.height.toFloat())),
@@ -103,13 +102,14 @@ class TiledDrawer (
 
                 // note draw
                 val blackKey = tile.isBlackKey
+                val colorMap = mutableMapOf<Color, Color>()
                 tile.notes.forEach { note ->
                     val pixelPos = ((note.note.tick - tile.startTick) * pxPerTick)
                     val durationPx = note.note.duration * pxPerTick
                     val noteRect = Rect(Offset(0f, bufferHeight - pixelPos - durationPx), Size(tile.width, durationPx))
                     drawNoteGraphics(
                         tile.canvas,
-                        if (blackKey) note.color.darken(1.5f) else note.color,
+                        if (blackKey) colorMap.getOrPut(note.color) { note.color.darken(1.5f) } else note.color,
                         noteRect,
                         tile.width * 0.5f * tile.noteRoundPercent
                     )
@@ -117,6 +117,7 @@ class TiledDrawer (
             }
         }
 
+        val mergeStart = Time.nanos
         // merge
         batch.sortedWith(compareBy( { isBlackKey(it.pitch) }, { it.pitch } )).forEach { tile ->
             canvas.drawImage(
@@ -125,6 +126,7 @@ class TiledDrawer (
                 EMPTY_PAINT
             )
         }
+//        Logger.v { "Draw cost ${(mergeStart - drawStart) * 0.000001f}ms; Merge cost ${(Time.nanos - mergeStart) * 0.000001f}ms" }
 
         dirty.clear()
     }
@@ -133,7 +135,7 @@ class TiledDrawer (
 @OptIn(ExperimentalAtomicApi::class)
 suspend fun <T> executeAll(
     tasks: List<T>,
-    parallelism: Int = 4,
+    parallelism: Int,
     process: (T) -> Unit
 ) = coroutineScope {
     val size = tasks.size

@@ -105,7 +105,7 @@ class WaterfallCache(
             chunk.chunkIndex = currChunk - 1 + index
             if (chunk.needRefresh) {
                 val cacheStart = Time.nanos
-                writeCache(
+                writeCacheMultiThread(
                     chunk,
                     midi,
                     maxNoteDurationList,
@@ -177,16 +177,21 @@ class WaterfallCache(
         pitchLabels: Map<Int, TextLayoutResult>?,
         noteRoundPercent: Float
     ) {
+        val initStart = Time.nanos
         val canvas = Canvas(chunk.bitmap)
         canvas.drawRect(
             Rect(Offset.Zero, Size(chunk.bitmap.width.toFloat(), chunk.bitmap.height.toFloat())),
             TRANSPARENT_PAINT
         )
+        val canvasDone = Time.nanos
+
         val startTick = chunk.chunkIndex * tickWindowSize
         val notes = filterWindowNotes(midi, startTick.toDouble(), tickWindowSize.toInt(), maxNoteDurationList, trackColors)
+        val filterDone = Time.nanos
         if (notes.isEmpty()) return
 
         val pitchTiles = notes.groupConsecutiveBy { it.note.pitch }
+        val groupDone = Time.nanos
         pitchTiles.forEach { (pitch, subNotes) ->
             val (x, w) = gridPos[pitch] ?: return@forEach
             tiledDrawer.addDrawCall(
@@ -198,8 +203,19 @@ class WaterfallCache(
                 notes = subNotes
             )
         }
+        val addCallDone = Time.nanos
 
+        val drawStart = Time.nanos
         tiledDrawer.draw(canvas)
+        val drawDone = Time.nanos
+
+        Logger.v {
+            "Init cost ${(canvasDone - initStart) * 0.000001f}ms; " +
+                    "Filter cost ${(filterDone - canvasDone) * 0.000001f}ms; " +
+                    "Group cost ${(groupDone - filterDone) * 0.000001f}ms; " +
+                    "AddCall cost ${(addCallDone - groupDone) * 0.000001f}ms; " +
+                    "Draw cost ${(drawDone - drawStart) * 0.000001f}ms"
+        }
     }
 
     fun getBitmaps(

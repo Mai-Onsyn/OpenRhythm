@@ -22,6 +22,8 @@ import androidx.compose.ui.unit.max
 import co.touchlab.kermit.Logger
 import mai_onsyn.open_rhythm.bridge.Global
 import mai_onsyn.open_rhythm.core.midi.Midi
+import mai_onsyn.open_rhythm.ui.modules.midi_flow.waterfalls.cpu_cached.CachedMidiWaterfall
+import mai_onsyn.open_rhythm.ui.modules.midi_flow.waterfalls.MidiWaterfall
 import mai_onsyn.open_rhythm.ui.utility.BackgroundImage
 import mai_onsyn.open_rhythm.ui.utility.BindInputDeviceEvents
 
@@ -125,35 +127,38 @@ fun MidiDownRegion(
                             }
                         else Modifier
                     )
-                if (Global.settings.UseCachedWaterfall) CachedMidiWaterfall(
-                    modifier = waterfallModifier,
-                    trackColors = trackColors,
-                    currTick = currentTick,
-                    minPitch = Global.settings.MinPitch,
-                    maxPitch = Global.settings.MaxPitch,
-                    midi = midi,
-                    hpb = hpb,
-                    activeNoteOutput = midiActiveKeys,
-                    onVerticalDragged = { deltaYpx += it },
-                    drawOctaveLine = Global.settings.DrawOctaveLines,
-                    drawSectionLine = Global.settings.DrawSectionLines,
-                    noteRoundPercent = Global.settings.NoteRoundConerPercent,
-                    drawPitchLabel = Global.settings.DrawPitchLabels
-                ) else MidiWaterfall(
-                    modifier = waterfallModifier,
-                    trackColors = trackColors,
-                    currTick = currentTick,
-                    minPitch = Global.settings.MinPitch,
-                    maxPitch = Global.settings.MaxPitch,
-                    midi = midi,
-                    hpb = hpb,
-                    activeNoteOutput = midiActiveKeys,
-                    onVerticalDragged = { deltaYpx += it },
-                    drawOctaveLine = Global.settings.DrawOctaveLines,
-                    drawSectionLine = Global.settings.DrawSectionLines,
-                    noteRoundPercent = Global.settings.NoteRoundConerPercent,
-                    drawPitchLabel = Global.settings.DrawPitchLabels
-                )
+                when (Global.settings.WaterfallRenderingMode) {
+                    0 -> MidiWaterfall(
+                        modifier = waterfallModifier,
+                        trackColors = trackColors,
+                        currTick = currentTick,
+                        minPitch = Global.settings.MinPitch,
+                        maxPitch = Global.settings.MaxPitch,
+                        midi = midi,
+                        hpb = hpb,
+                        activeNoteOutput = midiActiveKeys,
+                        onVerticalDragged = { deltaYpx += it },
+                        drawOctaveLine = Global.settings.DrawOctaveLines,
+                        drawSectionLine = Global.settings.DrawSectionLines,
+                        noteRoundPercent = Global.settings.NoteRoundConerPercent,
+                        drawPitchLabel = Global.settings.DrawPitchLabels
+                    )
+                    1 -> CachedMidiWaterfall(
+                        modifier = waterfallModifier,
+                        trackColors = trackColors,
+                        currTick = currentTick,
+                        minPitch = Global.settings.MinPitch,
+                        maxPitch = Global.settings.MaxPitch,
+                        midi = midi,
+                        hpb = hpb,
+                        activeNoteOutput = midiActiveKeys,
+                        onVerticalDragged = { deltaYpx += it },
+                        drawOctaveLine = Global.settings.DrawOctaveLines,
+                        drawSectionLine = Global.settings.DrawSectionLines,
+                        noteRoundPercent = Global.settings.NoteRoundConerPercent,
+                        drawPitchLabel = Global.settings.DrawPitchLabels
+                    )
+                }
             }
 
             LaunchedEffect(isPlaying, midi, hpb) {

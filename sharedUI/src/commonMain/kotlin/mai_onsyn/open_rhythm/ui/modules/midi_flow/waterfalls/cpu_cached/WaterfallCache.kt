@@ -1,4 +1,4 @@
-package mai_onsyn.open_rhythm.ui.modules.midi_flow
+package mai_onsyn.open_rhythm.ui.modules.midi_flow.waterfalls.cpu_cached
 
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
@@ -9,6 +9,8 @@ import co.touchlab.kermit.Logger
 import com.materialkolor.ktx.darken
 import mai_onsyn.open_rhythm.core.midi.Midi
 import mai_onsyn.open_rhythm.core.util.Time
+import mai_onsyn.open_rhythm.ui.modules.midi_flow.drawNoteGraphics
+import mai_onsyn.open_rhythm.ui.modules.midi_flow.waterfalls.filterWindowNotes
 import mai_onsyn.open_rhythm.ui.utility.drawTextCentered
 import mai_onsyn.open_rhythm.ui.utility.isBlackKey
 import kotlin.concurrent.Volatile
@@ -141,7 +143,8 @@ class WaterfallCache(
             TRANSPARENT_PAINT
         )
         val startTick = chunk.chunkIndex * tickWindowSize
-        val notes = filterWindowNotes(midi, startTick.toDouble(), tickWindowSize.toInt(), maxNoteDurationList, trackColors)
+        val notes =
+            filterWindowNotes(midi, startTick.toDouble(), tickWindowSize.toInt(), maxNoteDurationList, trackColors)
         if (notes.isEmpty()) return
         notes.forEach { note ->
             val (x, w) = gridPos[note.note.pitch] ?: return@forEach
@@ -186,7 +189,8 @@ class WaterfallCache(
         val canvasDone = Time.nanos
 
         val startTick = chunk.chunkIndex * tickWindowSize
-        val notes = filterWindowNotes(midi, startTick.toDouble(), tickWindowSize.toInt(), maxNoteDurationList, trackColors)
+        val notes =
+            filterWindowNotes(midi, startTick.toDouble(), tickWindowSize.toInt(), maxNoteDurationList, trackColors)
         val filterDone = Time.nanos
         if (notes.isEmpty()) return
 

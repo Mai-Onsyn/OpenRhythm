@@ -1,4 +1,4 @@
-package mai_onsyn.open_rhythm.ui.modules.midi_flow
+package mai_onsyn.open_rhythm.ui.modules.midi_flow.waterfalls.cpu_cached
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
@@ -7,7 +7,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.FilterQuality
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
@@ -15,11 +14,11 @@ import androidx.compose.ui.input.pointer.positionChanged
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.*
-import androidx.compose.ui.util.fastForEachReversed
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import mai_onsyn.open_rhythm.core.midi.Midi
 import mai_onsyn.open_rhythm.core.midi.Note
+import mai_onsyn.open_rhythm.ui.modules.midi_flow.waterfalls.filterWindowNotes
 import mai_onsyn.open_rhythm.ui.utility.*
 
 @Composable

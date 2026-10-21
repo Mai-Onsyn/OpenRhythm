@@ -109,7 +109,7 @@ class UserSetting(
     var ShowActiveNoteCount     by st.observable("ShowActiveNoteCount",         false)
 
     // =====Experiment=====
-    var UseCachedWaterfall      by st.observable("UseCachedWaterfall",          false)
+    var WaterfallRenderingMode  by st.observable("WaterfallRenderingMode",      0)  // 0=cpu realtime; 1=cpu static; 2 gpu realtime
 
     // =====User Data=====
     val libraryFolderList by st.list("LibraryFolderList", mutableListOf(), UILibraryFolder.serializer())

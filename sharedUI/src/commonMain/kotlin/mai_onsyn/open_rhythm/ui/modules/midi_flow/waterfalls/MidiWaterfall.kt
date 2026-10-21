@@ -1,4 +1,4 @@
-package mai_onsyn.open_rhythm.ui.modules.midi_flow
+package mai_onsyn.open_rhythm.ui.modules.midi_flow.waterfalls
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Arrangement
@@ -24,7 +24,6 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import co.touchlab.kermit.Logger
 import com.materialkolor.ktx.darken
 import kotlinx.coroutines.delay
 import mai_onsyn.open_rhythm.bridge.Global
@@ -32,6 +31,7 @@ import mai_onsyn.open_rhythm.core.midi.Midi
 import mai_onsyn.open_rhythm.core.midi.Note
 import mai_onsyn.open_rhythm.core.util.Time
 import mai_onsyn.open_rhythm.ui.modules.getContrastTextColor
+import mai_onsyn.open_rhythm.ui.modules.midi_flow.drawNoteGraphics
 import mai_onsyn.open_rhythm.ui.utility.*
 import kotlin.math.roundToInt
 import kotlin.math.roundToLong
@@ -248,12 +248,12 @@ fun filterWindowNotes(
     sortNotes(toDrawNotes)
     val sortDone = Time.nanos
 
-    if (visibleTickCount != 0) Logger.v {
-        "Find cost ${(findDone - findStart) * 0.000001f}ms; " +
-                "Sort cost ${(sortDone - findDone) * 0.000001f}ms; " +
-                "Total cost ${(sortDone - totalStart) * 0.000001f}ms; " +
-                "Notes ${toDrawNotes.size}"
-    }
+//    if (visibleTickCount != 0) Logger.v {
+//        "Find cost ${(findDone - findStart) * 0.000001f}ms; " +
+//                "Sort cost ${(sortDone - findDone) * 0.000001f}ms; " +
+//                "Total cost ${(sortDone - totalStart) * 0.000001f}ms; " +
+//                "Notes ${toDrawNotes.size}"
+//    }
     return toDrawNotes
 }
 

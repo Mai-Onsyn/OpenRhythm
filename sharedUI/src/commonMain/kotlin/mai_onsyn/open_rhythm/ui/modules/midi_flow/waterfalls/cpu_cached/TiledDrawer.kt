@@ -1,4 +1,4 @@
-package mai_onsyn.open_rhythm.ui.modules.midi_flow
+package mai_onsyn.open_rhythm.ui.modules.midi_flow.waterfalls.cpu_cached
 
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
@@ -10,6 +10,8 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import mai_onsyn.open_rhythm.core.util.Time
+import mai_onsyn.open_rhythm.ui.modules.midi_flow.drawNoteGraphics
+import mai_onsyn.open_rhythm.ui.modules.midi_flow.waterfalls.DrawableNote
 import mai_onsyn.open_rhythm.ui.utility.isBlackKey
 import kotlin.concurrent.atomics.AtomicInt
 import kotlin.concurrent.atomics.ExperimentalAtomicApi

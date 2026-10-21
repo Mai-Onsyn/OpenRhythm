@@ -28,6 +28,9 @@ dependencyResolutionManagement {
             }
         }
         mavenCentral()
+        maven("https://nexus.silenium.dev/repository/maven-releases/") {
+            name = "silenium-dev-releases"
+        }
     }
 }
 include(":sharedUI")

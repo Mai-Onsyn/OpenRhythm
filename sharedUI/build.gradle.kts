@@ -1,7 +1,9 @@
 import io.kmpbits.splash.ExitAnimation
 import io.kmpbits.splash.SplashColor
 import io.kmpbits.splash.SplashLogo
+import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.jetbrains.kotlin.gradle.plugin.KotlinPlatformType
 import org.gradle.kotlin.dsl.withType
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
 
@@ -44,23 +46,23 @@ kotlin {
             api(libs.kotlinx.serialization.json)
             api(libs.multiplatformSettings)
             api(libs.kotlinx.datetime)
-            api("dev.atsushieno:ktmidi:0.12.0")
-            api("org.jetbrains.kotlinx:kotlinx-io-core:0.9.1")
-//            api("dev.zwander:kmpfile:0.8.0")
-            implementation("io.coil-kt.coil3:coil-compose:3.5.0")
 
-            implementation("io.github.vinceglb:filekit-core:0.14.2")
-            implementation("io.github.vinceglb:filekit-dialogs-compose:0.14.2")
+            api(libs.ktmidi)
+            api(libs.kotlinx.io.core)
+            implementation(libs.coil.compose)
 
-            implementation("org.jetbrains.androidx.navigation:navigation-compose:2.9.2")
-            implementation("org.jetbrains.compose.ui:ui-backhandler:1.11.1")
+            implementation(libs.filekit.core)
+            implementation(libs.filekit.dialogs.compose)
 
-            implementation("com.materialkolor:material-kolor:4.1.1")
-            implementation("com.mikepenz:aboutlibraries-compose-m3:14.2.1")
-            implementation("sh.calvin.reorderable:reorderable:3.1.0")
+            implementation(libs.navigation.compose)
+            implementation(libs.ui.backhandler)
+
+            implementation(libs.material.kolor)
+            implementation(libs.aboutlibraries.compose.m3)
+            implementation(libs.reorderable)
 //            implementation("dev.chrisbanes.haze:haze-blur:2.0.0-alpha05")
 
-            implementation("io.github.sudarshanmhasrup.localina:localina:1.0.0-beta2")
+            implementation(libs.localina)
         }
 
         commonTest.dependencies {
@@ -79,6 +81,22 @@ kotlin {
             implementation(compose.desktop.currentOs)
             implementation(libs.kotlinx.coroutines.swing)
 //            api("dev.atsushieno:ktmidi-jvm-desktop:0.12.0")
+        }
+
+        // JVM + Android 共享源集
+        val jvmAndroidMain = maybeCreate("jvmAndroidMain")
+        jvmAndroidMain.dependencies {
+            implementation(libs.compose.gl)
+        }
+    }
+
+    @OptIn(ExperimentalKotlinGradlePluginApi::class)
+    applyDefaultHierarchyTemplate {
+        common {
+            group("jvmAndroid") {
+                withJvm()
+                withCompilations { it.target.platformType == KotlinPlatformType.androidJvm }
+            }
         }
     }
 

@@ -22,6 +22,7 @@ import androidx.compose.ui.unit.max
 import co.touchlab.kermit.Logger
 import mai_onsyn.open_rhythm.bridge.Global
 import mai_onsyn.open_rhythm.core.midi.Midi
+import mai_onsyn.open_rhythm.ui.modules.midi_flow.waterfalls.DefaultMidiWaterfall
 import mai_onsyn.open_rhythm.ui.modules.midi_flow.waterfalls.cpu_cached.CachedMidiWaterfall
 import mai_onsyn.open_rhythm.ui.modules.midi_flow.waterfalls.MidiWaterfall
 import mai_onsyn.open_rhythm.ui.utility.BackgroundImage
@@ -128,7 +129,7 @@ fun MidiDownRegion(
                         else Modifier
                     )
                 when (Global.settings.WaterfallRenderingMode) {
-                    0 -> MidiWaterfall(
+                    0 -> DefaultMidiWaterfall(
                         modifier = waterfallModifier,
                         trackColors = trackColors,
                         currTick = currentTick,

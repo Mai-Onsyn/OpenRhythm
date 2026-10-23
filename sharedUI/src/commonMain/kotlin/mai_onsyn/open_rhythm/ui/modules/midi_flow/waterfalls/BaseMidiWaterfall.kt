@@ -31,18 +31,15 @@ import kotlin.math.roundToInt
 import kotlin.math.roundToLong
 import kotlin.time.Duration.Companion.seconds
 
-/**
- * 封装音符渲染所需的核心上下文参数
- */
-data class NoteRenderScope(
-    val currTick: Double,
-    val visibleTickCount: Int,
-    val pxPerTick: Float,
-    val gridPos: Map<Int, Pair<Float, Float>>,
-    val pitchLabels:  Map<Int, TextLayoutResult>?,
-    val maxNoteDurationList: List<Long>,
+interface NoteRenderScope : BoxScope {
+    val currTick: Double
+    val visibleTickCount: Int
+    val pxPerTick: Float
+    val gridPos: Map<Int, Pair<Float, Float>>
+    val pitchLabels: Map<Int, TextLayoutResult>?
+    val maxNoteDurationList: List<Long>
     val whiteKeyWidth: Float
-)
+}
 
 @Composable
 fun BaseMidiWaterfall(
@@ -51,16 +48,14 @@ fun BaseMidiWaterfall(
     midi: Midi,
     minPitch: Int = 21,
     maxPitch: Int = 108,
-    trackColors: List<Color> = emptyList(),
     hpb: Dp = 120.dp,
     spacing: Dp = 1.dp,
     blackHorizontalPercentage: Float = 0.75f,
-    activeNoteOutput: MutableMap<Int, Color> = mutableMapOf(),
     drawSectionLine: Boolean = true,
     drawOctaveLine: Boolean = true,
     drawPitchLabel: Boolean = false,
     onVerticalDragged: (Float) -> Unit = {},
-    noteContent: @Composable BoxScope.(NoteRenderScope) -> Unit
+    noteContent: @Composable NoteRenderScope.() -> Unit
 ) {
     val density = LocalDensity.current
     val spacingPx = with(density) { spacing.toPx() }
@@ -135,7 +130,6 @@ fun BaseMidiWaterfall(
                 }
             }
     ) {
-        // 1. 公共底层网格线（八度线、小节线）
         Canvas(modifier = Modifier.matchParentSize()) {
             if (drawOctaveLine) drawOctaveLines(minPitch, maxPitch, gridPos)
             if (drawSectionLine) drawSectionLines(midi, currTick, currTick + visibleTickCount, pxPerTick)
@@ -147,21 +141,19 @@ fun BaseMidiWaterfall(
             countedFrames++
         }
 
-        // 2. 差异化音符渲染层（通过插槽注入）
         val renderScope = remember(currTick, canvasSize, hpb, midi) {
-            NoteRenderScope(
-                currTick = currTick,
-                visibleTickCount = visibleTickCount,
-                pxPerTick = pxPerTick,
-                gridPos = gridPos,
-                pitchLabels = pitchLabels,
-                maxNoteDurationList = maxNoteDurationList,
-                whiteKeyWidth = whiteKeyWidth
-            )
+            object : NoteRenderScope, BoxScope by this {
+                override val currTick: Double = currTick
+                override val visibleTickCount: Int = visibleTickCount
+                override val pxPerTick: Float = pxPerTick
+                override val gridPos: Map<Int, Pair<Float, Float>> = gridPos
+                override val pitchLabels: Map<Int, TextLayoutResult>? = pitchLabels
+                override val maxNoteDurationList: List<Long> = maxNoteDurationList
+                override val whiteKeyWidth: Float = whiteKeyWidth
+            }
         }
-        noteContent(renderScope)
+        renderScope.noteContent()
 
-        // 3. 公共顶层调试 UI 状态面板
         Box(Modifier.matchParentSize()) {
             val colorScheme = MaterialTheme.colorScheme
             val color by Global.settings.WaterfallBackgroundColor.let {

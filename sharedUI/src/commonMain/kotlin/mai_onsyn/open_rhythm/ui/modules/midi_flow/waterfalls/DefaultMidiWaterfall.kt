@@ -80,6 +80,8 @@ fun DefaultMidiWaterfall(
             activeNoteCount = 0
             for (pack in toDrawNotes) { if (!isBlackKey(pack.note.pitch)) drawNote(pack, false) }
             for (pack in toDrawNotes) { if (isBlackKey(pack.note.pitch)) drawNote(pack, true) }
+            status.currentNoteCount = toDrawNotes.size
+            status.activeNoteCount = activeNoteCount
         }
     }
 }

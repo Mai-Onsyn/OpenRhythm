@@ -107,7 +107,7 @@ class WaterfallCache(
             chunk.chunkIndex = currChunk - 1 + index
             if (chunk.needRefresh) {
                 val cacheStart = Time.nanos
-                writeCacheMultiThread(
+                writeCache(
                     chunk,
                     midi,
                     maxNoteDurationList,

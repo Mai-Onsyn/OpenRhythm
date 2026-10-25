@@ -24,7 +24,6 @@ import mai_onsyn.open_rhythm.bridge.Global
 import mai_onsyn.open_rhythm.core.midi.Midi
 import mai_onsyn.open_rhythm.ui.modules.midi_flow.waterfalls.DefaultMidiWaterfall
 import mai_onsyn.open_rhythm.ui.modules.midi_flow.waterfalls.cpu_cached.CachedMidiWaterfall
-import mai_onsyn.open_rhythm.ui.modules.midi_flow.waterfalls.MidiWaterfall
 import mai_onsyn.open_rhythm.ui.utility.BackgroundImage
 import mai_onsyn.open_rhythm.ui.utility.BindInputDeviceEvents
 

@@ -39,7 +39,13 @@ interface NoteRenderScope : BoxScope {
     val pitchLabels: Map<Int, TextLayoutResult>?
     val maxNoteDurationList: List<Long>
     val whiteKeyWidth: Float
+    val status: WaterfallRenderingStatus
 }
+
+class WaterfallRenderingStatus(
+    var currentNoteCount: Int = -1,
+    var activeNoteCount: Int = -1
+)
 
 @Composable
 fun BaseMidiWaterfall(
@@ -141,6 +147,7 @@ fun BaseMidiWaterfall(
             countedFrames++
         }
 
+        val renderingStatus = remember { WaterfallRenderingStatus() }
         val renderScope = remember(currTick, canvasSize, hpb, midi) {
             object : NoteRenderScope, BoxScope by this {
                 override val currTick: Double = currTick
@@ -150,6 +157,7 @@ fun BaseMidiWaterfall(
                 override val pitchLabels: Map<Int, TextLayoutResult>? = pitchLabels
                 override val maxNoteDurationList: List<Long> = maxNoteDurationList
                 override val whiteKeyWidth: Float = whiteKeyWidth
+                override val status: WaterfallRenderingStatus = renderingStatus
             }
         }
         renderScope.noteContent()
@@ -171,7 +179,8 @@ fun BaseMidiWaterfall(
                 if (Global.settings.ShowCurrentTick) ShowText("Tick=${currTick.roundToLong()}")
                 if (Global.settings.ShowFps) ShowText("FPS=${fps}")
                 if (Global.settings.ShowFrameTime) ShowText("Frame Time=${frameTime}")
-                // 渲染音符数和激活数可以由具体实现层去更新全局或通过状态回调，这里保留基础框架
+                if (Global.settings.ShowRenderingNoteCount && renderingStatus.currentNoteCount != -1) ShowText("Rendering Notes=${renderingStatus.currentNoteCount}")
+                if (Global.settings.ShowActiveNoteCount && renderingStatus.activeNoteCount != -1) ShowText("Active Notes=${renderingStatus.activeNoteCount}")
             }
         }
     }

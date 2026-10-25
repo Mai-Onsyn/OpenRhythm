@@ -102,9 +102,9 @@ Compose Multiplatform 依赖 JVM，在 Desktop 需要捆绑 JVM 和 Skia，体�
 
 # 构建 Windows / macOS / Linux 可执行程序
 ./gradlew createReleaseDistributable # 通用绿色程序
-./gradlew pakcageReleaseDmg # macOS 安装包
-./gradlew pakcageReleaseMsi # Windows 安装包
-./gradlew pakcageReleaseDeb # Linux 安装包
+./gradlew packageReleaseDmg # macOS 安装包
+./gradlew packageReleaseMsi # Windows 安装包
+./gradlew packageReleaseDeb # Linux 安装包
 
 # 构建 Android 安装包：
 # 使用 Android Studio 或 IDEA 的 Generate App Bundles or APKs 工具

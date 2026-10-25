@@ -102,9 +102,9 @@ Just fire it up from the project root:
 
 # Build Windows / macOS / Linux executable programs
 ./gradlew createReleaseDistributable # Universal portable program
-./gradlew pakcageReleaseDmg # macOS installer
-./gradlew pakcageReleaseMsi # Windows installer
-./gradlew pakcageReleaseDeb # Linux installer
+./gradlew packageReleaseDmg # macOS installer
+./gradlew packageReleaseMsi # Windows installer
+./gradlew packageReleaseDeb # Linux installer
 
 # Build Android apk
 # Please use the Generate App Bundles or APKs tool from Android Studio or IDEA

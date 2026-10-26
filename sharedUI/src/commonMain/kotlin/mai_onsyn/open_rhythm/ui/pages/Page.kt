@@ -157,7 +157,7 @@ fun AppNavigation(
             }
 
             composable<PlayScreen> {
-                PlayPage(currentOperateMidi, onBack)
+                PlayPage(currentOperateMidi, onBack, Global.settings.WaterfallRenderingMode)
             }
 
             composable<FreePlayScreen> {

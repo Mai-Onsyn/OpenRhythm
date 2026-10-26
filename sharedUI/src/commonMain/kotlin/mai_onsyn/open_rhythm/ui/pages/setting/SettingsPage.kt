@@ -233,7 +233,7 @@ fun PreviewRail(modifier: Modifier) {
         ) {
             value = parseMidi("故郷の星が映る海", Res.readBytes("files/The sea reflecting my hometown star.mid").toList())
         }
-        PlayPage(midi, {}, false)
+        PlayPage(midi, {}, 0, false)
 
         DisposableEffect(Unit) {
             onDispose {

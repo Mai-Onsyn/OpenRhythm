@@ -40,6 +40,7 @@ import kotlin.time.Duration.Companion.seconds
 fun PlayPage(
     midi: Midi?,
     onBack: () -> Unit,
+    renderer: Int,
     drawStatusBar: Boolean = true
 ) {
     if (drawStatusBar) BackHandler { onBack() }
@@ -123,7 +124,8 @@ fun PlayPage(
             keyboardRatio = if (Global.settings.KeyboardAutoAspect) Global.settings.KeyboardAspectRatio else 0f,
             onPlayStateChange = { isPlaying = it },
             onProgressChange = { playProgress = it },
-            focusRequester = focusRequester
+            focusRequester = focusRequester,
+            renderer = renderer
         )
 
         if (drawStatusBar) {

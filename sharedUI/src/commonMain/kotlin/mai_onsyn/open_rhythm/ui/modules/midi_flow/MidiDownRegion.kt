@@ -59,7 +59,8 @@ fun MidiDownRegion(
     keyboardRatio: Float = 0f,
     onPlayStateChange: (Boolean) -> Unit = {},
     onProgressChange: (Float) -> Unit = {},
-    focusRequester: FocusRequester? = null
+    focusRequester: FocusRequester? = null,
+    renderer: Int = 0
 ) {
     val density = LocalDensity.current
 
@@ -150,11 +151,11 @@ fun MidiDownRegion(
                             }
                         else Modifier
                     )
-                val waterfall: Renderer = when(Global.settings.WaterfallRenderingMode) {
+                val waterfall: Renderer = when(renderer) {
                     0 -> ::DefaultMidiWaterfall
                     1 -> ::CachedMidiWaterfall
                     2 -> ::GLInstancedWaterfall
-                    else -> throw UnsupportedOperationException("Waterfall rendering mode ${Global.settings.WaterfallRenderingMode} is not supported yet")
+                    else -> throw UnsupportedOperationException("Waterfall rendering mode ${renderer} is not supported yet")
                 }
                 waterfall(
                     waterfallModifier,

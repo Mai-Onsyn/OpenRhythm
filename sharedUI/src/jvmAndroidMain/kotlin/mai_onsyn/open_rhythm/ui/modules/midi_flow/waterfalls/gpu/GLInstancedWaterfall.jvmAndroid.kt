@@ -9,6 +9,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import dev.silenium.compose.gl.canvas.GLCanvas
 import dev.silenium.compose.gl.canvas.GLCanvasState
+import dev.silenium.compose.gl.canvas.rememberGLCanvasState
+import dev.silenium.libs.gl.fbo.FBO
 import mai_onsyn.open_rhythm.ui.modules.midi_flow.waterfalls.NoteRenderScope
 import org.lwjgl.opengl.GL30
 
@@ -19,17 +21,21 @@ actual fun NoteRenderScope.OpenGLWaterfall(
     activeNoteOutput: MutableMap<Int, Color>,
     roundCorners: Float
 ) {
+    val state = rememberGLCanvasState()
     GLCanvas(
+        state = state,
         modifier = modifier.matchParentSize(),
         onDispose = {},
-        onResize = {a, b ->
-            println("${a ?: "null"}, $b")
+        onResize = { old, new ->
+            println("Resized to $new")
         }
     ) {
         GL30.glEnable(GL30.GL_BLEND)
-        GL30.glBlendFunc(GL30.GL_SRC_ALPHA, GL30.GL_ONE_MINUS_SRC_ALPHA)
+        GL30.glBlendFunc(GL30.GL_ONE, GL30.GL_ONE_MINUS_SRC_ALPHA)
 
-        GL30.glClearColor(1f, 1f, 0f, 0.1f)
+        // 预乘 clear 颜色：rgb * a。这里 (1,1,0) @ 0.1 => (0.1, 0.1, 0), 0.1
+        val clearAlpha = 0.1f
+        GL30.glClearColor(1f * clearAlpha, 1f * clearAlpha, 0f * clearAlpha, clearAlpha)
         GL30.glClear(GL30.GL_COLOR_BUFFER_BIT)
     }
 

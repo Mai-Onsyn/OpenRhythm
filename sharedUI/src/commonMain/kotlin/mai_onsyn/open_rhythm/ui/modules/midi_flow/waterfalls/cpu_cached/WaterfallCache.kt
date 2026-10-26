@@ -171,6 +171,7 @@ class WaterfallCache(
 
 
     private val tiledDrawer = TiledDrawer(windowSize.height, pxPerTick)
+    @Deprecated("Unstable")
     private fun writeCacheMultiThread(
         chunk: BitmapChunk,
         midi: Midi,

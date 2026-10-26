@@ -14,7 +14,7 @@ import mai_onsyn.open_rhythm.ui.App
 import java.awt.Dimension
 
 fun main() = application {
-//    System.setProperty("skiko.renderApi", "DIRECT_SOFTWARE")
+    System.setProperty("skiko.renderApi", "OPENGL")
     LogManager.initialize()
     val pressedKey = remember { mutableSetOf<Key>() }
     Window(

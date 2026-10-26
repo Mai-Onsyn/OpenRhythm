@@ -6,6 +6,7 @@ import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.*
+import androidx.compose.runtime.internal.KComposableFunction15
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
@@ -17,6 +18,7 @@ import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.max
 import co.touchlab.kermit.Logger
@@ -24,8 +26,29 @@ import mai_onsyn.open_rhythm.bridge.Global
 import mai_onsyn.open_rhythm.core.midi.Midi
 import mai_onsyn.open_rhythm.ui.modules.midi_flow.waterfalls.DefaultMidiWaterfall
 import mai_onsyn.open_rhythm.ui.modules.midi_flow.waterfalls.cpu_cached.CachedMidiWaterfall
+import mai_onsyn.open_rhythm.ui.modules.midi_flow.waterfalls.gpu.GLInstancedWaterfall
 import mai_onsyn.open_rhythm.ui.utility.BackgroundImage
 import mai_onsyn.open_rhythm.ui.utility.BindInputDeviceEvents
+import kotlin.collections.emptyList
+import kotlin.collections.mutableMapOf
+
+private typealias Renderer = @Composable (
+    modifier: Modifier,
+    currTick: Double,
+    midi: Midi,
+    minPitch: Int,
+    maxPitch: Int,
+    trackColors: List<Color>,
+    hpb: Dp,
+    spacing: Dp,
+    blackHorizontalPercentage: Float,
+    activeNoteOutput: MutableMap<Int, Color>,
+    drawSectionLine: Boolean,
+    drawOctaveLine: Boolean,
+    noteRoundPercent: Float,
+    drawPitchLabel: Boolean,
+    onVerticalDragged: (Float) -> Unit
+) -> Unit
 
 @Composable
 fun MidiDownRegion(
@@ -127,38 +150,76 @@ fun MidiDownRegion(
                             }
                         else Modifier
                     )
-                when (Global.settings.WaterfallRenderingMode) {
-                    0 -> DefaultMidiWaterfall(
-                        modifier = waterfallModifier,
-                        trackColors = trackColors,
-                        currTick = currentTick,
-                        minPitch = Global.settings.MinPitch,
-                        maxPitch = Global.settings.MaxPitch,
-                        midi = midi,
-                        hpb = hpb,
-                        activeNoteOutput = midiActiveKeys,
-                        onVerticalDragged = { deltaYpx += it },
-                        drawOctaveLine = Global.settings.DrawOctaveLines,
-                        drawSectionLine = Global.settings.DrawSectionLines,
-                        noteRoundPercent = Global.settings.NoteRoundConerPercent,
-                        drawPitchLabel = Global.settings.DrawPitchLabels
-                    )
-                    1 -> CachedMidiWaterfall(
-                        modifier = waterfallModifier,
-                        trackColors = trackColors,
-                        currTick = currentTick,
-                        minPitch = Global.settings.MinPitch,
-                        maxPitch = Global.settings.MaxPitch,
-                        midi = midi,
-                        hpb = hpb,
-                        activeNoteOutput = midiActiveKeys,
-                        onVerticalDragged = { deltaYpx += it },
-                        drawOctaveLine = Global.settings.DrawOctaveLines,
-                        drawSectionLine = Global.settings.DrawSectionLines,
-                        noteRoundPercent = Global.settings.NoteRoundConerPercent,
-                        drawPitchLabel = Global.settings.DrawPitchLabels
-                    )
+                val waterfall: Renderer = when(Global.settings.WaterfallRenderingMode) {
+                    0 -> ::DefaultMidiWaterfall
+                    1 -> ::CachedMidiWaterfall
+                    2 -> ::GLInstancedWaterfall
+                    else -> throw UnsupportedOperationException("Waterfall rendering mode ${Global.settings.WaterfallRenderingMode} is not supported yet")
                 }
+                waterfall(
+                    waterfallModifier,
+                    currentTick,
+                    midi,
+                    Global.settings.MinPitch,
+                    Global.settings.MaxPitch,
+                    trackColors,
+                    hpb,
+                    1.dp,
+                    0.75f,
+                    midiActiveKeys,
+                    Global.settings.DrawOctaveLines,
+                    Global.settings.DrawSectionLines,
+                    Global.settings.NoteRoundConerPercent,
+                    Global.settings.DrawPitchLabels,
+                    { deltaYpx += it },
+                )
+//                when (Global.settings.WaterfallRenderingMode) {
+//                    0 -> DefaultMidiWaterfall(
+//                        modifier = waterfallModifier,
+//                        trackColors = trackColors,
+//                        currTick = currentTick,
+//                        minPitch = Global.settings.MinPitch,
+//                        maxPitch = Global.settings.MaxPitch,
+//                        midi = midi,
+//                        hpb = hpb,
+//                        activeNoteOutput = midiActiveKeys,
+//                        onVerticalDragged = { deltaYpx += it },
+//                        drawOctaveLine = Global.settings.DrawOctaveLines,
+//                        drawSectionLine = Global.settings.DrawSectionLines,
+//                        noteRoundPercent = Global.settings.NoteRoundConerPercent,
+//                        drawPitchLabel = Global.settings.DrawPitchLabels
+//                    )
+//                    1 -> CachedMidiWaterfall(
+//                        modifier = waterfallModifier,
+//                        trackColors = trackColors,
+//                        currTick = currentTick,
+//                        minPitch = Global.settings.MinPitch,
+//                        maxPitch = Global.settings.MaxPitch,
+//                        midi = midi,
+//                        hpb = hpb,
+//                        activeNoteOutput = midiActiveKeys,
+//                        onVerticalDragged = { deltaYpx += it },
+//                        drawOctaveLine = Global.settings.DrawOctaveLines,
+//                        drawSectionLine = Global.settings.DrawSectionLines,
+//                        noteRoundPercent = Global.settings.NoteRoundConerPercent,
+//                        drawPitchLabel = Global.settings.DrawPitchLabels
+//                    )
+//                    2 -> GLInstancedWaterfall(
+//                        modifier = waterfallModifier,
+//                        trackColors = trackColors,
+//                        currTick = currentTick,
+//                        minPitch = Global.settings.MinPitch,
+//                        maxPitch = Global.settings.MaxPitch,
+//                        midi = midi,
+//                        hpb = hpb,
+//                        activeNoteOutput = midiActiveKeys,
+//                        onVerticalDragged = { deltaYpx += it },
+//                        drawOctaveLine = Global.settings.DrawOctaveLines,
+//                        drawSectionLine = Global.settings.DrawSectionLines,
+//                        noteRoundPercent = Global.settings.NoteRoundConerPercent,
+//                        drawPitchLabel = Global.settings.DrawPitchLabels
+//                    )
+//                }
             }
 
             LaunchedEffect(isPlaying, midi, hpb) {

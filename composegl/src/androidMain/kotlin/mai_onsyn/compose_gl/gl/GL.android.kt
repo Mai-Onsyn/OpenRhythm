@@ -1,8 +1,6 @@
 package mai_onsyn.compose_gl.gl
 
 import android.opengl.GLES32
-import java.nio.ByteBuffer
-import java.nio.ByteOrder
 import java.nio.FloatBuffer
 
 actual fun glCreateShader(type: Int): Int = GLES32.glCreateShader(type)

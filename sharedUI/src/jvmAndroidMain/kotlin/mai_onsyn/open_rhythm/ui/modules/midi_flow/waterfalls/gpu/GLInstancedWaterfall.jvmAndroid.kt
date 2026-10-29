@@ -10,7 +10,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import mai_onsyn.compose_gl.GLCanvas
 import mai_onsyn.open_rhythm.ui.modules.midi_flow.waterfalls.NoteRenderScope
 
 var showGLCanvas by mutableStateOf(true)

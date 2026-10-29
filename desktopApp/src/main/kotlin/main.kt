@@ -11,6 +11,7 @@ import androidx.compose.ui.window.rememberWindowState
 import mai_onsyn.open_rhythm.bridge.keyEventDispatcher
 import mai_onsyn.open_rhythm.core.log.LogManager
 import mai_onsyn.open_rhythm.ui.App
+import mai_onsyn.open_rhythm.ui.modules.midi_flow.waterfalls.gpu.showGLCanvas
 import java.awt.Dimension
 
 fun main() = application {
@@ -20,7 +21,11 @@ fun main() = application {
     Window(
         title = "Open Rhythm",
         state = rememberWindowState(width = 800.dp, height = 600.dp),
-        onCloseRequest = ::exitApplication,
+        onCloseRequest = {
+            showGLCanvas = false
+            Thread.sleep(10)
+            exitApplication()
+        },
         icon = painterResource("icons/OpenRhythm.png"),
         onPreviewKeyEvent = {
             if (it.type == KeyEventType.KeyDown) {

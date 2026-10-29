@@ -5,11 +5,11 @@ rootProject.name = "OpenRhythm"
 pluginManagement {
     repositories {
         google {
-            content { 
-              	includeGroupByRegex("com\\.android.*")
-              	includeGroupByRegex("com\\.google.*")
-              	includeGroupByRegex("androidx.*")
-              	includeGroupByRegex("android.*")
+            content {
+                includeGroupByRegex("com\\.android.*")
+                includeGroupByRegex("com\\.google.*")
+                includeGroupByRegex("androidx.*")
+                includeGroupByRegex("android.*")
             }
         }
         gradlePluginPortal()
@@ -20,11 +20,11 @@ pluginManagement {
 dependencyResolutionManagement {
     repositories {
         google {
-            content { 
-              	includeGroupByRegex("com\\.android.*")
-              	includeGroupByRegex("com\\.google.*")
-              	includeGroupByRegex("androidx.*")
-              	includeGroupByRegex("android.*")
+            content {
+                includeGroupByRegex("com\\.android.*")
+                includeGroupByRegex("com\\.google.*")
+                includeGroupByRegex("androidx.*")
+                includeGroupByRegex("android.*")
             }
         }
         mavenCentral()
@@ -33,6 +33,7 @@ dependencyResolutionManagement {
         }
     }
 }
+include(":composegl")
 include(":sharedUI")
 include(":desktopApp")
 

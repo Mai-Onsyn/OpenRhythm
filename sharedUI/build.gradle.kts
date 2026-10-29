@@ -75,18 +75,28 @@ kotlin {
             implementation(libs.androidx.activity.ktx)
             implementation(libs.kotlinx.coroutines.android)
             api("io.github.kmpbits:splash-runtime:1.4.2")
+
+            api(project(":composegl"))
         }
 
         jvmMain.dependencies {
             implementation(compose.desktop.currentOs)
             implementation(libs.kotlinx.coroutines.swing)
 //            api("dev.atsushieno:ktmidi-jvm-desktop:0.12.0")
+
+            api(project(":composegl"))
+
+            api("org.lwjgl:lwjgl:${libs.versions.lwjgl.get()}")
+            api("org.lwjgl:lwjgl-glfw:${libs.versions.lwjgl.get()}")
+            api("org.lwjgl:lwjgl-opengl:${libs.versions.lwjgl.get()}")
+            runtimeOnly("org.lwjgl:lwjgl:${libs.versions.lwjgl.get()}:natives-windows")
+            runtimeOnly("org.lwjgl:lwjgl-glfw:${libs.versions.lwjgl.get()}:natives-windows")
+            runtimeOnly("org.lwjgl:lwjgl-opengl:${libs.versions.lwjgl.get()}:natives-windows")
         }
 
-        // JVM + Android 共享源集
         val jvmAndroidMain = maybeCreate("jvmAndroidMain")
         jvmAndroidMain.dependencies {
-            implementation(libs.compose.gl)
+            api(project(":composegl"))
         }
     }
 

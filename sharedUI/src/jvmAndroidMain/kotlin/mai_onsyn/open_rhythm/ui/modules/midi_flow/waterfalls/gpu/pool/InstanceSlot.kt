@@ -19,4 +19,8 @@ class InstanceSlot(
     fun destroy() {
 
     }
+
+    override fun toString(): String {
+        return "InstanceSlot($chunk, uploaded=$uploaded, vbo=$vboPtr)"
+    }
 }

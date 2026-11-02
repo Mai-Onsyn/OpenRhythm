@@ -1,23 +1,25 @@
 package mai_onsyn.open_rhythm.ui.modules.midi_flow.waterfalls.gpu.pool
 
+import co.touchlab.kermit.Logger
 import kotlin.math.floor
 
 class InstancedManager(
-    val pool: MutableList<InstanceSlot>,
     val chunkTickSize: Int,
     var currentTick: Double,
     var screenHeightTick: Int,
-    val pxPerTick: Float
+    val pxPerTick: Float,
+    var chunkBuilder: NoteChunkBuilder
 ) {
     var pixelOffset: Float = 0f
+    private val pool: MutableList<InstanceSlot> = mutableListOf()
+
     /**
      * 输入tick，根据tick来轮换vbo指针，只在GL线程调用
      */
     fun update(tick: Double) {
-        val oldStartChunk = floor(currentTick / chunkTickSize).toInt()
-        val newStartChunk = floor(tick / chunkTickSize).toInt()
+        val startChunk = floor(tick / chunkTickSize).toInt()
+        val startChunkTick = startChunk * chunkTickSize.toDouble()
         currentTick = tick
-        val chunkOffset = newStartChunk - oldStartChunk
 
         val screenChunkCount = screenHeightTick / chunkTickSize + 2
         (screenChunkCount - pool.size).let { difference ->
@@ -25,6 +27,57 @@ class InstancedManager(
                 pool.add(InstanceSlot(0, null, false))
             }
         }
+
+        // pool一般应该不超过10
+        val searchCache = arrayOfNulls<InstanceSlot>(screenChunkCount)
+        val usedPoolIndex = mutableSetOf<Int>()
+        for (i in 0 until screenChunkCount) {
+            val chunkID = i + startChunk
+            val idx = pool.indices.firstOrNull {
+                pool[it].chunk?.id == chunkID
+            } ?: continue
+            usedPoolIndex.add(idx)
+            searchCache[i] = pool[idx]
+        }
+        var cursor = 0
+        for (i in searchCache.indices) {
+            if (searchCache[i] != null) continue
+            while (cursor < pool.size && cursor in usedPoolIndex) cursor++
+            if (cursor < pool.size) {
+                searchCache[i] = pool[cursor]
+                searchCache[i]?.let {
+                    it.chunk = null
+                    it.uploaded = false
+                }
+                usedPoolIndex.add(cursor)
+                cursor++
+            }
+        }
+        val searchResults = searchCache.requireNoNulls()
+        if (pool.size > searchCache.size) {
+            val remaining = pool - searchResults.toSet()
+            pool.clear()
+            pool.addAll(searchResults)
+            pool.addAll(remaining)
+        }
+        else {
+            pool.clear()
+            pool.addAll(searchResults)
+        }
+
+        for (i in 0 until screenChunkCount) {
+            val slot = pool[i]
+            if (slot.chunk == null) {
+                val chunkStartTick = (startChunk + i) * chunkTickSize.toDouble()
+                slot.chunk = NoteChunk(
+                    startTick = chunkStartTick,
+                    durationTicks = chunkTickSize.toDouble(),
+                    id = startChunk + i,
+                    entities = chunkBuilder.buildDrawableNotes(chunkStartTick)
+                )
+            }
+        }
+        Logger.v { "T" }
     }
 
     /**
@@ -32,5 +85,9 @@ class InstancedManager(
      */
     fun draw() {
         TODO()
+    }
+
+    fun destroy() {
+        pool.forEach(InstanceSlot::destroy)
     }
 }

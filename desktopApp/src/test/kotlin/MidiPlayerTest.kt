@@ -1,10 +1,11 @@
 import co.touchlab.kermit.Logger
 import dev.atsushieno.ktmidi.JvmMidiAccess
-import dev.zwander.kotlin.file.FileUtils
 import kotlinx.coroutines.runBlocking
 import kotlinx.io.readByteArray
 import mai_onsyn.open_rhythm.core.midi.Midi
 import mai_onsyn.open_rhythm.core.midi.MidiPlayer
+import mai_onsyn.open_rhythm.core.midi.parseMidi
+import java.io.File
 import kotlin.test.Test
 
 class MidiPlayerTest {
@@ -12,19 +13,11 @@ class MidiPlayerTest {
     fun testPlay() {
 //        val file = FileUtils.fromString("D:\\Users\\Desktop\\Files\\voice\\MIDI\\最终鬼畜妹.mid", false)
 //        val file = FileUtils.fromString("D:\\Users\\Desktop\\Files\\voice\\MIDI\\蓬莱伝説 v1.11.mid", false)
-        val file = FileUtils.fromString("D:\\Users\\Desktop\\U.N. Owen.mid", false)
+        val file = File("D:\\Users\\Desktop\\U.N. Owen.mid")
 //        val file = FileUtils.fromString("D:\\Users\\Desktop\\天球の奇蹟.mid", false)
-        if (file == null) {
-            Logger.e { "Cant find test.mid" }
-            return
-        }
-        val byteArray = file.openInputStream()?.readByteArray()
-        if (byteArray == null) {
-            Logger.e { "Cant read test.mid" }
-            return
-        }
+        val byteArray = file.inputStream().readBytes()
 
-        val midi = Midi.fromFile(file.nameWithoutExtension, byteArray.toList())
+        val midi = parseMidi(file.nameWithoutExtension, byteArray.toList())
 
         val midiAccess = JvmMidiAccess()
         val outputs = midiAccess.outputs.toList()

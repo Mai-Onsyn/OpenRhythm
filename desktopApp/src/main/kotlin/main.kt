@@ -15,7 +15,7 @@ import mai_onsyn.open_rhythm.ui.modules.midi_flow.waterfalls.gpu.showGLCanvas
 import java.awt.Dimension
 
 fun main() = application {
-    System.setProperty("skiko.renderApi", "OPENGL")
+//    System.setProperty("skiko.renderApi", "OPENGL")
     LogManager.initialize()
     val pressedKey = remember { mutableSetOf<Key>() }
     Window(

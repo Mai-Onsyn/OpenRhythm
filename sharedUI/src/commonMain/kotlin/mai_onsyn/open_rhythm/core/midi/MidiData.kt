@@ -7,7 +7,8 @@ data class Note(
     val tick: Long,
     val duration: Long,
     val velocity: Int,
-    val channel: Int
+    val channel: Int,
+    var depth: UInt
 ) {
     companion object {
         fun toString(pitch: Int): String {

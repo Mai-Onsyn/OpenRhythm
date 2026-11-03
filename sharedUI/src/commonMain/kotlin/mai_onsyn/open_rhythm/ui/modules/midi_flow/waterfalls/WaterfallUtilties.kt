@@ -26,11 +26,12 @@ fun filterWindowNotes(
             maxNoteDurationList[i],
             track.notes
         ).forEach {
-            toDrawNotes.add(DrawableNote(it, trackColors[i % trackColors.size], i))
+            toDrawNotes.add(DrawableNote(it, trackColors[i % trackColors.size], i, it.depth))
         }
     }
-//    toDrawNotes.sortWith(compareBy({ isBlackKey(it.note.pitch) }, { -it.note.pitch }, { it.note.tick }, { it.trackNum }))
-    sortNotes(toDrawNotes)
+//    toDrawNotes.sortBy { it.depth }
+    toDrawNotes.sortWith(compareBy({ isBlackKey(it.note.pitch) }, { -it.note.pitch }, { it.note.tick }, { it.trackNum }))
+//    sortNotes(toDrawNotes)
     return toDrawNotes
 }
 
@@ -123,7 +124,8 @@ private fun bitsNeeded(v: Long): Int {
 data class DrawableNote(
     val note: Note,
     val color: Color,
-    val trackNum: Int
+    val trackNum: Int,
+    val depth: UInt
 )
 
 private fun findVisibleNotes(

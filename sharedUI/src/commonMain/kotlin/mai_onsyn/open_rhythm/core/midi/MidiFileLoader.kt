@@ -148,7 +148,7 @@ class MidiFileLoader {
             } else throw IOException("Can't read ${file.absolutePath()} as a MIDI file")
         }
         val midi = withContext(Dispatchers.Default) {
-            val bytes = bytes.toList()
+            val bytes = bytes.asList()
             if (Global.settings.UseParserV1) parseMidiV1(name, bytes)
             else parseMidi(name, bytes, file.absolutePath()).apply { if (Global.settings.SortTracksByPitch) sortTracksByPitches() }
         }

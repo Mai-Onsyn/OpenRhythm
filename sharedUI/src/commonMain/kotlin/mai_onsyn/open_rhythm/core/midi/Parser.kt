@@ -5,6 +5,8 @@ import dev.atsushieno.ktmidi.Midi1CompoundMessage
 import dev.atsushieno.ktmidi.Midi1Music
 import dev.atsushieno.ktmidi.read
 import mai_onsyn.open_rhythm.bridge.Global
+import mai_onsyn.open_rhythm.ui.utility.PriorityQueue
+import mai_onsyn.open_rhythm.ui.utility.isBlackKey
 import kotlin.math.max
 
 class CCTimeline(
@@ -330,7 +332,51 @@ fun parseMidi(name: String, bytes: List<Byte>, path: String? = null): Midi {
         pcChangeTimeline = pcTimeline,
         pbChangeTimeline = pbTimeline,
         path = path ?: ""
-    ).also { Logger.v { "Parsed $it" } }
+    ).also {
+        assignDepth(it.tracks)
+        Logger.v { "Parsed $it" }
+    }
+}
+
+
+data class NoteCursor(
+    val trackIndex: Int,
+    var noteIndex: Int
+)
+
+private fun assignDepth(tracks: List<MidiTrack>) {
+    val comparator = Comparator<NoteCursor> { a, b ->
+        val noteA = tracks[a.trackIndex].notes[a.noteIndex]
+        val noteB = tracks[b.trackIndex].notes[b.noteIndex]
+
+        compareValues(isBlackKey(noteA.pitch), isBlackKey(noteB.pitch)).takeIf { it != 0 }
+            ?: compareValues(noteB.pitch, noteA.pitch).takeIf { it != 0 }
+            ?: compareValues(noteA.tick, noteB.tick).takeIf { it != 0 }
+            ?: compareValues(a.trackIndex, b.trackIndex)
+    }
+
+    val queue = PriorityQueue(comparator)
+
+    tracks.forEachIndexed { index, track ->
+        if (track.notes.isNotEmpty()) {
+            queue.add(NoteCursor(index, 0))
+        }
+    }
+
+    var depth = 0u
+
+    while (!queue.isEmpty()) {
+        val cursor = queue.poll()
+        val track = tracks[cursor.trackIndex]
+
+        track.notes[cursor.noteIndex].depth = depth++
+
+        cursor.noteIndex++
+
+        if (cursor.noteIndex < track.notes.size) {
+            queue.add(cursor)
+        }
+    }
 }
 
 private fun mergeToNoteList(group: NoteGroup, minDuration: Long): MutableList<Note> {
@@ -358,7 +404,8 @@ private fun mergeToNoteList(group: NoteGroup, minDuration: Long): MutableList<No
                             pressEvent.tick.toLong(),
                             duration,
                             pressEvent.velocity,
-                            group.channel
+                            group.channel,
+                            0u
                         )
                     )
                 }

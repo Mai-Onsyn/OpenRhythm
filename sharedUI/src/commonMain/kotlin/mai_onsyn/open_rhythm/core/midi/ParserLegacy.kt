@@ -84,7 +84,7 @@ fun parseMidiV1(name: String, bytes: List<Byte>): Midi {
                             val old = pressedNote[key]!!
                             val duration = deltaTick - old.tick
                             if (duration > 0) {
-                                resultTrack.notes.add(Note(noteNumber, old.tick, duration, old.velocity, channel))
+                                resultTrack.notes.add(Note(noteNumber, old.tick, duration, old.velocity, channel, 0u))
                             }
                             pressedNote.remove(key)
                         }
@@ -96,7 +96,7 @@ fun parseMidiV1(name: String, bytes: List<Byte>): Midi {
                             val duration = deltaTick - old.tick
                             if (duration > 0) {
                                 // 用旧音符自己的 velocity，而不是当前 NoteOn 的 velocity
-                                resultTrack.notes.add(Note(noteNumber, old.tick, duration, old.velocity, channel))
+                                resultTrack.notes.add(Note(noteNumber, old.tick, duration, old.velocity, channel, 0u))
                             }
                         }
                         pressedNote[key] = UniqueNoteData(velocity, deltaTick)

@@ -231,7 +231,7 @@ fun PreviewRail(modifier: Modifier) {
             Global.settings.BasicNoteMiniumDuration,
             Global.settings.DrumNoteMiniumDuration
         ) {
-            value = parseMidi("故郷の星が映る海", Res.readBytes("files/The sea reflecting my hometown star.mid").toList())
+            value = parseMidi("故郷の星が映る海", Res.readBytes("files/The sea reflecting my hometown star.mid").asList())
         }
         PlayPage(midi, {}, 0, false)
 

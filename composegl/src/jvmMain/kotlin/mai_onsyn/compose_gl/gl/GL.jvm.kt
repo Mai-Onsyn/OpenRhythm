@@ -24,6 +24,7 @@ actual fun glBindBuffer(target: Int, buffer: Int) = GL46C.glBindBuffer(target, b
 actual fun glBufferData(target: Int, data: FloatBuffer, usage: Int) = GL46C.glBufferData(target, data, usage)
 actual fun glEnableVertexAttribArray(index: Int) = GL46C.glEnableVertexAttribArray(index)
 actual fun glVertexAttribPointer(index: Int, size: Int, type: Int, normalized: Boolean, stride: Int, offset: Int) = GL46C.glVertexAttribPointer(index, size, type, normalized, stride, offset.toLong())
+actual fun glVertexAttribIPointer(index: Int, size: Int, type: Int, stride: Int, offset: Int) = GL46C.glVertexAttribIPointer(index, size, type, stride, offset.toLong())
 actual fun glVertexAttribDivisor(index: Int, divisor: Int) = GL46C.glVertexAttribDivisor(index, divisor)
 actual fun glClearColor(red: Float, green: Float, blue: Float, alpha: Float) = GL46C.glClearColor(red, green, blue, alpha)
 actual fun glClear(mask: Int) = GL46C.glClear(mask)

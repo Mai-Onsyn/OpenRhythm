@@ -8,3 +8,4 @@ const val GL_FLOAT = 5126
 const val GL_DYNAMIC_DRAW = 35048
 const val GL_COLOR_BUFFER_BIT = 16384
 const val GL_TRIANGLES = 4
+const val GL_UNSIGNED_INT = 5125

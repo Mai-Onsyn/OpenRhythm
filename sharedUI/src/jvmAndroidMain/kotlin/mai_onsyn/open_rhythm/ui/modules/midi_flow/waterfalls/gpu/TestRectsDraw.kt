@@ -1,6 +1,5 @@
 package mai_onsyn.open_rhythm.ui.modules.midi_flow.waterfalls.gpu
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -8,8 +7,8 @@ import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
 import co.touchlab.kermit.Logger
 import mai_onsyn.compose_gl.GLCanvas
-//import org.lwjgl.opengl.GL46C.*
 import mai_onsyn.compose_gl.gl.*
+import org.lwjgl.opengl.GL30
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 
@@ -21,16 +20,24 @@ var quadVbo = 0
 @Composable
 fun TestRectsDraw() {
     val rects = listOf(
-        ToDrawRect(Rect(-0.5f, 0.5f, 0.4f, 0.4f), Color.Red),
-        ToDrawRect(Rect(0.1f, 0.1f, 2f, 0.3f), Color.Green)
+        _ToDrawRect(Rect(0.1f, 0.1f, 2f, 0.3f), Color.Green.copy(0.4f)),
+        _ToDrawRect(Rect(-0.5f, 0.5f, 0.4f, -0.4f), Color.Red.copy(0.1f)),
     )
     GLCanvas(
-        modifier = Modifier.fillMaxSize().background(Color(0x2f00ff20)),
+        modifier = Modifier.fillMaxSize(),
         onSurfaceDestroyed = {
             glDeleteBuffers(intArrayOf(instancedVbo, quadVbo))
             glDeleteVertexArrays(instancedVao)
             initialized = false
             Logger.d { "GLCanvas#destroy" }
+        },
+        onSurfaceCreated = {
+            GL30.glEnable(GL30.GL_BLEND)
+            GL30.glEnable(GL30.GL_DEPTH_TEST)
+            GL30.glBlendFunc(GL30.GL_SRC_ALPHA, GL30.GL_ONE_MINUS_SRC_ALPHA)
+//            GL30.glBlendFunc(GL30.GL_ONE, GL30.GL_ONE_MINUS_SRC_ALPHA)
+
+            // 预乘 clear 颜色：rgb * a。这里 (1,1,0) @ 0.1 => (0.1, 0.1, 0), 0.1
         },
         onSurfaceResized = { old, new -> println("Resized to $new") },
         onDraw = {
@@ -96,8 +103,13 @@ fun TestRectsDraw() {
             glBindBuffer(GL_ARRAY_BUFFER, instancedVbo)
             glBufferData(GL_ARRAY_BUFFER, buffer, GL_DYNAMIC_DRAW)
 
-            glClearColor(0f, 0f, 0f, 0f)
-            glClear(GL_COLOR_BUFFER_BIT)
+//            glClearColor(0f, 0f, 0f, 0f)
+//            glClear(GL_COLOR_BUFFER_BIT)
+
+
+            val clearAlpha = 0.1f
+            GL30.glClearColor(1f * clearAlpha, 0f * clearAlpha, 0.5f * clearAlpha, clearAlpha)
+            GL30.glClear(GL30.GL_COLOR_BUFFER_BIT)
 
             glUseProgram(program)
             glBindVertexArray(instancedVao)

@@ -1,6 +1,7 @@
 package mai_onsyn.open_rhythm.ui.modules.midi_flow.waterfalls.gpu.pool
 
 import co.touchlab.kermit.Logger
+import mai_onsyn.open_rhythm.ui.modules.midi_flow.waterfalls.gpu.Shader
 import kotlin.math.floor
 
 class InstancedManager(
@@ -11,20 +12,22 @@ class InstancedManager(
     var chunkBuilder: NoteChunkBuilder
 ) {
     var pixelOffset: Float = 0f
+    var screenChunkCount = 0
     private val pool: MutableList<InstanceSlot> = mutableListOf()
+    private val quadRect: QuadRect = QuadRect()
 
     /**
-     * 输入tick，根据tick来轮换vbo指针，只在GL线程调用
+     * 输入tick，根据tick来轮换vbo指针
      */
     fun update(tick: Double) {
         val startChunk = floor(tick / chunkTickSize).toInt()
         val startChunkTick = startChunk * chunkTickSize.toDouble()
         currentTick = tick
 
-        val screenChunkCount = screenHeightTick / chunkTickSize + 2
+        screenHeightTick / chunkTickSize + 2
         (screenChunkCount - pool.size).let { difference ->
             if (difference > 0) repeat(difference) {
-                pool.add(InstanceSlot(0, null, false))
+                pool.add(InstanceSlot(null))
             }
         }
 
@@ -81,13 +84,37 @@ class InstancedManager(
     }
 
     /**
+     * 更新GPU的vbo为当前池 只能在GL线程调用
+     */
+    fun upload() {
+        for (i in 0 until screenChunkCount) {
+            val slot = pool[i]
+            if (!slot.initialized) {
+                slot.initialize(quadRect.vbo)
+            }
+            if (!slot.uploaded) {
+                slot.upload()
+            }
+        }
+    }
+
+    /**
      * GL线程渲染调用 根据当前数据和tick偏移提交绘制命令
      */
     fun draw() {
         TODO()
     }
 
-    fun destroy() {
-        pool.forEach(InstanceSlot::destroy)
+    /**
+     * GL Canvas的init块调用 初始化GL资源
+     */
+    fun initGL() {
+        val program = Shader.VANILLA.program
+        quadRect.init()
+    }
+
+    fun dispose() {
+        pool.forEach(InstanceSlot::dispose)
+        quadRect.dispose()
     }
 }

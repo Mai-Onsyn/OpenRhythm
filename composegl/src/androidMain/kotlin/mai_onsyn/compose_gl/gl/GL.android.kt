@@ -24,6 +24,7 @@ actual fun glBindBuffer(target: Int, buffer: Int) = GLES32.glBindBuffer(target, 
 actual fun glBufferData(target: Int, data: FloatBuffer, usage: Int) = GLES32.glBufferData(target, data.remaining() * 4, data, usage)
 actual fun glEnableVertexAttribArray(index: Int) = GLES32.glEnableVertexAttribArray(index)
 actual fun glVertexAttribPointer(index: Int, size: Int, type: Int, normalized: Boolean, stride: Int, offset: Int) = GLES32.glVertexAttribPointer(index, size, type, normalized, stride, offset)
+actual fun glVertexAttribIPointer(index: Int, size: Int, type: Int, stride: Int, offset: Int) = GLES32.glVertexAttribIPointer(index, size, type, stride, offset)
 actual fun glVertexAttribDivisor(index: Int, divisor: Int) = GLES32.glVertexAttribDivisor(index, divisor)
 actual fun glClearColor(red: Float, green: Float, blue: Float, alpha: Float) = GLES32.glClearColor(red, green, blue, alpha)
 actual fun glClear(mask: Int) = GLES32.glClear(mask)

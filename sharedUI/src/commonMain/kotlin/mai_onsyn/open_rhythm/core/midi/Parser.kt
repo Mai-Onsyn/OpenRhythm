@@ -249,6 +249,7 @@ fun parseMidi(name: String, bytes: List<Byte>, path: String? = null): Midi {
     val resultTrackList = mutableListOf<MidiTrack>()
     var firstTick = Int.MAX_VALUE
     var lastTick = 0
+    val counter = UIntArray(128)
     for (group in validTrackGroups) {
         val chunkStartTick = group.noteEvents.first().tick
         val chunkEndTick = group.noteEvents.last().tick
@@ -262,9 +263,8 @@ fun parseMidi(name: String, bytes: List<Byte>, path: String? = null): Midi {
 //        val SOTR_START = Time.nanos
 //        group.noteEvents.sortWith(compareBy({ it.tick }, { it.on }))
 //        val SOTR_END_MERGE_START = Time.nanos
-        val notes = mergeToNoteList(group,
-            ((ppq shl 2) shr (if (group.channel == 9) Global.settings.DrumNoteMiniumDuration else Global.settings.BasicNoteMiniumDuration)).toLong()
-        )
+        val notes = mergeToNoteList(group, ((ppq shl 2) shr (if (group.channel == 9) Global.settings.DrumNoteMiniumDuration else Global.settings.BasicNoteMiniumDuration)).toLong()
+        , counter)
 //        logDurations("build", listOf("sort", "merge"), SOTR_START, SOTR_END_MERGE_START, Time.nanos)
 
         fun detectInstTrack(inst: Int, range: IntRange) {
@@ -305,7 +305,8 @@ fun parseMidi(name: String, bytes: List<Byte>, path: String? = null): Midi {
                 detectInstTrack(pcEvents.firstOrNull()?.value ?: cpcLine.eventList.firstOrNull()?.value ?: 0, chunkStartTick..chunkEndTick)
             } else {
                 pcEvents.forEachIndexed { index, pc ->
-                    val instRange = pc.tick..(pcEvents.getOrNull(index + 1)?.tick ?: chunkEndTick)
+                    val next = pcEvents.getOrNull(index + 1)?.tick
+                    val instRange = if (next != null) pc.tick..<next else pc.tick..chunkEndTick
                     detectInstTrack(pc.value, instRange)
                 }
             }
@@ -333,7 +334,7 @@ fun parseMidi(name: String, bytes: List<Byte>, path: String? = null): Midi {
         pbChangeTimeline = pbTimeline,
         path = path ?: ""
     ).also {
-        assignDepth(it.tracks)
+        assignDepth(it.tracks, counter)
         Logger.v { "Parsed $it" }
     }
 }
@@ -344,42 +345,43 @@ data class NoteCursor(
     var noteIndex: Int
 )
 
-private fun assignDepth(tracks: List<MidiTrack>) {
-    val comparator = Comparator<NoteCursor> { a, b ->
-        val noteA = tracks[a.trackIndex].notes[a.noteIndex]
-        val noteB = tracks[b.trackIndex].notes[b.noteIndex]
 
-        compareValues(isBlackKey(noteA.pitch), isBlackKey(noteB.pitch)).takeIf { it != 0 }
-            ?: compareValues(noteB.pitch, noteA.pitch).takeIf { it != 0 }
-            ?: compareValues(noteA.tick, noteB.tick).takeIf { it != 0 }
-            ?: compareValues(a.trackIndex, b.trackIndex)
-    }
+@OptIn(ExperimentalUnsignedTypes::class)
+private fun assignDepth(tracks: List<MidiTrack>, count: UIntArray) {
+    val base = UIntArray(128)
+    var acc = 0u
+    for (p in 127 downTo 0) if (!isBlackKey(p)) { base[p] = acc; acc += count[p] }
+    for (p in 127 downTo 0) if ( isBlackKey(p)) { base[p] = acc; acc += count[p] }
 
-    val queue = PriorityQueue(comparator)
+    val head = IntArray(tracks.size)                 // 每轨游标
+    val headTick = LongArray(tracks.size) { t -> tracks[t].notes.firstOrNull()?.tick ?: Long.MAX_VALUE }
 
-    tracks.forEachIndexed { index, track ->
-        if (track.notes.isNotEmpty()) {
-            queue.add(NoteCursor(index, 0))
-        }
-    }
-
-    var depth = 0u
-
-    while (!queue.isEmpty()) {
-        val cursor = queue.poll()
-        val track = tracks[cursor.trackIndex]
-
-        track.notes[cursor.noteIndex].depth = depth++
-
-        cursor.noteIndex++
-
-        if (cursor.noteIndex < track.notes.size) {
-            queue.add(cursor)
-        }
+    while (true) {
+        val t = argMinTrack(headTick)      // 只看 headTick + 轨道号，线性扫描 T 个 long
+        if (t < 0) break                   // 全部耗尽
+        val n = tracks[t].notes[head[t]]
+        n.depth = base[n.pitch]++          // ← 唯一的赋值
+        if (++head[t] < tracks[t].notes.size) headTick[t] = tracks[t].notes[head[t]].tick
+        else headTick[t] = Long.MAX_VALUE
     }
 }
 
-private fun mergeToNoteList(group: NoteGroup, minDuration: Long): MutableList<Note> {
+private fun argMinTrack(headTick: LongArray): Int {
+    var best = -1
+    var bestTick = Long.MAX_VALUE
+    for (t in headTick.indices) {
+        val tick = headTick[t]
+        if (tick < bestTick) {      // 严格小于 ⇒ 同 tick 时自然保留更小的 t
+            bestTick = tick
+            best = t
+        }
+    }
+    return best
+}
+
+
+@OptIn(ExperimentalUnsignedTypes::class)
+private fun mergeToNoteList(group: NoteGroup, minDuration: Long, counter: UIntArray): MutableList<Note> {
     val noteList = mutableListOf<Note>()
 
     // 为 128 个 MIDI 音高分别建立 FIFO 队列 (0..127)
@@ -392,6 +394,7 @@ private fun mergeToNoteList(group: NoteGroup, minDuration: Long): MutableList<No
         if (event.on) {
             // Note ON：直接压入队列尾部，不强行闭合前音
             noteActive[pitch].addLast(event)
+            counter[event.pitch]++
         } else {
             // Note OFF：弹出队列头部最早的 Note ON (FIFO)
             val pressEvent = noteActive[pitch].removeFirstOrNull()

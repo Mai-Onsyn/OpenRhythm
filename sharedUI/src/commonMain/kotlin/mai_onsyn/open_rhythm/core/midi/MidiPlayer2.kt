@@ -183,12 +183,12 @@ class MidiPlayer2(
 
         for ((i, track) in midi.tracks.withIndex()) {
             if (!(config?.trackSettings[i]?.audible ?: true)) continue
-            if (enableNote) for (note in track.notes) {
-                velocityCount[note.velocity] = (velocityCount[note.velocity] ?: 0) + 1
+            if (enableNote) for ((pitch, tick, duration, velocity, channel) in track.notes) {
+                velocityCount[velocity] = (velocityCount[velocity] ?: 0) + 1
                 noteCount++
-                if (note.velocity > 20) {
-                    eventList.add(NoteEvent.noteOn(note.tick, note.pitch, note.velocity, note.channel))
-                    eventList.add(NoteEvent.noteOff(note.tick + note.duration, note.pitch, note.velocity, note.channel))
+                if (velocity > 20) {
+                    eventList.add(NoteEvent.noteOn(tick, pitch, velocity, channel))
+                    eventList.add(NoteEvent.noteOff(tick + duration, pitch, velocity, channel))
                 } else filteredCount++
             }
             val volume = config?.trackSettings[i]?.volume

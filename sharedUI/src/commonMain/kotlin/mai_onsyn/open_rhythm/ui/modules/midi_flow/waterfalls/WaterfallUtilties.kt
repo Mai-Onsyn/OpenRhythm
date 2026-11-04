@@ -1,6 +1,7 @@
 package mai_onsyn.open_rhythm.ui.modules.midi_flow.waterfalls
 
 import androidx.compose.ui.graphics.Color
+import co.touchlab.kermit.Logger
 import mai_onsyn.open_rhythm.core.midi.Midi
 import mai_onsyn.open_rhythm.core.midi.Note
 import mai_onsyn.open_rhythm.core.util.Time
@@ -29,8 +30,11 @@ fun filterWindowNotes(
             toDrawNotes.add(DrawableNote(it, trackColors[i % trackColors.size], i, it.depth))
         }
     }
-//    toDrawNotes.sortBy { it.depth }
-    toDrawNotes.sortWith(compareBy({ isBlackKey(it.note.pitch) }, { -it.note.pitch }, { it.note.tick }, { it.trackNum }))
+
+    val s = Time.nanos
+    toDrawNotes.sortBy { it.depth }
+    Logger.v { "Sort cost ${(Time.nanos - s) / 1_000_000} ms" }
+//    toDrawNotes.sortWith(compareBy({ isBlackKey(it.note.pitch) }, { -it.note.pitch }, { it.note.tick }, { it.trackNum }))
 //    sortNotes(toDrawNotes)
     return toDrawNotes
 }

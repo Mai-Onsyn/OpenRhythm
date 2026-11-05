@@ -1,6 +1,7 @@
 package mai_onsyn.compose_gl.gl
 
 import android.opengl.GLES32
+import java.nio.ByteBuffer
 import java.nio.FloatBuffer
 
 actual fun glCreateShader(type: Int): Int = GLES32.glCreateShader(type)
@@ -21,7 +22,7 @@ actual fun glGenBuffers(): Int = IntArray(1).apply { GLES32.glGenBuffers(1, this
 actual fun glGenBuffers(buffers: IntArray) = GLES32.glGenBuffers(buffers.size, buffers, 0)
 actual fun glBindVertexArray(vertexArray: Int) = GLES32.glBindVertexArray(vertexArray)
 actual fun glBindBuffer(target: Int, buffer: Int) = GLES32.glBindBuffer(target, buffer)
-actual fun glBufferData(target: Int, data: FloatBuffer, usage: Int) = GLES32.glBufferData(target, data.remaining() * 4, data, usage)
+actual fun glBufferData(target: Int, data: FloatBuffer, usage: Int) = GLES32.glBufferData(target, data.remaining(), data, usage)
 actual fun glEnableVertexAttribArray(index: Int) = GLES32.glEnableVertexAttribArray(index)
 actual fun glVertexAttribPointer(index: Int, size: Int, type: Int, normalized: Boolean, stride: Int, offset: Int) = GLES32.glVertexAttribPointer(index, size, type, normalized, stride, offset)
 actual fun glVertexAttribIPointer(index: Int, size: Int, type: Int, stride: Int, offset: Int) = GLES32.glVertexAttribIPointer(index, size, type, stride, offset)
@@ -30,3 +31,6 @@ actual fun glClearColor(red: Float, green: Float, blue: Float, alpha: Float) = G
 actual fun glClear(mask: Int) = GLES32.glClear(mask)
 actual fun glUseProgram(program: Int) = GLES32.glUseProgram(program)
 actual fun glDrawArraysInstanced(mode: Int, first: Int, count: Int, instanceCount: Int) = GLES32.glDrawArraysInstanced(mode, first, count, instanceCount)
+actual fun glEnable(target: Int) = GLES32.glEnable(target)
+actual fun glBlendFunc(sfactor: Int, dfactor: Int) = GLES32.glBlendFunc(sfactor, dfactor)
+actual fun glBufferData(target: Int, data: ByteBuffer, usage: Int) = GLES32.glBufferData(target, data.remaining(), data, usage)

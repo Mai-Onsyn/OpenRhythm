@@ -1,18 +1,26 @@
 package mai_onsyn.open_rhythm.ui.modules.midi_flow.waterfalls.gpu.pool
 
 import mai_onsyn.compose_gl.gl.GL_ARRAY_BUFFER
+import mai_onsyn.compose_gl.gl.GL_DYNAMIC_DRAW
 import mai_onsyn.compose_gl.gl.GL_FLOAT
+import mai_onsyn.compose_gl.gl.GL_TRIANGLES
+import mai_onsyn.compose_gl.gl.GL_UNSIGNED_BYTE
 import mai_onsyn.compose_gl.gl.GL_UNSIGNED_INT
 import mai_onsyn.compose_gl.gl.glBindBuffer
 import mai_onsyn.compose_gl.gl.glBindVertexArray
+import mai_onsyn.compose_gl.gl.glBufferData
 import mai_onsyn.compose_gl.gl.glDeleteBuffers
 import mai_onsyn.compose_gl.gl.glDeleteVertexArrays
+import mai_onsyn.compose_gl.gl.glDrawArraysInstanced
 import mai_onsyn.compose_gl.gl.glEnableVertexAttribArray
 import mai_onsyn.compose_gl.gl.glGenBuffers
 import mai_onsyn.compose_gl.gl.glGenVertexArrays
 import mai_onsyn.compose_gl.gl.glVertexAttribDivisor
 import mai_onsyn.compose_gl.gl.glVertexAttribIPointer
 import mai_onsyn.compose_gl.gl.glVertexAttribPointer
+import mai_onsyn.open_rhythm.ui.modules.midi_flow.waterfalls.gpu.instancedVao
+import java.nio.ByteBuffer
+import java.nio.ByteOrder
 
 class InstanceSlot(
     var chunk: NoteChunk?
@@ -44,9 +52,9 @@ class InstanceSlot(
         glVertexAttribPointer(1, 4, GL_FLOAT, false, INSTANCE_STRIDE, 0)
         glVertexAttribDivisor(1, 1)
 
-        // 颜色rgba
+        // 颜色argb
         glEnableVertexAttribArray(2)
-        glVertexAttribIPointer(2, 1, GL_UNSIGNED_INT, INSTANCE_STRIDE, 16)
+        glVertexAttribIPointer(2, 4, GL_UNSIGNED_BYTE, INSTANCE_STRIDE, 16)
         glVertexAttribDivisor(2, 1)
 
         // 深度
@@ -60,9 +68,35 @@ class InstanceSlot(
     }
 
     // 复用已有vbo
-    fun upload() {
+    fun upload(builder: NoteChunkBuilder) {
+        if (uploaded || chunk == null) return
+
+        val buffer = ByteBuffer
+            .allocateDirect(chunk!!.entities.size * 8 * 4)
+            .order(ByteOrder.nativeOrder())
+
+        for (e in chunk!!.entities) {
+            val (fracX, fracW, tickInChunk, durationTick, color, depth) = builder.buildGLRect(chunk!!.id, e) ?: continue
+            buffer.putFloat(fracX)
+            buffer.putFloat(fracW)
+            buffer.putFloat(tickInChunk)
+            buffer.putFloat(durationTick)
+            buffer.putInt(color)
+            buffer.putInt(depth)
+        }
+        buffer.flip()
+
+        glBindBuffer(GL_ARRAY_BUFFER, vbo)
+        glBufferData(GL_ARRAY_BUFFER, buffer, GL_DYNAMIC_DRAW)
+        glBindBuffer(GL_ARRAY_BUFFER, 0)
+
         uploaded = true
-        TODO()
+    }
+
+    fun draw() {
+        glBindVertexArray(vao)
+        glDrawArraysInstanced(GL_TRIANGLES, 0, 6, chunk!!.entities.size)
+        glBindVertexArray(0)
     }
 
     // 完全删除vbo 删除后这个变量必须再次initialize

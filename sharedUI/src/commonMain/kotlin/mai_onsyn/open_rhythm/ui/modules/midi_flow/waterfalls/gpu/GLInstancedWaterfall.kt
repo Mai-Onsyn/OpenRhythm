@@ -43,6 +43,7 @@ fun GLInstancedWaterfall(
     ) {
         OpenGLWaterfall(
             Modifier.matchParentSize(),
+            midi,
             trackColors,
             activeNoteOutput,
             noteRoundPercent
@@ -53,6 +54,7 @@ fun GLInstancedWaterfall(
 @Composable
 expect fun NoteRenderScope.OpenGLWaterfall(
     modifier: Modifier,
+    midi: Midi,
     trackColors: List<Color>,
     activeNoteOutput: MutableMap<Int, Color>,
     roundCorners: Float

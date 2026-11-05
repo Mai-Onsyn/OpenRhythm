@@ -7,6 +7,7 @@ import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
 import co.touchlab.kermit.Logger
 import mai_onsyn.compose_gl.GLCanvas
+import mai_onsyn.compose_gl.config.FramePolicy
 import mai_onsyn.compose_gl.gl.*
 import org.lwjgl.opengl.GL30
 import java.nio.ByteBuffer
@@ -20,8 +21,8 @@ var quadVbo = 0
 @Composable
 fun TestRectsDraw() {
     val rects = listOf(
-        _ToDrawRect(Rect(0.1f, 0.1f, 2f, 0.3f), Color.Green.copy(0.4f)),
-        _ToDrawRect(Rect(-0.5f, 0.5f, 0.4f, -0.4f), Color.Red.copy(0.1f)),
+        _ToDrawRect(Rect(0.1f, 0.1f, 2f, 0.3f), Color.Green.copy(0.9f)),
+        _ToDrawRect(Rect(-0.5f, 0.5f, 0.4f, -0.4f), Color.Red.copy(0.8f)),
     )
     GLCanvas(
         modifier = Modifier.fillMaxSize(),
@@ -34,12 +35,12 @@ fun TestRectsDraw() {
         onSurfaceCreated = {
             GL30.glEnable(GL30.GL_BLEND)
             GL30.glEnable(GL30.GL_DEPTH_TEST)
-            GL30.glBlendFunc(GL30.GL_SRC_ALPHA, GL30.GL_ONE_MINUS_SRC_ALPHA)
-//            GL30.glBlendFunc(GL30.GL_ONE, GL30.GL_ONE_MINUS_SRC_ALPHA)
+            GL30.glBlendFunc(GL30.GL_ONE, GL30.GL_ONE_MINUS_SRC_ALPHA)
 
-            // 预乘 clear 颜色：rgb * a。这里 (1,1,0) @ 0.1 => (0.1, 0.1, 0), 0.1
+//            GL30.glBlendFunc(GL30.GL_SRC_ALPHA, GL30.GL_ONE_MINUS_SRC_ALPHA)
         },
         onSurfaceResized = { old, new -> println("Resized to $new") },
+        framePolicy = FramePolicy.Continuous(60),
         onDraw = {
             val program = Shader.VANILLA.program
             if (!initialized) {
@@ -105,7 +106,6 @@ fun TestRectsDraw() {
 
 //            glClearColor(0f, 0f, 0f, 0f)
 //            glClear(GL_COLOR_BUFFER_BIT)
-
 
             val clearAlpha = 0.1f
             GL30.glClearColor(1f * clearAlpha, 0f * clearAlpha, 0.5f * clearAlpha, clearAlpha)

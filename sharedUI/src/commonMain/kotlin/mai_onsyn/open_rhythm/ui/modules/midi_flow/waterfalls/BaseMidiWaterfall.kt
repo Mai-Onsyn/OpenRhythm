@@ -39,6 +39,7 @@ interface NoteRenderScope : BoxScope {
     val pitchLabels: Map<Int, TextLayoutResult>?
     val maxNoteDurationList: List<Long>
     val whiteKeyWidth: Float
+    val windowSize: Size
     val status: WaterfallRenderingStatus
 }
 
@@ -157,6 +158,7 @@ fun BaseMidiWaterfall(
                 override val pitchLabels: Map<Int, TextLayoutResult>? = pitchLabels
                 override val maxNoteDurationList: List<Long> = maxNoteDurationList
                 override val whiteKeyWidth: Float = whiteKeyWidth
+                override val windowSize: Size = canvasSize
                 override val status: WaterfallRenderingStatus = renderingStatus
             }
         }

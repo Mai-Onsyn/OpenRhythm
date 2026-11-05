@@ -37,7 +37,8 @@ compose.desktop {
             "-Xms512m",
             "-XX:MaxRAMPercentage=80.0",
             "--enable-native-access=ALL-UNNAMED",
-//            "-Xlog:gc"
+            "-Xlog:gc",
+            "-XX:+ExplicitGCInvokesConcurrent"
         )
 
         buildTypes.release.proguard {

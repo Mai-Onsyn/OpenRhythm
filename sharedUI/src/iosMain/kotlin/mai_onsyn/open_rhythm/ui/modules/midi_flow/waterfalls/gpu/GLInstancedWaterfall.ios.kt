@@ -7,11 +7,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import mai_onsyn.open_rhythm.core.midi.Midi
 import mai_onsyn.open_rhythm.ui.modules.midi_flow.waterfalls.NoteRenderScope
 
 @Composable
 actual fun NoteRenderScope.OpenGLWaterfall(
     modifier: Modifier,
+    midi: Midi,
     trackColors: List<Color>,
     activeNoteOutput: MutableMap<Int, Color>,
     roundCorners: Float

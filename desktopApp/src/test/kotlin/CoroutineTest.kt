@@ -17,7 +17,7 @@ class CoroutineTest {
                 println(end - start)
             }
         }
-        Thread.sleep(10000)  // test only, to prevent the test from finishing before the coroutine has finished
+        Thread.sleep(10000)  // frameLoop only, to prevent the frameLoop from finishing before the coroutine has finished
     }
 
 

@@ -1,6 +1,7 @@
 package mai_onsyn.compose_gl.gl
 
 import org.lwjgl.opengl.GL46C
+import java.nio.ByteBuffer
 import java.nio.FloatBuffer
 
 actual fun glCreateShader(type: Int): Int = GL46C.glCreateShader(type)
@@ -30,3 +31,6 @@ actual fun glClearColor(red: Float, green: Float, blue: Float, alpha: Float) = G
 actual fun glClear(mask: Int) = GL46C.glClear(mask)
 actual fun glUseProgram(program: Int) = GL46C.glUseProgram(program)
 actual fun glDrawArraysInstanced(mode: Int, first: Int, count: Int, instanceCount: Int) = GL46C.glDrawArraysInstanced(mode, first, count, instanceCount)
+actual fun glEnable(target: Int) = GL46C.glEnable(target)
+actual fun glBlendFunc(sfactor: Int, dfactor: Int) = GL46C.glBlendFunc(sfactor, dfactor)
+actual fun glBufferData(target: Int, data: ByteBuffer, usage: Int) = GL46C.glBufferData(target, data, usage)

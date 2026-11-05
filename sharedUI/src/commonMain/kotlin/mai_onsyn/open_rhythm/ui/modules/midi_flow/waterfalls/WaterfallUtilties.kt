@@ -31,10 +31,10 @@ fun filterWindowNotes(
         }
     }
 
-    val s = Time.nanos
     toDrawNotes.sortBy { it.depth }
-    Logger.v { "Sort cost ${(Time.nanos - s) / 1_000_000} ms" }
+//    val s = Time.nanos
 //    toDrawNotes.sortWith(compareBy({ isBlackKey(it.note.pitch) }, { -it.note.pitch }, { it.note.tick }, { it.trackNum }))
+//    Logger.v { "Sort cost ${(Time.nanos - s) / 1_000_000} ms" }
 //    sortNotes(toDrawNotes)
     return toDrawNotes
 }

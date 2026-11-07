@@ -20,6 +20,7 @@ import mai_onsyn.open_rhythm.core.util.Time
 import mai_onsyn.open_rhythm.ui.utility.drawOctaveLines
 import mai_onsyn.open_rhythm.ui.utility.isBlackKey
 import mai_onsyn.open_rhythm.ui.utility.reMeasure
+import mai_onsyn.open_rhythm.ui.utility.times
 import kotlin.time.Duration.Companion.milliseconds
 
 data class LiveNote(
@@ -62,7 +63,7 @@ fun MidiUpFlow(
 
         val toDrawBlacks = mutableListOf<DrawScope.() -> Unit>()
         for (note in notes) {
-            val (x, w) = gridPos[note.pitch] ?: continue
+            val (x, w) = (gridPos[note.pitch] ?: continue) * size.width
 
             val startElapsed = now - note.startNanos
             val endElapsed = now - (note.endNanos ?: now)

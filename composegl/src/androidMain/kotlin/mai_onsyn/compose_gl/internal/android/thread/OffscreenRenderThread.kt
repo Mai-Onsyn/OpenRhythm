@@ -3,6 +3,7 @@ package mai_onsyn.compose_gl.internal.android.thread
 import android.opengl.EGL14
 import android.opengl.GLES20
 import androidx.compose.ui.graphics.asImageBitmap
+import mai_onsyn.compose_gl.ComposeGL
 import mai_onsyn.compose_gl.config.FramePolicy
 import mai_onsyn.compose_gl.config.GLConfig
 import mai_onsyn.compose_gl.internal.MutableGLRenderScope
@@ -45,12 +46,9 @@ internal class OffscreenRenderThread(
         scope.infoValue = readInfo()
         scope.requestHandler = { requestRender() }
         scope.densityValue = density
-        // 上下文是常驻的：只有真正创建上下文的那一次才触发，
-        // 之后重新挂载时用户的着色器等资源依然有效，不用重新编译
-        if (created.isFirstContextUse) {
-            callbacks.created(scope)
-            created.onContextDestroy = { callbacks.destroyed(scope) }
-        }
+        // 由基类统一触发上下文级 / 画布级回调，这里只把「是不是首次」传上去
+        contextIsFirstUse = created.isFirstContextUse
+        created.onContextDestroy = { ComposeGL.onContextDestroyed(scope) }
     }
 
     override fun onResize(width: Int, height: Int) {

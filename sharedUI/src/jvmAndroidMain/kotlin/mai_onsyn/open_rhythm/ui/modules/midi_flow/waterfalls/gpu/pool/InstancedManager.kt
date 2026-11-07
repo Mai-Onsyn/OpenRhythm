@@ -1,7 +1,10 @@
 package mai_onsyn.open_rhythm.ui.modules.midi_flow.waterfalls.gpu.pool
 
+import androidx.compose.ui.geometry.Size
+import kotlinx.coroutines.runBlocking
 import mai_onsyn.compose_gl.gl.glUseProgram
 import mai_onsyn.open_rhythm.ui.modules.midi_flow.waterfalls.gpu.Shader
+import openrhythm.sharedui.generated.resources.Res
 import kotlin.math.floor
 
 class InstancedManager(
@@ -14,6 +17,7 @@ class InstancedManager(
     private val pool: MutableList<InstanceSlot> = mutableListOf()
     private val quadRect: QuadRect = QuadRect()
     private val uniforms: Uniforms = Uniforms()
+    private lateinit var shader: Shader
 
     /**
      * 输入tick，根据tick来轮换vbo指针
@@ -83,7 +87,7 @@ class InstancedManager(
     /**
      * 更新GPU的vbo为当前池 只能在GL线程调用
      */
-    fun upload(pxPerTick: Float, roundedFrac: Float) {
+    fun upload(pxPerTick: Float, windowSizePx: Size, roundedFrac: Float) {
         for (i in 0 until screenChunkCount) {
             val slot = pool[i]
             if (!slot.initialized) {
@@ -93,7 +97,7 @@ class InstancedManager(
                 slot.upload(chunkBuilder)
             }
         }
-        uniforms.update(pxPerTick, chunkBuilder.windowSizePx, roundedFrac)
+        uniforms.update(pxPerTick, windowSizePx, chunkTickSize.toFloat(), roundedFrac)
     }
 
     /**
@@ -111,14 +115,15 @@ class InstancedManager(
      * GL Canvas的init块调用 初始化GL资源
      */
     fun initGL() {
-        val program = Shader.VANILLA.program
-        glUseProgram(program)
+        shader = Shader(Shader.VANILLA_VERTEX, Shader.VANILLA_FRAGMENT)
+        shader.use()
         quadRect.init()
-        uniforms.initialize(program)
+        uniforms.initialize(shader.program)
     }
 
     fun dispose() {
         pool.forEach(InstanceSlot::dispose)
         quadRect.dispose()
+        shader.dispose()
     }
 }

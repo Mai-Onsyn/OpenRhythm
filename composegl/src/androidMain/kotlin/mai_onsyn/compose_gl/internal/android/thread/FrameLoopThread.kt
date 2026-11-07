@@ -1,8 +1,10 @@
 package mai_onsyn.compose_gl.internal.android.thread
 
 import androidx.compose.ui.unit.IntSize
+import mai_onsyn.compose_gl.ComposeGL
 import mai_onsyn.compose_gl.config.FramePolicy
 import mai_onsyn.compose_gl.error.GLException
+import mai_onsyn.compose_gl.gl.GLThreadGuard
 import mai_onsyn.compose_gl.internal.MutableGLRenderScope
 import mai_onsyn.compose_gl.internal.framePeriodNanos
 import mai_onsyn.compose_gl.internal.android.AndroidCallbacks
@@ -85,9 +87,22 @@ internal abstract class FrameLoopThread(
         join(1500)
     }
 
+    /** 由子类在 [onStart] 里设置：本次挂载是不是该上下文的第一位使用者。 */
+    protected var contextIsFirstUse: Boolean = false
+
     final override fun run() {
+        var canvasCreated = false
+        GLThreadGuard.enter()
         try {
             onStart()
+
+            // 上下文级：每个上下文一次，早于任何画布的 canvasCreated
+            if (contextIsFirstUse) {
+                ComposeGL.onContextCreated(scope)
+            }
+            // 画布级：每次挂载都调
+            callbacks.canvasCreated(scope)
+            canvasCreated = true
 
             var lastWidth = -1
             var lastHeight = -1
@@ -153,10 +168,15 @@ internal abstract class FrameLoopThread(
                 )
             }
         } finally {
+            if (canvasCreated) {
+                // 卸载回调：此时上下文仍然有效
+                runCatching { callbacks.canvasDisposed(scope) }
+            }
             try {
                 onStop()
             } catch (_: Throwable) {
             }
+            GLThreadGuard.exit()
         }
     }
 

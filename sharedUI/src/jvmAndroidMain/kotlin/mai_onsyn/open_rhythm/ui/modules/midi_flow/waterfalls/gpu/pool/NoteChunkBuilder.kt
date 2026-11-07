@@ -1,6 +1,5 @@
 package mai_onsyn.open_rhythm.ui.modules.midi_flow.waterfalls.gpu.pool
 
-import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import com.materialkolor.ktx.darken
@@ -15,8 +14,7 @@ class NoteChunkBuilder(
     val midi: Midi,
     val maxNoteDurationList: List<Long>,
     val trackColors: List<Color>,
-    val gridPos: Map<Int, Pair<Float, Float>>,
-    var windowSizePx: Size
+    val gridPos: Map<Int, Pair<Float, Float>>
 ) {
     fun buildDrawableNotes(tick: Double): List<DrawableNote> {
         return filterWindowNotes(midi, tick, chunkTickSize, maxNoteDurationList, trackColors)
@@ -25,8 +23,7 @@ class NoteChunkBuilder(
     fun buildGLRect(chunkID: Int, dn: DrawableNote): ToDrawRect? {
         val (x, w) = gridPos[dn.note.pitch] ?: return null
         return ToDrawRect(
-            x / windowSizePx.width,
-            w / windowSizePx.width,
+            x, w,
             (dn.note.tick.toDouble() - (chunkID * chunkTickSize).toDouble()).toFloat(),
             dn.note.duration.toFloat(),
             if (isBlackKey(dn.note.pitch)) dn.color.darken(1.5f).toArgb() else dn.color.toArgb(),

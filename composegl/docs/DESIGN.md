@@ -3,11 +3,16 @@
 | 项 | 值 |
 |---|---|
 | 文档版本 | v1.1 |
-| 状态 | 基本完工 |
+| 状态 | 设计定稿，待开工 |
 | 更新日期 | 2026-10-29 |
 | 目标读者 | 接手本项目的人（默认对方对本项目零背景） |
 
 > **本文档是唯一权威来源。** 任何人接手时先读完第 1、2、3 章，再读第 5 章动手，第 7 章是"不要踩的坑"。若有冲突，以本文档为准；若需偏离，先改文档再改代码。
+>
+> **⚠️ 更新（2026-11-06）**：桌面端零拷贝已打通并接进 `GLCanvas`（`DesktopSurfaceMode.SharedTexture`），
+> **第 3.6 节的「已证伪」结论及其派生的 ADR-1 / ADR-5 表述均已失效**。该主题一律以
+> [`APPROACHES.md`](APPROACHES.md) 第 11 章的最新实测为准。本文其余章节描述的是默认的
+> `ComposeImage` 回读路径，仍然有效。
 
 ---
 
@@ -99,7 +104,7 @@
 | FR-3 | 双向层级：下层 Compose 可见、上层 Compose 可覆盖 | 上下各放一个 `Text`，均正确渲染 |
 | FR-4 | `requestRender()` 触发一帧；帧完成后 Compose 自动重绘 | 手动调用后画面更新，不调用时画面不变 |
 | FR-5 | 尺寸变化时回调 `onSurfaceResized` 并重建 render target | 窗口拖动缩放、屏幕旋转后画面不拉伸不变形 |
-| FR-6 | 提供 `onSurfaceCreated` / `onSurfaceDestroyed` 管理 GL 资源生命周期 | 组件进出组合时资源正确创建/释放，无泄漏 |
+| FR-6 | 两层生命周期：`ComposeGL.onContextCreated` / `onContextDestroyed`（上下文级）+ `onCanvasCreated` / `onCanvasDisposed`（画布级） | 画布反复挂载/卸载时资源配对创建释放，着色器只编译一次 |
 | FR-7 | 上下文创建失败时渲染 `fallbackContent` 并输出警告 | 人为让上下文创建失败，界面显示 fallback 而非崩溃 |
 | FR-8 | 不拦截任何指针事件 | GLCanvas 上下的按钮均可点击 |
 | FR-9 | 提供帧统计（绘制/回读/发布耗时）用于性能观测 | `scope.stats` 有合理数值 |
@@ -230,7 +235,8 @@ ComposeGL.androidSurfaceMode = AndroidSurfaceMode.TextureView
 
 铁律：
 
-1. 用户的所有 GL 命令只能出现在 `onSurfaceCreated` / `onSurfaceResized` / `onDraw` / `onSurfaceDestroyed` 四个回调里——它们全部在渲染线程执行。
+1. 用户的所有 GL 命令只能出现在 `onCanvasCreated` / `onCanvasResized` / `onDraw` / `onCanvasDisposed`
+   或上下文级的 `onContextCreated` / `onContextDestroyed` 里——它们全部在渲染线程执行，且上下文已 current。
 2. 库在回调返回后负责把结果发布到 UI 线程，使用方不需要、也不允许自己做线程切换。
 3. 任何跨线程共享的数据，同步责任在使用方（库里只有"位图引用"这一个共享对象，用原子引用 + 单写单读保证安全）。
 
@@ -251,7 +257,28 @@ ComposeGL.androidSurfaceMode = AndroidSurfaceMode.TextureView
 - 安卓 `Bitmap` 用 `ARGB_8888` + `setPremultiplied(true)`。
 - 清屏用 `glClearColor(0, 0, 0, 0)` + `glClear`。
 
-### 3.6 已证伪：zero-copy 不可行
+### 3.6 zero-copy：结论已更新（原文为历史记录）
+
+> ✅ **本节下方的「已证伪」结论已被 2026-11-06 的实测推翻，保留仅作历史记录。**
+> 桌面端零拷贝已打通并落地为 `DesktopSurfaceMode.SharedTexture`，完整证据见
+> [`APPROACHES.md` 第 11 章](APPROACHES.md)。
+>
+> 当时三个判断错在哪：
+>
+> 1. `Image.makeFromTexture` 确实不存在，但同一个 `Image` 类里有 **`adoptTextureFrom`**
+>    （对应 `SkImages::AdoptTextureFrom`），能把 `BackendTexture` 包成 GPU-backed Image。
+> 2. 「没有任何函数接收 DirectContext + BackendTexture」—— `adoptTextureFrom` 就是。
+> 3. 「切 Skia 后端没有收益」—— 零拷贝模式**必须** `-Dskiko.renderApi=OPENGL`，
+>    否则拿不到 HGLRC、也建不了 Share Group。
+>
+> 真正的拦路虎不是 API 面，而是四件事：Skiko 的 GL 上下文常年 current 在别的线程
+> （用 classpath 影子类在**创建时**加入 Share Group 解决）、跨上下文需 fence 同步、
+> **Compose 的 display list 按底层 `SkiaImage` 缓存内容**（每帧必须换底层 Image，
+> 只换 `ImageBitmap` 的 Java 壳无效）、以及 **`toComposeImageBitmap()` 会走
+> `Image.toBitmap()` 把 GPU 纹理整帧光栅化到 CPU 位图**（必须绕开 `ImageBitmap`，
+> 直接把 `SkiaImage` 交给 `drawIntoCanvas { it.skiaCanvas.drawImageRect(...) }`）。
+
+#### 以下为 2026-10-29 的原始结论（已失效，勿再引用）
 
 这是本项目最重要的技术结论，别再花时间尝试。
 
@@ -1535,3 +1562,112 @@ FBO(RGBA8) 建好并检查 COMPLETE
 
 `composegl/build.gradle.kts` 里原本为了压 `expect object GL` 的 Beta 警告而加的
 `-Xexpect-actual-classes`（以及那段注释）已经删除——仓库里不再有任何 `expect class` / `expect object`。
+
+
+---
+
+## 17. 桌面端的 GC 灾难（生产事故，已缓解，未根治）
+
+### 17.1 现象
+
+生产环境上，连续渲染时 JVM 每 240ms 一次 Full GC，每次 80–100ms，程序完全卡死。
+
+```
+GC(20) Major Collection (System.gc()) 426M(1%)->416M(1%) 0.089s
+```
+
+### 17.2 根因链条
+
+1. 桌面端每帧 `glReadPixels` → Skia 位图内存 → `Image.makeRaster` 产出一个新 Image；
+2. Skia 为每个新 Image 上传一份纹理（GPU 侧），这个 **Image 对象是原生内存**；
+3. Image 的释放靠 RefCnt 的 Cleaner —— 即 JVM GC。但 JVM 堆里只有一个几百字节的壳，
+   堆压力几乎为零，GC 永远不触发；
+4. 于是原生内存一路涨，我们只能用 `nativeCopyBudgetMb` 兜底：累计到 64MB 就 `System.gc()`；
+5. `System.gc()` 默认触发 **Full GC**，大画布上 80–100ms —— 灾难。
+
+实测（G1 / 943×514 / 60fps）：每 610ms 一次 `Pause Full (System.gc()) 20ms`，
+而堆只有 12M→11M —— GC 几乎回收不到 JVM 对象，纯粹是为了让 Cleaner 跑起来。
+
+### 17.3 试过但不可行的方案
+
+**复用同一个 Image**（`notifyPixelsChanged` + 帧计数触发重绘）：
+
+- 画面会冻结。Skia 为 Image 缓存了纹理，`Bitmap.notifyPixelsChanged()` 影响不到它，
+  而 Skiko 的 `Image` 没有暴露 `notifyPixelsChanged`。
+- 实测两帧差异只有 1589 像素（全是 HUD 文字），画布内容完全没更新。
+
+**强制软件渲染**（`-Dskiko.renderApi=SOFTWARE`）：整个 UI 变软件光栅化，代价太大。
+
+### 17.4 已落地的缓解
+
+| 措施 | 效果 |
+|---|---|
+| `-XX:+ExplicitGCInvokesConcurrent` | 停顿 20ms → 1.5ms + Remark 2ms（实测） |
+
+库侧的文档已把这个参数写进 `GLConfig.nativeCopyBudgetMb` 和 README。
+
+### 17.5 真正的修法（未实现）
+
+**不回读**。桌面端把 GL 画面直接贴到窗口，绕开 Skia：
+
+- `SwingPanel` + `AWTGLCanvas`（`org.lwjglx:lwjgl3-awt`）：GL 直接渲染进 AWT 原生画布，
+  零回读、零每帧分配。代价是重量级组件——Compose 内容不能叠在它上面（和安卓 TextureView 同款限制）。
+- 这是 filament-compose 在安卓上走的路（`SurfaceTexture`/`AndroidExternalSurface` 也是零拷贝）。
+
+代价与风险：新依赖、重量级组件的裁剪/层级问题、需要重写桌面端承载层。属于下一阶段的工作。
+
+
+### 17.6 尝试过但不通的折中：`DesktopSurfaceMode.NativeSurface`
+
+为了在不写原生库的前提下拿到零拷贝，加了第二种桌面承载方式：
+
+- `SwingPanel` + `AWTGLCanvas`（`org.lwjglx:lwjgl3-awt`），GL 直接渲染进 AWT 原生画布；
+- 没有 FBO、没有回读、没有 Skia Image → **零每帧原生分配，不需要 `System.gc()`**；
+- 帧驱动：`javax.swing.Timer` 按刷新率 `repaint()`，回调都在 **EDT** 上执行。
+
+代价：AWT 重量级组件永远盖在 Compose 的 Skia 画面之上 → **Compose 内容不能叠在 GL 上面**。
+叠加内容需要挪到 GL 区域之外（`Column`/`Row`）。
+
+顺带一个收益：在这个模式下，状态栏收起/展开导致的区域变化只是画布 resize，
+不像回读路径那样要重新分配整帧位图并触发 GC。
+
+依赖踩坑：`lwjgl3-awt` 的 POM 里对 lwjgl core 用了未展开的 classifier（`${lwjgl.natives}`），
+必须 `exclude(group = "org.lwjgl", module = "lwjgl")`（只排除 core，**不能**整组排除——
+整组会把 `lwjgl-jawt` 一起干掉，运行期 `NoClassDefFoundError: org/lwjgl/system/jawt/JAWT`）。
+
+
+#### 实做结果（未打通）
+
+按 `SwingPanel` + `AWTGLCanvas` 实现了一版，遇到并解决了三个问题、卡在第四个：
+
+1. **依赖**：`lwjgl3-awt` 的 POM 对 lwjgl core 用了未展开的 classifier，只能排除 core；
+   整组排除会丢 `lwjgl-jawt`，运行期 `NoClassDefFoundError: org/lwjgl/system/jawt/JAWT`。
+2. **版本上限**：`GLUtil.validVersionGL` 只认到 4.5，传 4.6 抛
+   `IllegalArgumentException: Invalid OpenGL version`。已夹到 4.5。
+3. **渲染驱动**：`AWTGLCanvas` **没有重写 `paint()`** —— AWT 的绘制流程根本不会触发 GL，
+   必须由我们显式调 `render()`。改完后 `initGL`（4.5 core）和 `paintGL`（帧号递增）都正常。
+4. **卡住的地方**：画布在 Compose 的 `SwingInteropViewGroup` 里**渲染不出来**：
+   - 默认：画布被 Skia 层完全盖住，画面全白；
+   - `-Dcompose.interop.blending=true`：画布变透明，GL 输出仍不可见；
+   - 组件 `isShowing=true`、尺寸正确（755×410）、给画布设红色背景同样看不到。
+
+结论：Compose Desktop 的互操作层对 heavyweight(Canvas) 子组件的混排不支持，
+这条路不成立。零拷贝 + 可叠加只能走"GL 纹理与 Skia 共享"（17.5），需要原生库。
+
+
+### 17.7 最终解法（2026-11-06）：分配驱动 GC
+
+17.5 提出的"不回读"路线在实现前的验证阶段被否掉了（WGL 共享被 `ERROR_BUSY` 挡住，
+详见 APPROACHES 第 8 章），所以回到 Image 路径，但把 `System.gc()` 换掉：
+
+- **删掉** `nativeCopyBudgetMb` 兜底与所有 `System.gc()`；
+- 每帧分配一块和帧同样大小的临时数组（`@Volatile` 字段持有，防止被优化掉），
+  用分配压力驱动 ZGC 做**并发**回收。
+
+实测（ZGC / 943×514 / 60fps / `-Xmx768m`）：RSS 稳定 1.36–1.52GB，
+40 秒 32 次 `Garbage Collection (Proactive)`，**没有一次 `System.gc()`**。
+对照：泵太小（1/4 帧）就触发不了 GC，RSS 回到 +120MB/s；
+不限 `-Xmx` 则堆会涨到 2GB 以上。所以泵的大小与 `-Xmx` 都需要注意。
+
+另外验证了一条走不通的"确定性释放"：`Image.close()` 保留最近 3 帧 —— RSS 完全没变。
+原因是 Compose 的 `ImageBitmap` 包装器自己持着原生引用，只有它被 GC 才释放。

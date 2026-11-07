@@ -3,6 +3,8 @@ package mai_onsyn.compose_gl.internal.desktop.context
 import mai_onsyn.compose_gl.config.GLConfig
 import mai_onsyn.compose_gl.error.GLException
 import mai_onsyn.compose_gl.error.GLLog
+import mai_onsyn.compose_gl.gl.GLThreadGuard
+import mai_onsyn.compose_gl.internal.desktop.skiko.SkikoGlShare
 import mai_onsyn.compose_gl.scope.GLInfo
 import org.lwjgl.glfw.GLFW
 import org.lwjgl.glfw.GLFW.GLFW_CONTEXT_VERSION_MAJOR
@@ -17,6 +19,8 @@ import org.lwjgl.opengl.GL11
 import org.lwjgl.opengl.GL43
 import org.lwjgl.opengl.GLDebugMessageCallback
 import org.lwjgl.opengl.GLDebugMessageCallbackI
+import org.lwjgl.opengl.WGL
+import org.lwjgl.system.MemoryStack
 import org.lwjgl.system.MemoryUtil.NULL
 
 /**
@@ -38,6 +42,7 @@ import org.lwjgl.system.MemoryUtil.NULL
 internal class GlfwSession private constructor(
     val key: String,
     private val config: GLConfig,
+    private val useSharedContext: Boolean,
 ) {
 
     /** 会话线程持有的窗口与上下文。 */
@@ -64,6 +69,10 @@ internal class GlfwSession private constructor(
 
     /** 由会话线程调用：在本线程上创建窗口与上下文。 */
     private fun createContextOnSessionThread() {
+        if (useSharedContext) {
+            createSharedContextOnSessionThread()
+            return
+        }
         val requested = config.desktopGlVersion
         val attempts = buildList {
             add(requested)
@@ -104,6 +113,41 @@ internal class GlfwSession private constructor(
         throw GLException("无法创建 OpenGL 上下文：$lastError")
     }
 
+    /**
+     * 零拷贝模式：直接复用影子类建的 bootstrap 上下文。
+     *
+     * 它与 Skiko 的 GL 上下文**从创建起就在同一个 WGL Share Group**，所以这里建的纹理
+     * 可以被 Skia 直接采样。GLFW 的 `glfwCreateWindow(..., share)` 只接受另一个 GLFW
+     * window，传不进原生 HGLRC，因此这条路径必须自己 `wglMakeCurrent`。
+     */
+    private fun createSharedContextOnSessionThread() {
+        val hglrc = SkikoGlShare.ensureBootstrap()
+        val dc = SkikoGlShare.bootstrapDc
+        if (hglrc == 0L || dc == 0L) {
+            throw GLException(
+                "SharedTexture bootstrap context unavailable; " +
+                    "start the JVM with -Dskiko.renderApi=OPENGL",
+            )
+        }
+        val stack = MemoryStack.stackPush()
+        val ok = try {
+            WGL.wglMakeCurrent(stack.ints(1), dc, hglrc)
+        } finally {
+            stack.pop()
+        }
+        if (!ok) throw GLException("wglMakeCurrent failed for shared bootstrap context")
+        GL.createCapabilities()
+        val version = GL11.glGetString(GL11.GL_VERSION) ?: "unknown"
+        info = GLInfo(
+            major = version.trim().substringBefore('.').toIntOrNull() ?: 4,
+            minor = version.trim().substringAfter('.').substringBefore(' ').toIntOrNull() ?: 5,
+            versionString = version,
+            rendererString = GL11.glGetString(GL11.GL_RENDERER) ?: "unknown",
+            vendorString = GL11.glGetString(GL11.GL_VENDOR) ?: "unknown",
+        )
+        installDebugCallback()
+    }
+
     private fun installDebugCallback() {
         if (!config.debugContext) return
         if (!GL.getCapabilities().OpenGL43) return
@@ -126,7 +170,11 @@ internal class GlfwSession private constructor(
         debugCallback = callback
     }
 
-    /** 上下文销毁时回调（由客户端注册）。 */
+    /** 会话是否已被 [invalidate]。画布循环靠它退出。 */
+    val isClosed: Boolean
+        get() = synchronized(lock) { closed }
+
+    /** 上下文销毁时回调（由客户端注册，在会话线程收尾时执行，此时上下文仍有效）。 */
     @Volatile
     var onContextDestroy: (() -> Unit)? = null
 
@@ -150,7 +198,11 @@ internal class GlfwSession private constructor(
         try {
             createContextOnSessionThread()
         } catch (t: Throwable) {
-            GLLog.warn("GL", "创建常驻 GL 上下文失败：${t.message}")
+            GLLog.warn("GL", "Failed to create resident GL context: ${t.message}")
+            synchronized(lock) {
+                pendingSurface?.onSessionFailure(t)
+                pendingSurface = null
+            }
             return
         }
         try {
@@ -169,12 +221,24 @@ internal class GlfwSession private constructor(
                 client.runOnSessionThread(this, firstUse)
             }
         } finally {
+            // 先把上下文级销毁回调跑掉：此刻上下文仍然 current，用户可以安全删 program/texture
+            GLThreadGuard.enter()
+            try {
+                runCatching { onContextDestroy?.invoke() }
+                    .onFailure { GLLog.warn("GL", "onContextDestroyed 抛出异常: ${it.message}") }
+            } finally {
+                GLThreadGuard.exit()
+            }
+            onContextDestroy = null
+
             debugCallback?.free()
             debugCallback = null
             if (window != 0L) {
                 GLFW.glfwDestroyWindow(window)
                 window = 0L
             }
+            // GLFW 的终止必须发生在会话线程收尾之后，否则会话线程还在用就已经被 terminate
+            releaseGlfw()
         }
     }
 
@@ -185,30 +249,36 @@ internal class GlfwSession private constructor(
 
         /** 取（或建）会话。相同 [key] 拿到同一个常驻上下文。 */
         @Synchronized
-        fun obtain(key: String, config: GLConfig): GlfwSession {
+        fun obtain(key: String, config: GLConfig, useSharedContext: Boolean = false): GlfwSession {
             sessions[key]?.let { return it }
             if (initCount == 0 && !GLFW.glfwInit()) {
                 throw GLException("glfwInit 失败")
             }
             initCount++
-            val created = GlfwSession(key, config)
+            val created = GlfwSession(key, config, useSharedContext)
             sessions[key] = created
             created.thread.start()
             return created
         }
 
-        /** 丢弃会话：下次挂载会重新建上下文（着色器需要重新编译）。 */
+        /**
+         * 丢弃会话：下次挂载会重新建上下文（着色器需要重新编译）。
+         *
+         * 这里只标记关闭。真正的收尾（触发 onContextDestroyed、销毁窗口、归还 GLFW）
+         * 由会话线程在退出时完成 —— 因为那时上下文才 current，GL 调用才安全。
+         */
         @Synchronized
         fun invalidate(key: String) {
-            sessions.remove(key)?.also { session ->
-                session.onContextDestroy?.invoke()
-                session.onContextDestroy = null
-                session.close()
-                initCount--
-                if (initCount <= 0) {
-                    initCount = 0
-                    GLFW.glfwTerminate()
-                }
+            sessions.remove(key)?.close()
+        }
+
+        /** 会话线程退出后调用：归还 GLFW 引用，归零时终止。 */
+        @Synchronized
+        internal fun releaseGlfw() {
+            initCount--
+            if (initCount <= 0) {
+                initCount = 0
+                GLFW.glfwTerminate()
             }
         }
     }
@@ -228,4 +298,7 @@ internal interface SessionClient {
      *   false 表示复用了常驻上下文，客户端之前的 GL 资源依然有效。
      */
     fun runOnSessionThread(session: GlfwSession, isFirstContextUse: Boolean)
+
+    /** 会话线程建上下文失败时回调；默认空实现，客户端可用来触发 onFailure。 */
+    fun onSessionFailure(error: Throwable) = Unit
 }

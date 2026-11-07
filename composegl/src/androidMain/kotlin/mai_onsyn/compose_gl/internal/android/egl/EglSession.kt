@@ -7,6 +7,7 @@ import android.opengl.EGLDisplay
 import mai_onsyn.compose_gl.config.GLConfig
 import mai_onsyn.compose_gl.config.contextSignature
 import mai_onsyn.compose_gl.error.GLException
+import mai_onsyn.compose_gl.error.GLLog
 
 /**
  * 进程级共享的 EGL 会话。
@@ -27,9 +28,13 @@ internal class EglSession private constructor(
     private val rootContext: EGLContext,
 ) {
 
-    /** 上下文销毁时回调（由客户端注册）。 */
+    /** 上下文销毁时回调（由客户端注册，必须在上下文 current 的渲染线程上执行）。 */
     @Volatile
     var onContextDestroy: (() -> Unit)? = null
+
+    /** 已被 invalidate，等渲染线程收尾时销毁上下文。 */
+    @Volatile
+    var pendingDestroy: Boolean = false
 
     /** 根上下文是否正在被某个画布使用。 */
     private var rootInUse = false
@@ -72,6 +77,7 @@ internal class EglSession private constructor(
     /** 彻底丢弃会话：下次挂载会重建上下文（着色器需要重新编译）。 */
     @Synchronized
     fun destroy() {
+        pendingDestroy = false
         EGL14.eglDestroyContext(display, rootContext)
         EGL14.eglTerminate(display)
     }
@@ -88,13 +94,24 @@ internal class EglSession private constructor(
             return created
         }
 
-        /** 丢弃会话。 */
+        /**
+         * 丢弃会话。
+         *
+         * 用户在 [onContextDestroy] 里可能删 program/texture，那需要上下文 current，
+         * 所以只有在没有画布正在使用（root 空闲）时才直接销毁；否则交给渲染线程收尾。
+         * 没有上下文可用时会跳过回调并记日志 —— 总比在错误线程上崩掉好。
+         */
         @Synchronized
         fun invalidate(key: String) {
-            sessions.remove(key)?.also {
-                it.onContextDestroy?.invoke()
-                it.onContextDestroy = null
-                it.destroy()
+            sessions.remove(key)?.also { session ->
+                if (session.rootInUse) {
+                    session.pendingDestroy = true
+                } else {
+                    runCatching { session.onContextDestroy?.invoke() }
+                        .onFailure { GLLog.warn("EGL", "onContextDestroyed 抛出异常: ${it.message}") }
+                    session.onContextDestroy = null
+                    session.destroy()
+                }
             }
         }
 

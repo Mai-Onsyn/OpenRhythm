@@ -14,6 +14,7 @@ import mai_onsyn.open_rhythm.core.midi.Midi
 import mai_onsyn.open_rhythm.ui.modules.midi_flow.drawNoteGraphics
 import mai_onsyn.open_rhythm.ui.utility.drawTextCentered
 import mai_onsyn.open_rhythm.ui.utility.isBlackKey
+import mai_onsyn.open_rhythm.ui.utility.times
 
 @Composable
 fun DefaultMidiWaterfall(
@@ -56,7 +57,7 @@ fun DefaultMidiWaterfall(
 
             activeNoteOutput.clear()
             fun drawNote(pack: DrawableNote, blackKey: Boolean) {
-                val (x, w) = gridPos[pack.note.pitch] ?: return
+                val (x, w) = (gridPos[pack.note.pitch] ?: return) * size.width
                 val pixelPos = (pack.note.tick - currTick) * pxPerTick
                 val durationPx = pack.note.duration * pxPerTick
                 val noteRect = Rect(Offset(x, (canvasHeight - pixelPos - durationPx).toFloat()), Size(w, durationPx))

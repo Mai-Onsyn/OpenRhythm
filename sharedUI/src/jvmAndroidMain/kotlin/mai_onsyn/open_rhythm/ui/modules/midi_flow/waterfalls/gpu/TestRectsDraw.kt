@@ -26,20 +26,20 @@ fun TestRectsDraw() {
     )
     GLCanvas(
         modifier = Modifier.fillMaxSize(),
-        onSurfaceDestroyed = {
+        onCanvasDisposed = {
             glDeleteBuffers(intArrayOf(instancedVbo, quadVbo))
             glDeleteVertexArrays(instancedVao)
             initialized = false
             Logger.d { "GLCanvas#destroy" }
         },
-        onSurfaceCreated = {
+        onCanvasCreated = {
             GL30.glEnable(GL30.GL_BLEND)
             GL30.glEnable(GL30.GL_DEPTH_TEST)
             GL30.glBlendFunc(GL30.GL_ONE, GL30.GL_ONE_MINUS_SRC_ALPHA)
 
 //            GL30.glBlendFunc(GL30.GL_SRC_ALPHA, GL30.GL_ONE_MINUS_SRC_ALPHA)
         },
-        onSurfaceResized = { old, new -> println("Resized to $new") },
+        onCanvasResized = { new -> println("Resized to $new") },
         framePolicy = FramePolicy.Continuous(60),
         onDraw = {
             val program = Shader.VANILLA.program

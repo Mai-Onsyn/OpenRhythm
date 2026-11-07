@@ -32,6 +32,7 @@ kotlin {
             api("org.lwjgl:lwjgl:${libs.versions.lwjgl.get()}")
             api("org.lwjgl:lwjgl-glfw:${libs.versions.lwjgl.get()}")
             api("org.lwjgl:lwjgl-opengl:${libs.versions.lwjgl.get()}")
+            api("org.lwjglx:lwjgl3-awt:0.2.3") { exclude(group = "org.lwjgl", module = "lwjgl") }
             runtimeOnly("org.lwjgl:lwjgl:${libs.versions.lwjgl.get()}:natives-windows")
             runtimeOnly("org.lwjgl:lwjgl-glfw:${libs.versions.lwjgl.get()}:natives-windows")
             runtimeOnly("org.lwjgl:lwjgl-opengl:${libs.versions.lwjgl.get()}:natives-windows")

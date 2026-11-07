@@ -128,7 +128,7 @@ fun DrawScope.drawOctaveLines(
     val thicknessPx = thickness.toPx()
     for (pitch in minPitch..maxPitch) {
         if (pitch % 12 == 0) {
-            val x = gridPos[pitch]!!.first - thicknessPx / 2
+            val x = gridPos[pitch]!!.first * size.width - thicknessPx / 2
             drawLine(
                 color = color,
                 start = Offset(x, 0f),
@@ -137,7 +137,7 @@ fun DrawScope.drawOctaveLines(
             )
         }
         else if (pitch % 12 == 5) {
-            val x = gridPos[pitch]!!.first - thicknessPx / 2
+            val x = gridPos[pitch]!!.first * size.width - thicknessPx / 2
             drawLine(
                 color = color,
                 start = Offset(x, 0f),
@@ -258,6 +258,7 @@ fun reMeasure(
 
     gridPos.clear()
     val whiteKeyWidth = (size.width - (whiteKeyCount - 1) * spacingPx) / whiteKeyCount
+    val invW = 1f / size.width
 
     for (pitch in minPitch..maxPitch) {
         if (isBlackKey(pitch)) {
@@ -265,12 +266,16 @@ fun reMeasure(
             val centerX = (countWhiteKeys(minPitch, pitch)) * (whiteKeyWidth + spacingPx) - spacingPx / 2
             val keyWidth = whiteKeyWidth * blackHorizontalPercentage
             val left = centerX - keyWidth / 2 + keyWidth * offsetPercent
-            gridPos[pitch] = Pair(left, keyWidth)
+            gridPos[pitch] = Pair(left * invW, keyWidth * invW)
         } else {
             gridPos[pitch] = Pair(
-                (countWhiteKeys(minPitch, pitch) - 1) * (whiteKeyWidth + spacingPx),
-                whiteKeyWidth
+                (countWhiteKeys(minPitch, pitch) - 1) * (whiteKeyWidth + spacingPx) * invW,
+                whiteKeyWidth * invW
             )
         }
     }
+}
+
+operator fun Pair<Float, Float>.times(other: Float): Pair<Float, Float> {
+    return this.first * other to this.second * other
 }

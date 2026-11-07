@@ -3,6 +3,7 @@ package mai_onsyn.open_rhythm.ui.modules.midi_flow.waterfalls.gpu
 import kotlinx.coroutines.runBlocking
 import mai_onsyn.compose_gl.gl.*
 import openrhythm.sharedui.generated.resources.Res
+import org.lwjgl.opengl.GL46C
 
 class Shader(vertexSource: String, fragmentSource: String) {
     val program: Int
@@ -25,10 +26,21 @@ class Shader(vertexSource: String, fragmentSource: String) {
         glDeleteShader(fragmentShader)
     }
 
+    fun use() = glUseProgram(program)
+
+    fun dispose() {
+        GL46C.glDeleteProgram(program)
+        glUseProgram(0)
+    }
+
     companion object {
+        @Deprecated("TestOnly")
         val VANILLA = runBlocking { Shader(
             String(Res.readBytes("files/shaders/vanilla-vertex.glsl")),
             String(Res.readBytes("files/shaders/vanilla-fragment.glsl"))
         ) }
+
+        val VANILLA_VERTEX = runBlocking { String(Res.readBytes("files/shaders/vanilla-vertex.glsl")) }
+        val VANILLA_FRAGMENT = runBlocking { String(Res.readBytes("files/shaders/vanilla-fragment.glsl")) }
     }
 }

@@ -13,6 +13,7 @@ import mai_onsyn.open_rhythm.ui.modules.midi_flow.drawNoteGraphics
 import mai_onsyn.open_rhythm.ui.modules.midi_flow.waterfalls.filterWindowNotes
 import mai_onsyn.open_rhythm.ui.utility.drawTextCentered
 import mai_onsyn.open_rhythm.ui.utility.isBlackKey
+import mai_onsyn.open_rhythm.ui.utility.times
 import kotlin.concurrent.Volatile
 
 data class BitmapChunk(
@@ -147,7 +148,7 @@ class WaterfallCache(
             filterWindowNotes(midi, startTick.toDouble(), tickWindowSize.toInt(), maxNoteDurationList, trackColors)
         if (notes.isEmpty()) return
         notes.forEach { note ->
-            val (x, w) = gridPos[note.note.pitch] ?: return@forEach
+            val (x, w) = (gridPos[note.note.pitch] ?: return@forEach) * windowSize.width
             val pixelPos = ((note.note.tick - startTick) * pxPerTick)
             val durationPx = note.note.duration * pxPerTick
             val noteRect = Rect(Offset(x, windowSize.height - pixelPos - durationPx), Size(w, durationPx))
@@ -198,7 +199,7 @@ class WaterfallCache(
         val pitchTiles = notes.groupConsecutiveBy { it.note.pitch }
         val groupDone = Time.nanos
         pitchTiles.forEach { (pitch, subNotes) ->
-            val (x, w) = gridPos[pitch] ?: return@forEach
+            val (x, w) = (gridPos[pitch] ?: return@forEach) * windowSize.width
             tiledDrawer.addDrawCall(
                 pitch = pitch,
                 x = x,

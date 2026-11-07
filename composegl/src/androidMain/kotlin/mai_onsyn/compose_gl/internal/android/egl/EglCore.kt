@@ -5,6 +5,7 @@ import android.opengl.EGLConfig
 import android.opengl.EGLContext
 import android.opengl.EGLDisplay
 import mai_onsyn.compose_gl.config.GLConfig
+import mai_onsyn.compose_gl.error.GLLog
 
 /**
  * EGL display / config / context 的访问入口。
@@ -44,10 +45,22 @@ internal class EglCore(private val session: EglSession) {
         )
     }
 
-    /** 交还上下文；常驻会话本身不会因此销毁。 */
+    /**
+     * 交还上下文；常驻会话本身不会因此销毁。
+     *
+     * 若会话已被 [EglSession.invalidate]，在**上下文仍然 current** 的此刻先跑
+     * [EglSession.onContextDestroy]，再做真正的销毁 —— 否则用户会在没有上下文的线程上删 GL 对象。
+     */
     fun release() {
+        val destroying = session.pendingDestroy
+        if (destroying) {
+            runCatching { session.onContextDestroy?.invoke() }
+                .onFailure { GLLog.warn("EGL", "onContextDestroyed 抛出异常: ${it.message}") }
+            session.onContextDestroy = null
+        }
         releaseCurrent()
         session.release(context)
+        if (destroying) session.destroy()
     }
 
     companion object {

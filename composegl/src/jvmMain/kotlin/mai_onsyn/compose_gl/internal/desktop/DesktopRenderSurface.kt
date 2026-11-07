@@ -1,28 +1,35 @@
 package mai_onsyn.compose_gl.internal.desktop
 
 import androidx.compose.ui.unit.IntSize
+import mai_onsyn.compose_gl.ComposeGL
 import mai_onsyn.compose_gl.config.FramePolicy
 import mai_onsyn.compose_gl.config.GLConfig
 import mai_onsyn.compose_gl.config.contextSignature
 import mai_onsyn.compose_gl.error.GLException
+import mai_onsyn.compose_gl.gl.GLThreadGuard
 import mai_onsyn.compose_gl.internal.MutableGLRenderScope
 import mai_onsyn.compose_gl.internal.framePeriodNanos
 import mai_onsyn.compose_gl.internal.desktop.compose.ComposeImageHost
+import mai_onsyn.compose_gl.internal.desktop.compose.FrameHost
+import mai_onsyn.compose_gl.internal.desktop.compose.SharedTextureHost
 import mai_onsyn.compose_gl.internal.desktop.context.GlfwSession
 import mai_onsyn.compose_gl.internal.desktop.context.SessionClient
 import mai_onsyn.compose_gl.internal.desktop.framebuffer.Framebuffer
 import mai_onsyn.compose_gl.internal.desktop.readback.FrameReader
 import mai_onsyn.compose_gl.internal.desktop.readback.SkiaFrameBuffer
+import mai_onsyn.compose_gl.internal.desktop.shared.SharedTexturePresenter
 import mai_onsyn.compose_gl.scope.FrameStats
 import mai_onsyn.compose_gl.scope.GLRenderScope
 import org.lwjgl.opengl.GL11
 
 /** 用户回调的持有者。用可变字段承接每次重组的 lambda，避免过期闭包。 */
 internal class DesktopCallbacks {
-    var created: (GLRenderScope) -> Unit = {}
+    /** 每次挂载调用，与 [canvasDisposed] 严格配对。 */
+    var canvasCreated: (GLRenderScope) -> Unit = {}
     var resized: (GLRenderScope, IntSize) -> Unit = { _, _ -> }
     var draw: (GLRenderScope) -> Unit = {}
-    var destroyed: (GLRenderScope) -> Unit = {}
+    /** 每次卸载调用（上下文仍然有效）。 */
+    var canvasDisposed: (GLRenderScope) -> Unit = {}
     var failure: (GLException) -> Unit = {}
 }
 
@@ -35,10 +42,14 @@ internal class DesktopRenderSurface(
     private val config: GLConfig,
     sessionKey: String,
     framePolicy: FramePolicy,
-    private val host: ComposeImageHost,
+    private val host: FrameHost,
     val callbacks: DesktopCallbacks,
     refreshRateHz: Float = 60f,
+    private val sharedTexture: Boolean = false,
 ) : SessionClient {
+
+    private val composeHost = host as? ComposeImageHost
+    private val sharedHost = host as? SharedTextureHost
 
     /** 显示器刷新率；`Continuous(maxFps = 0)` 时用它定周期。 */
     @Volatile
@@ -86,8 +97,11 @@ internal class DesktopRenderSurface(
     /** Continuous 模式下的下一帧目标时刻；按"起始时刻 + 周期"计算，避免把耗时叠加到周期上。 */
     private var nextDeadline = 0L
 
+    /** GC 泵用的临时数组，见 [pumpGcIfNeeded]。 */
+    @Volatile
+    private var gcPump: ByteArray? = null
+
     /** 距上次主动回收累计发布的像素字节数。 */
-    private var nativeBytesSinceGc = 0L
 
     @Volatile
     var density: Float = 1f
@@ -100,6 +114,7 @@ internal class DesktopRenderSurface(
     private val session = GlfwSession.obtain(
         "$sessionKey|${config.contextSignature()}",
         config,
+        useSharedContext = sharedTexture,
     )
 
     /** 本画布的循环是否已经结束（会话线程退出时置位）。 */
@@ -145,17 +160,26 @@ internal class DesktopRenderSurface(
     override fun runOnSessionThread(session: GlfwSession, isFirstContextUse: Boolean) {
         val framebuffer = Framebuffer()
         val reader = FrameReader(SkiaFrameBuffer())
+        val presenter = if (sharedTexture) {
+            SharedTexturePresenter(requireNotNull(sharedHost) { "SharedTexture host missing" })
+        } else null
+        // 只有 canvasCreated 成功执行过，卸载时才回调 canvasDisposed，保证严格配对
+        var canvasCreated = false
+        GLThreadGuard.enter()
         try {
             session.glInfo?.let { scope.infoValue = it }
             scope.requestHandler = { requestRender() }
             scope.densityValue = density
             scope.refreshRateValue = refreshRateHz
-            // 上下文是常驻的：只有真正创建上下文的那一次才触发，
-            // 之后重新挂载时用户的着色器等资源依然有效，不用重新编译
+            // 上下文级：每个上下文只一次，早于任何画布的 canvasCreated
             if (isFirstContextUse) {
-                callbacks.created(scope)
-                session.onContextDestroy = { callbacks.destroyed(scope) }
+                ComposeGL.onContextCreated(scope)
+                // 上下文销毁时的回调交给会话线程收尾时执行（那时上下文仍然有效）
+                session.onContextDestroy = { ComposeGL.onContextDestroyed(scope) }
             }
+            // 画布级：每次挂载都调，与 canvasDisposed 配对
+            callbacks.canvasCreated(scope)
+            canvasCreated = true
 
             var lastWidth = -1
             var lastHeight = -1
@@ -174,7 +198,8 @@ internal class DesktopRenderSurface(
                 }
 
                 if (width != lastWidth || height != lastHeight) {
-                    framebuffer.resize(config, width, height)
+                    // 零拷贝路径每帧都会按当前尺寸新建纹理，这里不需要额外重建。
+                    if (!sharedTexture) framebuffer.resize(config, width, height)
                     lastWidth = width
                     lastHeight = height
                     scope.w = width
@@ -186,22 +211,32 @@ internal class DesktopRenderSurface(
                 val frameStart = System.nanoTime()
                 scope.frameTime = frameStart
 
-                framebuffer.bind()
+                if (presenter != null) presenter.beginFrame(width, height) else framebuffer.bind()
 
                 val drawStart = System.nanoTime()
                 callbacks.draw(scope)
                 val drawEnd = System.nanoTime()
 
-                // MSAA 时把多重采样结果解析到单采样纹理，之后的回读才拿得到像素
-                framebuffer.resolve()
-                GL11.glFlush()
-                val image = reader.read(width, height)
-                val readEnd = System.nanoTime()
-
-                host.publish(image)
+                val readEnd: Long
+                if (presenter != null) {
+                    // 零拷贝：只 flush + fence，把纹理 id 交给 EDT 上的 Skia adopt。
+                    presenter.endFrame()
+                    readEnd = System.nanoTime()
+                } else {
+                    // MSAA 时把多重采样结果解析到单采样纹理，之后的回读才拿得到像素
+                    framebuffer.resolve()
+                    GL11.glFlush()
+                    val image = reader.read(width, height)
+                    readEnd = System.nanoTime()
+                    composeHost?.publish(image)
+                }
                 val presentEnd = System.nanoTime()
 
-                reclaimNativeIfNeeded(reader, width, height)
+                if (presenter == null) {
+                    // resize 丢弃的位图也要计入
+                    reader.drainReleasedBytes()
+                    pumpGcIfNeeded(width, height)
+                }
 
                 if (framePolicy is FramePolicy.Continuous) {
                     // 以"本帧开始时刻"为基准推进，耗时不会累积到周期里
@@ -224,13 +259,27 @@ internal class DesktopRenderSurface(
                 )
             }
         } finally {
+            if (canvasCreated) {
+                // 卸载回调：上下文仍然 current，用户在这里删 VBO/VAO 是安全的
+                runCatching { callbacks.canvasDisposed(scope) }
+            }
+            presenter?.dispose()
             reader.dispose()
             framebuffer.dispose()
+            GLThreadGuard.exit()
             synchronized(finishedLock) {
                 loopFinished = true
                 finishedLock.notifyAll()
             }
         }
+    }
+
+    /** 会话线程建上下文失败：把错误交给调用方，避免零拷贝模式静默白屏。 */
+    override fun onSessionFailure(error: Throwable) {
+        callbacks.failure(
+            error as? GLException
+                ?: GLException("桌面 GL 上下文创建失败：${error.message}", error),
+        )
     }
 
     /** 阻塞直到有帧请求；返回 [width, height]，线程被要求停止时返回 null。 */
@@ -249,12 +298,33 @@ internal class DesktopRenderSurface(
             }
         }
 
-        if (stopped) return false
+        // 会话被 invalidate 时也要退出，否则 close() 之后会话线程还在跑
+        if (stopped || session.isClosed) return false
         pending = false
         // 复用字段而不是每帧新建 IntArray：帧循环里不该有堆分配
         frameWidth = pendingWidth
         frameHeight = pendingHeight
         true
+    }
+
+    /**
+     * 每帧制造一点堆垃圾，用来**驱动 GC 周期性运行**。
+     *
+     * 为什么需要：每帧发布都会新建一个 Skia Image，Skia 为它上传一份显卡纹理
+     * （约 w*h*4 字节原生内存）。这份内存的释放挂在 Image 的 Java 包装器上，
+     * 只有 GC 跑到才会归还。而堆里都是几十字节的壳，分配速率几乎为零 →
+     * GC 不跑 → 原生内存以 ~120MB/s 一路涨。
+     *
+     * 以前靠 `System.gc()` 兜底，但 ZGC 下 `System.gc()` 会**同步等整个回收周期完成**，
+     * 生产环境实测几百毫秒一次，正是"卡得没法用"的根因。
+     *
+     * 改成每帧分配一块和帧同样大小的临时数组：ZGC 会因此持续做**并发**回收，
+     * 停顿在亚毫秒级，Image 的壳被收走、纹理随之归还。
+     */
+    private fun pumpGcIfNeeded(width: Int, height: Int) {
+        if (!config.gcPumpPerFrame) return
+        // 必须"逃逸"出去（写进字段），否则 JIT 会把整个分配优化掉
+        gcPump = ByteArray(width * height * 4)
     }
 
     private fun periodNanos(): Long {
@@ -263,28 +333,5 @@ internal class DesktopRenderSurface(
         return framePeriodNanos(fps)
     }
 
-    /**
-     * 主动回收每帧产生的原生内存。
-     *
-     * 为什么必须这么做：Compose 桌面端画一帧更新过的位图，内部会为这一帧新建一个 Skia Image
-     * 并把像素作为纹理上传（D3D12 后端）。这部分内存是**原生**的，JVM 堆完全看不见，
-     * 所以 GC 不会被触发；连续渲染时实测 RSS 以 ~66MB/s 线性增长，几分钟就吃掉几个 GB，
-     * 最终 malloc 失败或拖垮显卡驱动。
-     *
-     * 这里按"累计发布字节数"计费，超过 `GLConfig.nativeCopyBudgetMb` 就主动回收一次，
-     * 把峰值内存钳在预算量级（默认 64MB，60fps 下约每秒一次）。
-     * 实测对帧率影响约 1fps（58.5 -> 57.3）。
-     */
-    private fun reclaimNativeIfNeeded(reader: FrameReader, width: Int, height: Int) {
-        val budgetMb = config.nativeCopyBudgetMb
-        // resize 丢弃的位图也要计入，否则拖拽窗口会把原生内存一路顶上去
-        nativeBytesSinceGc += reader.drainReleasedBytes()
-        if (budgetMb <= 0) return
-        nativeBytesSinceGc += width.toLong() * height * 4
-        if (nativeBytesSinceGc >= budgetMb.toLong() * 1024 * 1024) {
-            nativeBytesSinceGc = 0
-            System.gc()
-        }
-    }
 
 }

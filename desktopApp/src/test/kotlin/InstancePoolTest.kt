@@ -16,8 +16,7 @@ class InstancePoolTest {
                 Midi("empty", 480, 180000),
                 listOf(),
                 listOf(),
-                mapOf(),
-                Size.Zero
+                mapOf()
             )
         )
 

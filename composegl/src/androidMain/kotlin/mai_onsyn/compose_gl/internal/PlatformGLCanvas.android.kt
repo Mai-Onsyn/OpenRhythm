@@ -74,10 +74,10 @@ internal actual fun PlatformGLCanvas(
     modifier: Modifier,
     config: GLConfig,
     framePolicy: FramePolicy,
-    onSurfaceCreated: (GLRenderScope) -> Unit,
-    onSurfaceResized: (GLRenderScope, IntSize) -> Unit,
-    onDraw: (GLRenderScope) -> Unit,
-    onSurfaceDestroyed: (GLRenderScope) -> Unit,
+    onCanvasCreated: GLRenderScope.() -> Unit,
+    onCanvasResized: GLRenderScope.(IntSize) -> Unit,
+    onDraw: GLRenderScope.() -> Unit,
+    onCanvasDisposed: GLRenderScope.() -> Unit,
     onFailure: (GLException) -> Unit,
     sessionKey: String,
 ) {
@@ -89,10 +89,10 @@ internal actual fun PlatformGLCanvas(
     val host = remember { AndroidImageHost() }
     val surface = remember(config, mode) {
         val callbacks = AndroidCallbacks().apply {
-            created = onSurfaceCreated
-            resized = onSurfaceResized
-            draw = onDraw
-            destroyed = onSurfaceDestroyed
+            canvasCreated = { scope -> onCanvasCreated(scope) }
+            resized = { scope, size -> onCanvasResized(scope, size) }
+            draw = { scope -> onDraw(scope) }
+            canvasDisposed = { scope -> onCanvasDisposed(scope) }
             failure = onFailure
         }
         AndroidRenderSurface(config, sessionKey, framePolicy, mode, callbacks, host)
@@ -100,10 +100,10 @@ internal actual fun PlatformGLCanvas(
     }
 
     SideEffect {
-        surface.callbacks.created = onSurfaceCreated
-        surface.callbacks.resized = onSurfaceResized
-        surface.callbacks.draw = onDraw
-        surface.callbacks.destroyed = onSurfaceDestroyed
+        surface.callbacks.canvasCreated = { scope -> onCanvasCreated(scope) }
+        surface.callbacks.resized = { scope, size -> onCanvasResized(scope, size) }
+        surface.callbacks.draw = { scope -> onDraw(scope) }
+        surface.callbacks.canvasDisposed = { scope -> onCanvasDisposed(scope) }
         surface.callbacks.failure = onFailure
         surface.density = density
         surface.framePolicy = framePolicy

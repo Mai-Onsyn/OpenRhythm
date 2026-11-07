@@ -1,23 +1,24 @@
 #version 300 es
 precision highp float;
 
-in vec2 vUv;      // 0..1 inside the note quad
-in vec2 vSizePx;  // note size in px
-in vec4 vColor;   // straight (non-premultiplied) rgba 0..1
+in vec2 vUv;
+in vec2 vSizePx;
+in vec4 vColor;
+in float vTickY;
 
-// corner radius as a fraction of half the note width (same meaning as
-// noteRoundPercent in the CPU renderer: radius = width * 0.5 * percent)
 uniform float roundedCorners;
+uniform float chunkTickSize;
 
 out vec4 fragColor;
 
-// signed distance to a rounded box, p in px from the center
 float sdRoundBox(vec2 p, vec2 halfSize, float radius) {
     vec2 q = abs(p) - halfSize + radius;
     return length(max(q, 0.0)) + min(max(q.x, q.y), 0.0) - radius;
 }
 
 void main() {
+    if (vTickY < 0.0 || vTickY >= chunkTickSize) discard;
+
     vec2 halfSize = max(vSizePx * 0.5, vec2(0.0001));
     float radius = clamp(roundedCorners, 0.0, 1.0) * halfSize.x;
     radius = min(radius, min(halfSize.x, halfSize.y));
@@ -30,8 +31,6 @@ void main() {
 
     if (coverage <= 0.0) discard;
 
-    // the readback target is a premultiplied RGBA bitmap blended with
-    // (GL_ONE, GL_ONE_MINUS_SRC_ALPHA), so premultiply here
     vec4 color = vColor;
     color.rgb *= color.a;
 

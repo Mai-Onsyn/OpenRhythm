@@ -18,6 +18,7 @@ import mai_onsyn.compose_gl.gl.glGenVertexArrays
 import mai_onsyn.compose_gl.gl.glVertexAttribDivisor
 import mai_onsyn.compose_gl.gl.glVertexAttribIPointer
 import mai_onsyn.compose_gl.gl.glVertexAttribPointer
+import mai_onsyn.open_rhythm.ui.modules.midi_flow.waterfalls.gpu.ToDrawRect
 import mai_onsyn.open_rhythm.ui.modules.midi_flow.waterfalls.gpu.instancedVao
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
@@ -32,10 +33,14 @@ class InstanceSlot(
 
     companion object {
         val INSTANCE_STRIDE = 4 * 6
+
+        val NULL_RECT = ToDrawRect(0f, 0f, 0f, 0f, 0, 0)
     }
 
     // 创建vbo和vao
     fun initialize(quadVbo: Int) {
+        if (quadVbo == 0) error("quad vbo not initialized — initGL missed?")
+
         vao = glGenVertexArrays()
         vbo = glGenBuffers()
 
@@ -76,7 +81,7 @@ class InstanceSlot(
             .order(ByteOrder.nativeOrder())
 
         for (e in chunk!!.entities) {
-            val (fracX, fracW, tickInChunk, durationTick, color, depth) = builder.buildGLRect(chunk!!.id, e) ?: continue
+            val (fracX, fracW, tickInChunk, durationTick, color, depth) = builder.buildGLRect(chunk!!.id, e) ?: NULL_RECT
             buffer.putFloat(fracX)
             buffer.putFloat(fracW)
             buffer.putFloat(tickInChunk)

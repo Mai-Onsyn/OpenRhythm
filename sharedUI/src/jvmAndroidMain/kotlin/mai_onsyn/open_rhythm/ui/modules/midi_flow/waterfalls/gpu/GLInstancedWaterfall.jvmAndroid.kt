@@ -33,25 +33,6 @@ actual fun NoteRenderScope.OpenGLWaterfall(
     activeNoteOutput: MutableMap<Int, Color>,
     roundCorners: Float
 ) {
-//    if (showGLCanvas) GLCanvas(
-//        onDraw = {
-//            glEnable(GL_BLEND)
-//            glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA)
-//
-//            glClearColor(0.1f, 0f, 0f, 0.1f)
-//            glClear(GL_COLOR_BUFFER_BIT)
-//        }
-//    )
-//    TestRectsDraw()
-//    LaunchedEffect(midi, trackColors) {
-//        withContext(Dispatchers.Main) {
-//            im.chunkTickSize = midi.ppq
-//            im.chunkBuilder = NoteChunkBuilder(
-//                midi.ppq, midi, maxNoteDurationList, trackColors, gridPos, windowSize
-//            )
-//        }
-//    }
-
     val im = remember(midi, trackColors, roundCorners) {
         InstancedManager(midi.ppq, currTick, visibleTickCount,
             NoteChunkBuilder(midi.ppq, midi, maxNoteDurationList, trackColors, gridPos)
@@ -59,16 +40,16 @@ actual fun NoteRenderScope.OpenGLWaterfall(
     }
 
     // [0]=min [1]=max [2]=sum [3]=count
-    val perfStats = remember { mutableMapOf<String, LongArray>() }
-
-    fun recordPerf(key: String, value: Long) {
-        if (value < 1000L) return
-        val s = perfStats.getOrPut(key) { longArrayOf(Long.MAX_VALUE, Long.MIN_VALUE, 0L, 0L) }
-        if (value < s[0]) s[0] = value
-        if (value > s[1]) s[1] = value
-        s[2] += value
-        s[3]++
-    }
+//    val perfStats = remember { mutableMapOf<String, LongArray>() }
+//
+//    fun recordPerf(key: String, value: Long) {
+//        if (value < 1000L) return
+//        val s = perfStats.getOrPut(key) { longArrayOf(Long.MAX_VALUE, Long.MIN_VALUE, 0L, 0L) }
+//        if (value < s[0]) s[0] = value
+//        if (value > s[1]) s[1] = value
+//        s[2] += value
+//        s[3]++
+//    }
     SideEffect {
         val activeNotes = filterWindowNotes(midi, currTick, 0, maxNoteDurationList, trackColors)
         activeNoteOutput.clear()
@@ -84,12 +65,14 @@ actual fun NoteRenderScope.OpenGLWaterfall(
             glEnable(GL_BLEND)
             glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA)
             glClearColor(0f, 0f, 0f, 0f)
+            im.uploadAll(midi.totalTicks.toDouble())
         },
         onCanvasDisposed = {
             im.dispose()
         },
         onCanvasResized = {},
-        framePolicy = FramePolicy.Continuous(100)
+        framePolicy = FramePolicy.Continuous(100),
+        config = GLConfig(msaa = 4)
     ) {
         val frameStart = Time.nanos
         glClear(GL_COLOR_BUFFER_BIT)
@@ -113,13 +96,4 @@ actual fun NoteRenderScope.OpenGLWaterfall(
 //                }
 //            }
     } }
-
-//    Box(modifier) {
-//        Text(
-//            text = "OpenGL renderer Content",
-//            style = MaterialTheme.typography.displayMedium,
-//            modifier = Modifier.align(Alignment.Center),
-//            maxLines = 10
-//        )
-//    }
 }

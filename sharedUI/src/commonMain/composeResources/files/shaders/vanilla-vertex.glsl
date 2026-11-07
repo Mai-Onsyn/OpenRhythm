@@ -4,7 +4,7 @@ precision highp float;
 layout (location = 0) in vec2 aPosition;
 layout (location = 1) in vec4 aInstanceRect;
 layout (location = 2) in uvec4 aInstanceColor;
-layout (location = 3) in uint aDepth;
+//layout (location = 3) in uint aDepth;
 
 uniform vec2 windowSize;
 uniform float pxPerTick;
@@ -30,7 +30,7 @@ void main() {
         yPx / safeSize.y * 2.0 - 1.0
     );
 
-    gl_Position = vec4(ndc, uintBitsToFloat(aDepth), 1.0);
+    gl_Position = vec4(ndc, 0, 1.0);
 
     vUv = aPosition;
     vSizePx = vec2(aInstanceRect.y * safeSize.x, aInstanceRect.w * scaleY);

@@ -32,7 +32,7 @@ class InstanceSlot(
     var initialized: Boolean = false
 
     companion object {
-        val INSTANCE_STRIDE = 4 * 6
+        val INSTANCE_STRIDE = 4 * 5
 
         val NULL_RECT = ToDrawRect(0f, 0f, 0f, 0f, 0, 0)
     }
@@ -63,9 +63,9 @@ class InstanceSlot(
         glVertexAttribDivisor(2, 1)
 
         // 深度
-        glEnableVertexAttribArray(3)
-        glVertexAttribIPointer(3, 1, GL_UNSIGNED_INT, INSTANCE_STRIDE, 20)
-        glVertexAttribDivisor(3, 1)
+//        glEnableVertexAttribArray(3)
+//        glVertexAttribIPointer(3, 1, GL_UNSIGNED_INT, INSTANCE_STRIDE, 20)
+//        glVertexAttribDivisor(3, 1)
 
         glBindBuffer(GL_ARRAY_BUFFER, 0)
         glBindVertexArray(0)
@@ -77,7 +77,7 @@ class InstanceSlot(
         if (uploaded || chunk == null) return
 
         val buffer = ByteBuffer
-            .allocateDirect(chunk!!.entities.size * 8 * 4)
+            .allocateDirect(chunk!!.entities.size * INSTANCE_STRIDE)
             .order(ByteOrder.nativeOrder())
 
         for (e in chunk!!.entities) {
@@ -87,7 +87,7 @@ class InstanceSlot(
             buffer.putFloat(tickInChunk)
             buffer.putFloat(durationTick)
             buffer.putInt(color)
-            buffer.putInt(depth)
+//            buffer.putInt(depth)
         }
         buffer.flip()
 

@@ -29,6 +29,7 @@ import mai_onsyn.compose_gl.config.AndroidSurfaceMode
 import mai_onsyn.compose_gl.config.FramePolicy
 import mai_onsyn.compose_gl.config.GLConfig
 import mai_onsyn.compose_gl.error.GLException
+import mai_onsyn.compose_gl.error.GLLog
 import mai_onsyn.compose_gl.internal.android.AndroidCallbacks
 import mai_onsyn.compose_gl.internal.android.AndroidRenderSurface
 import mai_onsyn.compose_gl.internal.android.compose.AndroidImageHost
@@ -115,6 +116,16 @@ internal actual fun PlatformGLCanvas(
     }
 
     DisposableEffect(surface) {
+        // 排查"白屏"的第一现场：确认到底走了哪条承载路径、宿主有没有被判成后台
+        GLLog.warn(
+            "ComposeGL",
+            "画布挂载：承载模式=$mode，前台=$lifecycleStarted。" +
+                if (mode == AndroidSurfaceMode.TextureView) {
+                    "出现白屏先确认这个 TextureView 拿到了非 0 尺寸。"
+                } else {
+                    "ComposeImage 每帧回读，白屏请确认 GLCanvas 本身有尺寸。"
+                },
+        )
         surface.start()
         onDispose { surface.dispose() }
     }

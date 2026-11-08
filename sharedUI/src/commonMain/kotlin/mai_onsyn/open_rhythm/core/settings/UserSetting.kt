@@ -107,9 +107,11 @@ class UserSetting(
     var ShowFrameTime           by st.observable("ShowFrameTime",               false)
     var ShowRenderingNoteCount  by st.observable("ShowRenderingNoteCount",      false)
     var ShowActiveNoteCount     by st.observable("ShowActiveNoteCount",         false)
+    var ShowDebugInfos          by st.observable("ShowDebugInfos",              false)
 
     // =====Experiment=====
     var WaterfallRenderingMode  by st.observable("WaterfallRenderingMode",      0)  // 0=cpu realtime; 1=cpu static; 2 gpu realtime
+    var UploadAllVBOs           by st.observable("UploadAllVBOs",               true)
 
     // =====User Data=====
     val libraryFolderList by st.list("LibraryFolderList", mutableListOf(), UILibraryFolder.serializer())

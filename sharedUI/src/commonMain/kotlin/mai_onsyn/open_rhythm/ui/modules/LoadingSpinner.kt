@@ -17,6 +17,7 @@ import androidx.compose.ui.unit.dp
 fun LoadingSpinner(
     modifier: Modifier = Modifier.size(48.dp),
     color: Color = MaterialTheme.colorScheme.primary,
+    baseColor: Color = MaterialTheme.colorScheme.surfaceContainerHigh,
     strokeWidth: Dp = 6.dp,
     durationMillis: Int = 1000
 ) {
@@ -31,10 +32,9 @@ fun LoadingSpinner(
         label = "rotation"
     )
 
-    val colorScheme = MaterialTheme.colorScheme
     Canvas(modifier = modifier) {
         drawCircle(
-            color = colorScheme.surfaceContainerHigh,
+            color = baseColor,
             style = Stroke(width = strokeWidth.toPx())
         )
 

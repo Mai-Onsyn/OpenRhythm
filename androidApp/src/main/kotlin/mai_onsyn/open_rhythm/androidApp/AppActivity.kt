@@ -21,6 +21,8 @@ import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowInsetsControllerCompat
 import co.touchlab.kermit.Logger
 import io.kmpbits.splash.SplashActivity
+import mai_onsyn.compose_gl.ComposeGL
+import mai_onsyn.compose_gl.config.AndroidSurfaceMode
 import mai_onsyn.open_rhythm.bridge.Global
 import mai_onsyn.open_rhythm.bridge.initAndroid
 import mai_onsyn.open_rhythm.bridge.keyEventDispatcher
@@ -54,6 +56,7 @@ class AppActivity: SplashActivity() {
     override fun onFinished() {
         initAndroid(this)
         LogManager.initialize()
+        ComposeGL.androidSurfaceMode = AndroidSurfaceMode.TextureView
 
         setContent {
             val configuration = LocalConfiguration.current

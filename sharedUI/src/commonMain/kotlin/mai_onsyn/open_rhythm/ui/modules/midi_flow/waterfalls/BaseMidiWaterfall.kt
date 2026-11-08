@@ -46,7 +46,8 @@ interface NoteRenderScope : BoxScope {
 class WaterfallRenderingStatus(
     var renderingReadyFor: Midi? = null,
     var currentNoteCount: Int = -1,
-    var activeNoteCount: Int = -1
+    var activeNoteCount: Int = -1,
+    var glFPS: Float = -1f
 )
 
 @Composable
@@ -149,7 +150,7 @@ fun BaseMidiWaterfall(
             countedFrames++
         }
 
-        val renderingStatus = remember { WaterfallRenderingStatus() }
+        val rStatus = remember { WaterfallRenderingStatus() }
         val renderScope = remember(currTick, canvasSize, hpb, midi) {
             object : NoteRenderScope, BoxScope by this {
                 override val currTick: Double = currTick
@@ -160,12 +161,12 @@ fun BaseMidiWaterfall(
                 override val maxNoteDurationList: List<Long> = maxNoteDurationList
                 override val whiteKeyWidth: Float = whiteKeyWidth
                 override val windowSize: Size = canvasSize
-                override val status: WaterfallRenderingStatus = renderingStatus
+                override val status: WaterfallRenderingStatus = rStatus
             }
         }
         renderScope.noteContent()
 
-        Box(Modifier.matchParentSize()) {
+        if (Global.settings.ShowDebugInfos) Box(Modifier.matchParentSize()) {
             val colorScheme = MaterialTheme.colorScheme
             val color by Global.settings.WaterfallBackgroundColor.let {
                 remember(it) { mutableStateOf(if (it.isSpecified) getContrastTextColor(it) else colorScheme.onSurface) }
@@ -179,11 +180,12 @@ fun BaseMidiWaterfall(
                 fun ShowText(str: String) {
                     Text(text = str, style = MaterialTheme.typography.bodyMedium, color = color)
                 }
-                if (Global.settings.ShowCurrentTick) ShowText("Tick=${currTick.roundToLong()}")
-                if (Global.settings.ShowFps) ShowText("FPS=${fps}")
-                if (Global.settings.ShowFrameTime) ShowText("Frame Time=${frameTime}")
-                if (Global.settings.ShowRenderingNoteCount && renderingStatus.currentNoteCount != -1) ShowText("Rendering Notes=${renderingStatus.currentNoteCount}")
-                if (Global.settings.ShowActiveNoteCount && renderingStatus.activeNoteCount != -1) ShowText("Active Notes=${renderingStatus.activeNoteCount}")
+                ShowText("Tick=${currTick.roundToLong()}")
+                ShowText("FPS=${fps}")
+                ShowText("Frame Time=${frameTime}")
+                if (rStatus.currentNoteCount != -1) ShowText("Rendering Notes=${rStatus.currentNoteCount}")
+                if (rStatus.activeNoteCount != -1) ShowText("Active Notes=${rStatus.activeNoteCount}")
+                if (rStatus.glFPS != -1f) ShowText("Gl FPS=${rStatus.glFPS.roundToInt()}")
             }
         }
     }

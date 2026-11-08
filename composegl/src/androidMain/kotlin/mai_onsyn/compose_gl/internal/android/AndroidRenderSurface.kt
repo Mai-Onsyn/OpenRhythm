@@ -6,6 +6,7 @@ import android.view.TextureView
 import mai_onsyn.compose_gl.config.AndroidSurfaceMode
 import mai_onsyn.compose_gl.config.FramePolicy
 import mai_onsyn.compose_gl.config.GLConfig
+import mai_onsyn.compose_gl.error.GLLog
 import mai_onsyn.compose_gl.internal.MutableGLRenderScope
 import mai_onsyn.compose_gl.internal.android.compose.AndroidImageHost
 import mai_onsyn.compose_gl.internal.android.thread.FrameLoopThread
@@ -132,6 +133,13 @@ internal class AndroidRenderSurface(
         val existing = view.surfaceTexture
         if (existing != null && view.width > 0 && view.height > 0) {
             startWindowThread(Surface(existing), view.width, view.height)
+        } else {
+            // 白屏最常见的原因就是停在这一步：宿主容器没给尺寸，回调永远不会来
+            GLLog.warn(
+                "EGL",
+                "TextureView 尚未就绪（surfaceTexture=${existing != null}，" +
+                    "尺寸=${view.width}x${view.height}），等 onSurfaceTextureAvailable",
+            )
         }
     }
 

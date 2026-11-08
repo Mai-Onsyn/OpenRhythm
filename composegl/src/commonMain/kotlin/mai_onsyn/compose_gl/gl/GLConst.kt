@@ -16,3 +16,4 @@ const val GL_ONE_MINUS_SRC_ALPHA = 771
 const val GL_SRC_ALPHA = 770
 const val GL_DEPTH_BUFFER_BIT = 256
 const val GL_UNSIGNED_BYTE = 5121
+const val GL_COMPILE_STATUS = 35713

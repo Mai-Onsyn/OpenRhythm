@@ -36,6 +36,8 @@ import mai_onsyn.open_rhythm.bridge.Global
 import mai_onsyn.open_rhythm.core.midi.Midi
 import mai_onsyn.open_rhythm.core.util.bpmAtTick
 import mai_onsyn.open_rhythm.ui.icons.ic_arrow_warm_up
+import mai_onsyn.open_rhythm.ui.modules.LoadingSpinner
+import mai_onsyn.open_rhythm.ui.modules.getContrastTextColor
 import mai_onsyn.open_rhythm.ui.modules.midi_flow.MidiDownRegion
 import mai_onsyn.open_rhythm.ui.theme.TrackColorDefaults
 import kotlin.math.roundToInt
@@ -237,11 +239,20 @@ fun PlayPage(
                     .onKeyEvent { it.key != Key.Escape }
                     .background(Color.Black.copy(alpha = 0.4f))
             ) {
-                Text(
-                    text = "Loading...",
-                    style = MaterialTheme.typography.displayMedium,
-                    modifier = Modifier.align(Alignment.Center)
-                )
+
+                Row(
+                    modifier = Modifier.align(Alignment.Center),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    val color = getContrastTextColor(Global.settings.WaterfallBackgroundColor)
+                    LoadingSpinner(Modifier.size(32.dp), strokeWidth = 5.dp, baseColor = color)
+                    Text(
+                        text = "Loading...",
+                        style = MaterialTheme.typography.displayMedium,
+                        color = color
+                    )
+                }
             }
         }
     }

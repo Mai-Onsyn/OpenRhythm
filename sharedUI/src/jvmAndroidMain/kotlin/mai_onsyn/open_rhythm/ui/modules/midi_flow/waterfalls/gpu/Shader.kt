@@ -1,9 +1,9 @@
 package mai_onsyn.open_rhythm.ui.modules.midi_flow.waterfalls.gpu
 
+import co.touchlab.kermit.Logger
 import kotlinx.coroutines.runBlocking
 import mai_onsyn.compose_gl.gl.*
 import openrhythm.sharedui.generated.resources.Res
-import org.lwjgl.opengl.GL46C
 
 class Shader(vertexSource: String, fragmentSource: String) {
     val program: Int
@@ -17,6 +17,21 @@ class Shader(vertexSource: String, fragmentSource: String) {
         glShaderSource(fragmentShader, fragmentSource)
         glCompileShader(fragmentShader)
 
+        val vertexStatus = IntArray(1)
+        glGetShaderiv(vertexShader, GL_COMPILE_STATUS, vertexStatus)
+        Logger.e { vertexStatus[0].let { "Vertex shader compiled: $it" } }
+        if (vertexStatus[0] == 0) {
+            val errorLog1 = glGetShaderInfoLog(vertexShader)
+            Logger.e { "Vertex shader compile failed: $errorLog1" }
+        }
+        val fragmentStatus = IntArray(1)
+        glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, fragmentStatus)
+        Logger.e { fragmentStatus[0].let { "Fragment shader compiled: $it" } }
+        if (fragmentStatus[0] == 0) {
+            val errorLog2 = glGetShaderInfoLog(fragmentShader)
+            Logger.e { "Fragment shader compile failed: $errorLog2" }
+        }
+
         program = glCreateProgram()
         glAttachShader(program, vertexShader)
         glAttachShader(program, fragmentShader)
@@ -29,7 +44,7 @@ class Shader(vertexSource: String, fragmentSource: String) {
     fun use() = glUseProgram(program)
 
     fun dispose() {
-        GL46C.glDeleteProgram(program)
+        glDeleteProgram(program)
         glUseProgram(0)
     }
 

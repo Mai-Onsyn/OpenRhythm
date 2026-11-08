@@ -49,7 +49,7 @@ object ComposeGL {
      *
      * 注意切到 `TextureView` 后，GL 层下面的 Compose 组件将无法接收触摸。
      */
-    var androidSurfaceMode: AndroidSurfaceMode = AndroidSurfaceMode.TextureView
+    var androidSurfaceMode: AndroidSurfaceMode = AndroidSurfaceMode.ComposeImage
 
     /**
      * 桌面端的承载方式，默认 [DesktopSurfaceMode.ComposeImage]（能叠加 Compose 内容）。

@@ -1,25 +1,7 @@
 package mai_onsyn.open_rhythm.ui.modules.midi_flow.waterfalls.gpu.pool
 
-import mai_onsyn.compose_gl.gl.GL_ARRAY_BUFFER
-import mai_onsyn.compose_gl.gl.GL_DYNAMIC_DRAW
-import mai_onsyn.compose_gl.gl.GL_FLOAT
-import mai_onsyn.compose_gl.gl.GL_TRIANGLES
-import mai_onsyn.compose_gl.gl.GL_UNSIGNED_BYTE
-import mai_onsyn.compose_gl.gl.GL_UNSIGNED_INT
-import mai_onsyn.compose_gl.gl.glBindBuffer
-import mai_onsyn.compose_gl.gl.glBindVertexArray
-import mai_onsyn.compose_gl.gl.glBufferData
-import mai_onsyn.compose_gl.gl.glDeleteBuffers
-import mai_onsyn.compose_gl.gl.glDeleteVertexArrays
-import mai_onsyn.compose_gl.gl.glDrawArraysInstanced
-import mai_onsyn.compose_gl.gl.glEnableVertexAttribArray
-import mai_onsyn.compose_gl.gl.glGenBuffers
-import mai_onsyn.compose_gl.gl.glGenVertexArrays
-import mai_onsyn.compose_gl.gl.glVertexAttribDivisor
-import mai_onsyn.compose_gl.gl.glVertexAttribIPointer
-import mai_onsyn.compose_gl.gl.glVertexAttribPointer
+import mai_onsyn.compose_gl.gl.*
 import mai_onsyn.open_rhythm.ui.modules.midi_flow.waterfalls.gpu.ToDrawRect
-import mai_onsyn.open_rhythm.ui.modules.midi_flow.waterfalls.gpu.instancedVao
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 

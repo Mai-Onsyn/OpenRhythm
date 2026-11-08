@@ -1,10 +1,7 @@
 package mai_onsyn.open_rhythm.ui.modules.midi_flow.waterfalls.gpu.pool
 
 import androidx.compose.ui.geometry.Size
-import kotlinx.coroutines.runBlocking
-import mai_onsyn.compose_gl.gl.glUseProgram
 import mai_onsyn.open_rhythm.ui.modules.midi_flow.waterfalls.gpu.Shader
-import openrhythm.sharedui.generated.resources.Res
 import kotlin.math.ceil
 import kotlin.math.floor
 

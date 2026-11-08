@@ -10,7 +10,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import mai_onsyn.open_rhythm.bridge.Global
+import mai_onsyn.open_rhythm.bridge.Platform
+import mai_onsyn.open_rhythm.bridge.PlatformInfos
 import mai_onsyn.open_rhythm.ui.icons.ic_experiment
+import mai_onsyn.open_rhythm.ui.modules.dialog.ConfirmDialog
 import mai_onsyn.open_rhythm.ui.pages.setting.SettingsCard
 import mai_onsyn.open_rhythm.ui.utility.str
 import openrhythm.sharedui.generated.resources.*
@@ -22,13 +25,6 @@ fun ExperimentSettings() {
         icon = ic_experiment,
         modifier = Modifier.widthIn(400.dp, 800.dp)
     ) {
-//        itemWithSwitch(
-//            name = str(Res.string.set_experiment_useCachedWaterfall),
-//            description = str(Res.string.set_experiment_useCachedWaterfall_desc),
-//            initial = Global.settings.UseCachedWaterfall,
-//            onToggled = { Global.settings.UseCachedWaterfall = it }
-//        )
-
         val items = mutableListOf(
             "CPU Realtime",
 //            str(Res.string.set_experiment_useCachedWaterfall),
@@ -40,13 +36,50 @@ fun ExperimentSettings() {
             str(Res.string.set_experiment_useCachedWaterfall_desc),
             "Use GPU parallel rendering the waterfall realtime, to improve the performance extremely",
         )
+
+        var showWaringDialog by remember { mutableStateOf(false) }
+        var waringMessage by remember { mutableStateOf("") }
         itemWithDropDownMenu(
             name = "Rendering mode",
             description = modeDescs[Global.settings.WaterfallRenderingMode],
             items = items,
             initial = Global.settings.WaterfallRenderingMode,
-            onSelected = { Global.settings.WaterfallRenderingMode = it },
+            onSelected = {
+                if (it == 2) when (PlatformInfos.platform) {
+                    Platform.Windows -> {
+                        if (!PlatformInfos.rendererBackend.contains("OPENGL")) {
+                            waringMessage = "If you want to use GPU Instanced rendering mode, you have to restart the application, otherwise it could use an incredible amount of memory!"
+                            showWaringDialog = true
+                        }
+                        Global.settings.WaterfallRenderingMode = it
+                    }
+                    Platform.Android -> Global.settings.WaterfallRenderingMode = it
+                    else -> {
+                        waringMessage = "The GPU Instanced rendering mode might not be available on your device."
+                        showWaringDialog = true
+                    }
+                } else Global.settings.WaterfallRenderingMode = it
+            },
             fixedWidth = Dp.Unspecified
+        )
+
+        ConfirmDialog(
+            visible = showWaringDialog,
+            onDismissRequest = { showWaringDialog = false },
+            onConfirm = { showWaringDialog = false },
+            title = "Waring",
+            message = waringMessage,
+            isDangerous = true,
+            showCancel = false
+        )
+
+
+        animatedSwitch(
+            visible = Global.settings.WaterfallRenderingMode == 2,
+            name = "Full upload",
+            description = "At the start of playback, upload all the notes to the GPU, trading memory usage(20B/Note) for ultimate rendering performance.",
+            initial = Global.settings.UploadAllVBOs,
+            onToggled = { Global.settings.UploadAllVBOs = it }
         )
     }
 }

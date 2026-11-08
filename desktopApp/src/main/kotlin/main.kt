@@ -8,21 +8,23 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
+import co.touchlab.kermit.Logger
 import mai_onsyn.compose_gl.ComposeGL
 import mai_onsyn.compose_gl.config.DesktopSurfaceMode
+import mai_onsyn.open_rhythm.bridge.Global
 import mai_onsyn.open_rhythm.bridge.keyEventDispatcher
 import mai_onsyn.open_rhythm.core.log.LogManager
 import mai_onsyn.open_rhythm.ui.App
 import java.awt.Dimension
 
 fun main() {
-    System.setProperty("skiko.renderApi", "OPENGL")
-    ComposeGL.desktopSurfaceMode = DesktopSurfaceMode.SharedTexture
-    val src = Class.forName("org.jetbrains.skiko.redrawer.WindowsOpenGLRedrawerKt")
-        .protectionDomain.codeSource?.location
-    println("shadow loaded from: $src")
-
     LogManager.initialize()
+    if (Global.settings.WaterfallRenderingMode == 2) {
+        System.setProperty("skiko.renderApi", "OPENGL")
+        ComposeGL.desktopSurfaceMode = DesktopSurfaceMode.SharedTexture
+        Logger.i { "Using OpenGL rendering backend" }
+    }
+
     application {
         val pressedKey = remember { mutableSetOf<Key>() }
         Window(

@@ -1,7 +1,7 @@
 package mai_onsyn.open_rhythm.ui.modules.midi_flow.waterfalls.gpu.pool
 
 import androidx.compose.ui.geometry.Size
-import org.lwjgl.opengl.GL46C
+import mai_onsyn.compose_gl.gl.*
 
 class Uniforms {
     var pxPerTickLoc = 0
@@ -20,11 +20,11 @@ class Uniforms {
         private set
 
     fun initialize(program: Int) {
-        pxPerTickLoc = GL46C.glGetUniformLocation(program, "pxPerTick")
-        windowSizeLoc = GL46C.glGetUniformLocation(program, "windowSize")
-        currChunkTickLoc = GL46C.glGetUniformLocation(program, "currChunkTick")
-        chunkTickSizeLoc = GL46C.glGetUniformLocation(program, "chunkTickSize")
-        roundedCornersLoc = GL46C.glGetUniformLocation(program, "roundedCorners")
+        pxPerTickLoc = glGetUniformLocation(program, "pxPerTick")
+        windowSizeLoc = glGetUniformLocation(program, "windowSize")
+        currChunkTickLoc = glGetUniformLocation(program, "currChunkTick")
+        chunkTickSizeLoc = glGetUniformLocation(program, "chunkTickSize")
+        roundedCornersLoc = glGetUniformLocation(program, "roundedCorners")
     }
 
     fun update(
@@ -33,13 +33,13 @@ class Uniforms {
         chunkTickSize: Float,
         roundedCorners: Float,
     ) {
-        GL46C.glUniform1f(pxPerTickLoc, pxPerTick)
-        GL46C.glUniform2f(windowSizeLoc, windowSize.width, windowSize.height)
-        GL46C.glUniform1f(roundedCornersLoc, roundedCorners)
-        GL46C.glUniform1f(chunkTickSizeLoc, chunkTickSize)
+        glUniform1f(pxPerTickLoc, pxPerTick)
+        glUniform2f(windowSizeLoc, windowSize.width, windowSize.height)
+        glUniform1f(roundedCornersLoc, roundedCorners)
+        glUniform1f(chunkTickSizeLoc, chunkTickSize)
     }
 
     fun updateInChunk(chunkTick: Float) {
-        GL46C.glUniform1f(currChunkTickLoc, chunkTick)
+        glUniform1f(currChunkTickLoc, chunkTick)
     }
 }

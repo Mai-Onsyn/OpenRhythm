@@ -34,6 +34,7 @@ actual fun glDrawArraysInstanced(mode: Int, first: Int, count: Int, instanceCoun
 actual fun glEnable(target: Int) = withGuard { GL46C.glEnable(target) }
 actual fun glBlendFunc(sfactor: Int, dfactor: Int) = withGuard { GL46C.glBlendFunc(sfactor, dfactor) }
 actual fun glBufferData(target: Int, data: ByteBuffer, usage: Int) = withGuard { GL46C.glBufferData(target, data, usage) }
+actual fun glDeleteProgram(program: Int) = GL46C.glDeleteProgram(program)
 
 /**
  * 每个 gl* 调用先过这里：确认当前线程是渲染线程。
@@ -66,3 +67,9 @@ internal object GLThreadGuard {
         }
     }
 }
+
+actual fun glGetUniformLocation(program: Int, name: String): Int = GL46C.glGetUniformLocation(program, name)
+actual fun glUniform1f(program: Int, value: Float) = GL46C.glUniform1f(program, value)
+actual fun glUniform2f(program: Int, v1: Float, v2: Float) = GL46C.glUniform2f(program, v1, v2)
+actual fun glGetShaderiv(shader: Int, pname: Int, params: IntArray) = GL46C.glGetShaderiv(shader, pname, params)
+actual fun glGetShaderInfoLog(shader: Int): String = GL46C.glGetShaderInfoLog(shader)

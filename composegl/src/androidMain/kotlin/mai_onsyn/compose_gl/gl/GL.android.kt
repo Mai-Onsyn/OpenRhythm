@@ -22,7 +22,7 @@ actual fun glGenBuffers(): Int = IntArray(1).apply { GLES32.glGenBuffers(1, this
 actual fun glGenBuffers(buffers: IntArray) = withGuard { GLES32.glGenBuffers(buffers.size, buffers, 0) }
 actual fun glBindVertexArray(vertexArray: Int) = withGuard { GLES32.glBindVertexArray(vertexArray) }
 actual fun glBindBuffer(target: Int, buffer: Int) = withGuard { GLES32.glBindBuffer(target, buffer) }
-actual fun glBufferData(target: Int, data: FloatBuffer, usage: Int) = withGuard { GLES32.glBufferData(target, data.remaining(), data, usage) }
+actual fun glBufferData(target: Int, data: FloatBuffer, usage: Int) = withGuard { GLES32.glBufferData(target, data.remaining() * 4, data, usage) }
 actual fun glEnableVertexAttribArray(index: Int) = withGuard { GLES32.glEnableVertexAttribArray(index) }
 actual fun glVertexAttribPointer(index: Int, size: Int, type: Int, normalized: Boolean, stride: Int, offset: Int) = withGuard { GLES32.glVertexAttribPointer(index, size, type, normalized, stride, offset) }
 actual fun glVertexAttribIPointer(index: Int, size: Int, type: Int, stride: Int, offset: Int) = withGuard { GLES32.glVertexAttribIPointer(index, size, type, stride, offset) }
@@ -34,6 +34,7 @@ actual fun glDrawArraysInstanced(mode: Int, first: Int, count: Int, instanceCoun
 actual fun glEnable(target: Int) = withGuard { GLES32.glEnable(target) }
 actual fun glBlendFunc(sfactor: Int, dfactor: Int) = withGuard { GLES32.glBlendFunc(sfactor, dfactor) }
 actual fun glBufferData(target: Int, data: ByteBuffer, usage: Int) = withGuard { GLES32.glBufferData(target, data.remaining(), data, usage) }
+actual fun glDeleteProgram(program: Int) = GLES32.glDeleteProgram(program)
 
 /**
  * 每个 gl* 调用先过这里：确认当前线程是渲染线程。
@@ -66,3 +67,9 @@ internal object GLThreadGuard {
         }
     }
 }
+
+actual fun glGetUniformLocation(program: Int, name: String): Int = GLES32.glGetUniformLocation(program, name)
+actual fun glUniform1f(program: Int, value: Float) = GLES32.glUniform1f(program, value)
+actual fun glUniform2f(program: Int, v1: Float, v2: Float) = GLES32.glUniform2f(program, v1, v2)
+actual fun glGetShaderiv(shader: Int, pname: Int, params: IntArray) = GLES32.glGetShaderiv(shader, pname, params, 0)
+actual fun glGetShaderInfoLog(shader: Int): String = GLES32.glGetShaderInfoLog(shader)

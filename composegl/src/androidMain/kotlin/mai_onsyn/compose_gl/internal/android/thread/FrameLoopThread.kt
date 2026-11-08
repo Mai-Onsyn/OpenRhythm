@@ -4,6 +4,7 @@ import androidx.compose.ui.unit.IntSize
 import mai_onsyn.compose_gl.ComposeGL
 import mai_onsyn.compose_gl.config.FramePolicy
 import mai_onsyn.compose_gl.error.GLException
+import mai_onsyn.compose_gl.error.GLLog
 import mai_onsyn.compose_gl.gl.GLThreadGuard
 import mai_onsyn.compose_gl.internal.MutableGLRenderScope
 import mai_onsyn.compose_gl.internal.framePeriodNanos
@@ -95,6 +96,12 @@ internal abstract class FrameLoopThread(
         GLThreadGuard.enter()
         try {
             onStart()
+            // 白屏排查：确认上下文真的建起来了、是哪个版本
+            GLLog.warn(
+                "ComposeGL",
+                "渲染线程就绪：${scope.infoValue.versionLabel} / ${scope.infoValue.rendererString}，" +
+                    "首用=${contextIsFirstUse}",
+            )
 
             // 上下文级：每个上下文一次，早于任何画布的 canvasCreated
             if (contextIsFirstUse) {
@@ -106,6 +113,7 @@ internal abstract class FrameLoopThread(
 
             var lastWidth = -1
             var lastHeight = -1
+            var warnedZeroSize = false
 
             while (true) {
                 if (!awaitFrame()) break
@@ -122,11 +130,17 @@ internal abstract class FrameLoopThread(
                 val width = frameWidth
                 val height = frameHeight
                 if (width <= 0 || height <= 0) {
+                    // 白屏第二大原因：画布拿到的尺寸是 0，这里以前完全静默
+                    if (!warnedZeroSize) {
+                        warnedZeroSize = true
+                        GLLog.warn("ComposeGL", "尺寸为 0（${width}x$height），不渲染")
+                    }
                     dropped++
                     continue
                 }
 
                 if (width != lastWidth || height != lastHeight) {
+                    GLLog.warn("ComposeGL", "画布尺寸 ${width}x$height")
                     lastWidth = width
                     lastHeight = height
                     scope.w = width

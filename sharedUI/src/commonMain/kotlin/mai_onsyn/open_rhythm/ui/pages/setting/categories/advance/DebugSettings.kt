@@ -29,37 +29,44 @@ fun DebugSettings() {
             }
         )
 
-        fold(str(Res.string.set_debug_overlayLayer)) {
-            itemWithSwitch(
-                name = str(Res.string.set_debug_showCurrentTick),
-                description = str(Res.string.set_debug_showCurrentTick_desc),
-                initial = Global.settings.ShowCurrentTick,
-                onToggled = { Global.settings.ShowCurrentTick = it }
-            )
-            itemWithSwitch(
-                name = str(Res.string.set_debug_showFps),
-                description = str(Res.string.set_debug_showFps_desc),
-                initial = Global.settings.ShowFps,
-                onToggled = { Global.settings.ShowFps = it }
-            )
-            itemWithSwitch(
-                name = str(Res.string.set_debug_showFrameTime),
-                description = str(Res.string.set_debug_showFrameTime_desc),
-                initial = Global.settings.ShowFrameTime,
-                onToggled = { Global.settings.ShowFrameTime = it }
-            )
-            itemWithSwitch(
-                name = str(Res.string.set_debug_showRenderingNoteCount),
-                description = str(Res.string.set_debug_showRenderingNoteCount_desc),
-                initial = Global.settings.ShowRenderingNoteCount,
-                onToggled = { Global.settings.ShowRenderingNoteCount = it }
-            )
-            itemWithSwitch(
-                name = str(Res.string.set_debug_showActiveNoteCount),
-                description = str(Res.string.set_debug_showActiveNoteCount_desc),
-                initial = Global.settings.ShowActiveNoteCount,
-                onToggled = { Global.settings.ShowActiveNoteCount = it }
-            )
-        }
+        itemWithSwitch(
+            name = "Show debug infos",
+            description = "Show the corresponding renderer's debug info on the waterfall",
+            initial = Global.settings.ShowDebugInfos,
+            onToggled = { Global.settings.ShowDebugInfos = it }
+        )
+
+//        fold(str(Res.string.set_debug_overlayLayer)) {
+//            itemWithSwitch(
+//                name = str(Res.string.set_debug_showCurrentTick),
+//                description = str(Res.string.set_debug_showCurrentTick_desc),
+//                initial = Global.settings.ShowCurrentTick,
+//                onToggled = { Global.settings.ShowCurrentTick = it }
+//            )
+//            itemWithSwitch(
+//                name = str(Res.string.set_debug_showFps),
+//                description = str(Res.string.set_debug_showFps_desc),
+//                initial = Global.settings.ShowFps,
+//                onToggled = { Global.settings.ShowFps = it }
+//            )
+//            itemWithSwitch(
+//                name = str(Res.string.set_debug_showFrameTime),
+//                description = str(Res.string.set_debug_showFrameTime_desc),
+//                initial = Global.settings.ShowFrameTime,
+//                onToggled = { Global.settings.ShowFrameTime = it }
+//            )
+//            itemWithSwitch(
+//                name = str(Res.string.set_debug_showRenderingNoteCount),
+//                description = str(Res.string.set_debug_showRenderingNoteCount_desc),
+//                initial = Global.settings.ShowRenderingNoteCount,
+//                onToggled = { Global.settings.ShowRenderingNoteCount = it }
+//            )
+//            itemWithSwitch(
+//                name = str(Res.string.set_debug_showActiveNoteCount),
+//                description = str(Res.string.set_debug_showActiveNoteCount_desc),
+//                initial = Global.settings.ShowActiveNoteCount,
+//                onToggled = { Global.settings.ShowActiveNoteCount = it }
+//            )
+//        }
     }
 }

@@ -10,6 +10,7 @@ expect fun glAttachShader(program: Int, shader: Int)
 expect fun glLinkProgram(program: Int)
 expect fun glCreateProgram(): Int
 expect fun glDeleteShader(shader: Int)
+expect fun glDeleteProgram(program: Int)
 
 expect fun glDeleteBuffers(buffer: Int)
 expect fun glDeleteBuffers(buffers: IntArray)
@@ -34,3 +35,9 @@ expect fun glDrawArraysInstanced(mode: Int, first: Int, count: Int, instanceCoun
 
 expect fun glEnable(target: Int)
 expect fun glBlendFunc(sfactor: Int, dfactor: Int)
+
+expect fun glGetUniformLocation(program: Int, name: String): Int
+expect fun glUniform1f(program: Int, value: Float)
+expect fun glUniform2f(program: Int, v1: Float, v2: Float)
+expect fun glGetShaderiv(shader: Int, pname: Int, params: IntArray)
+expect fun glGetShaderInfoLog(shader: Int): String

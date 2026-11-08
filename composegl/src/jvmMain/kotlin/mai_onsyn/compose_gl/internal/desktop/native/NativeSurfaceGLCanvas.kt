@@ -8,6 +8,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.awt.SwingPanel
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.IntSize
+import mai_onsyn.compose_gl.GLCanvasHandle
 import mai_onsyn.compose_gl.config.FramePolicy
 import mai_onsyn.compose_gl.config.GLConfig
 import mai_onsyn.compose_gl.error.GLException
@@ -236,6 +237,7 @@ internal fun NativeSurfaceGLCanvas(
     framePolicy: FramePolicy,
     refreshRateHz: Float,
     density: Float,
+    handle: GLCanvasHandle?,
     onSurfaceCreated: (GLRenderScope) -> Unit,
     onSurfaceResized: (GLRenderScope, IntSize) -> Unit,
     onDraw: (GLRenderScope) -> Unit,
@@ -263,6 +265,13 @@ internal fun NativeSurfaceGLCanvas(
         canvas.onSurfaceDestroyed = onSurfaceDestroyed
         canvas.onFailure = onFailure
         canvas.updatePolicy(framePolicy)
+    }
+
+    DisposableEffect(canvas, handle) {
+        // 这个模式没有独立的 paused 概念（Continuous 靠 Swing Timer 驱动），只接驱动入口。
+        // 何况这条路径本身已确认不可用，不再为它补暂停语义。
+        handle?.attach(request = { canvas.requestRender() }, applyPause = {})
+        onDispose { handle?.detach() }
     }
 
     DisposableEffect(canvas) {

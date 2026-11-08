@@ -4,11 +4,13 @@ import androidx.compose.animation.*
 import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
@@ -18,7 +20,11 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.input.pointer.*
 import androidx.compose.ui.keepScreenOn
 import androidx.compose.ui.layout.onSizeChanged
@@ -46,8 +52,9 @@ fun PlayPage(
     if (drawStatusBar) BackHandler { onBack() }
 
     var isPlaying by remember { mutableStateOf(false) }
-    val displayMidi by rememberUpdatedState(
-        (midi ?: Midi("Empty MIDI", 480, 4800)).apply {
+
+    val displayMidi = remember(midi) {
+        midi?.apply {
             tracks.forEach { track ->
                 track.visible = true
                 if (track.trackChannel == 9) {
@@ -65,7 +72,7 @@ fun PlayPage(
                 Logger.i { "Disabled track indexes: [${disabled.joinToString()}]" }
             }
         }
-    )
+    }
 
     var playProgress by remember { mutableStateOf(0.0f) }
     val focusRequester = remember { FocusRequester() }
@@ -92,6 +99,7 @@ fun PlayPage(
             Global.settings.trackColors.let {
                 if (it.isEmpty()) TrackColorDefaults.colors() else it
             }.toMutableList().apply {
+                displayMidi ?: return@apply
                 Global.settings.midiFileSettings[displayMidi.path]?.trackSettings?.forEach { (track, settings) ->
                     val color = settings.color ?: return@forEach
                     while (track > this.size - 1) {
@@ -104,6 +112,9 @@ fun PlayPage(
                 }
             }
         }
+
+        var rendererReady by remember(midi) { mutableStateOf(false) }
+
         MidiDownRegion(
             modifier = Modifier
                 .fillMaxSize()
@@ -125,7 +136,12 @@ fun PlayPage(
             onPlayStateChange = { isPlaying = it },
             onProgressChange = { playProgress = it },
             focusRequester = focusRequester,
-            renderer = renderer
+            renderer = renderer,
+            onRendererReady = {
+                if (it == midi) {
+                    rendererReady = true; Logger.i { "Renderer ready" }
+                }
+            }
         )
 
         if (drawStatusBar) {
@@ -205,6 +221,28 @@ fun PlayPage(
                 bpm = ((midi?.tempoEvents?.bpmAtTick(Global.player.preciseTick.toLong()) ?: 120.0) * Global.player.getSpeed()).roundToInt(),
                 focusRequester = focusRequester
             )
+        }
+
+        if (!rendererReady) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .pointerInput(Unit) {
+                        awaitPointerEventScope {
+                            while (true) {
+                                awaitPointerEvent(PointerEventPass.Final)
+                            }
+                        }
+                    }
+                    .onKeyEvent { it.key != Key.Escape }
+                    .background(Color.Black.copy(alpha = 0.4f))
+            ) {
+                Text(
+                    text = "Loading...",
+                    style = MaterialTheme.typography.displayMedium,
+                    modifier = Modifier.align(Alignment.Center)
+                )
+            }
         }
     }
 }

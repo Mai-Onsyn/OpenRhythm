@@ -111,6 +111,12 @@ internal abstract class FrameLoopThread(
                 if (!awaitFrame()) break
                 if (paused) {
                     dropped++
+                    // 暂停期间必须真的挂起：Continuous 模式下 pending 恒为 true，
+                    // 直接 continue 会退化成忙转（CPU 100%）。100ms 只是兜底，
+                    // paused setter 和 resize/requestRender 都会立刻唤醒。
+                    if (framePolicy is FramePolicy.Continuous) {
+                        synchronized(lock) { lock.wait(100) }
+                    }
                     continue
                 }
                 val width = frameWidth

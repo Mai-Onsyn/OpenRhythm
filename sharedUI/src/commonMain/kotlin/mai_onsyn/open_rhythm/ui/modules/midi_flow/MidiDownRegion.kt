@@ -25,6 +25,8 @@ import co.touchlab.kermit.Logger
 import mai_onsyn.open_rhythm.bridge.Global
 import mai_onsyn.open_rhythm.core.midi.Midi
 import mai_onsyn.open_rhythm.ui.modules.midi_flow.waterfalls.DefaultMidiWaterfall
+import mai_onsyn.open_rhythm.ui.modules.midi_flow.waterfalls.NoteRenderScope
+import mai_onsyn.open_rhythm.ui.modules.midi_flow.waterfalls.WaterfallRenderingStatus
 import mai_onsyn.open_rhythm.ui.modules.midi_flow.waterfalls.cpu_cached.CachedMidiWaterfall
 import mai_onsyn.open_rhythm.ui.modules.midi_flow.waterfalls.gpu.GLInstancedWaterfall
 import mai_onsyn.open_rhythm.ui.utility.BackgroundImage
@@ -47,20 +49,22 @@ private typealias Renderer = @Composable (
     drawOctaveLine: Boolean,
     noteRoundPercent: Float,
     drawPitchLabel: Boolean,
-    onVerticalDragged: (Float) -> Unit
+    onVerticalDragged: (Float) -> Unit,
+    onFrameEnd: NoteRenderScope.() -> Unit
 ) -> Unit
 
 @Composable
 fun MidiDownRegion(
     modifier: Modifier = Modifier,
-    midi: Midi,
+    midi: Midi?,
     trackColors: List<Color> = emptyList(),
     isPlaying: Boolean = false,
     keyboardRatio: Float = 0f,
     onPlayStateChange: (Boolean) -> Unit = {},
     onProgressChange: (Float) -> Unit = {},
     focusRequester: FocusRequester? = null,
-    renderer: Int = 0
+    renderer: Int = 0,
+    onRendererReady: (Midi) -> Unit = {}
 ) {
     val density = LocalDensity.current
 
@@ -155,77 +159,41 @@ fun MidiDownRegion(
                     0 -> ::DefaultMidiWaterfall
                     1 -> ::CachedMidiWaterfall
                     2 -> ::GLInstancedWaterfall
-                    else -> throw UnsupportedOperationException("Waterfall rendering mode ${renderer} is not supported yet")
+                    else -> throw UnsupportedOperationException("Waterfall rendering mode $renderer is not supported yet")
                 }
-                waterfall(
-                    waterfallModifier,
-                    currentTick,
-                    midi,
-                    Global.settings.MinPitch,
-                    Global.settings.MaxPitch,
-                    trackColors,
-                    hpb,
-                    1.dp,
-                    0.75f,
-                    midiActiveKeys,
-                    Global.settings.DrawSectionLines,
-                    Global.settings.DrawOctaveLines,
-                    Global.settings.NoteRoundConerPercent,
-                    Global.settings.DrawPitchLabels,
-                    { deltaYpx += it },
-                )
-//                when (Global.settings.WaterfallRenderingMode) {
-//                    0 -> DefaultMidiWaterfall(
-//                        modifier = waterfallModifier,
-//                        trackColors = trackColors,
-//                        currTick = currentTick,
-//                        minPitch = Global.settings.MinPitch,
-//                        maxPitch = Global.settings.MaxPitch,
-//                        midi = midi,
-//                        hpb = hpb,
-//                        activeNoteOutput = midiActiveKeys,
-//                        onVerticalDragged = { deltaYpx += it },
-//                        drawOctaveLine = Global.settings.DrawOctaveLines,
-//                        drawSectionLine = Global.settings.DrawSectionLines,
-//                        noteRoundPercent = Global.settings.NoteRoundConerPercent,
-//                        drawPitchLabel = Global.settings.DrawPitchLabels
-//                    )
-//                    1 -> CachedMidiWaterfall(
-//                        modifier = waterfallModifier,
-//                        trackColors = trackColors,
-//                        currTick = currentTick,
-//                        minPitch = Global.settings.MinPitch,
-//                        maxPitch = Global.settings.MaxPitch,
-//                        midi = midi,
-//                        hpb = hpb,
-//                        activeNoteOutput = midiActiveKeys,
-//                        onVerticalDragged = { deltaYpx += it },
-//                        drawOctaveLine = Global.settings.DrawOctaveLines,
-//                        drawSectionLine = Global.settings.DrawSectionLines,
-//                        noteRoundPercent = Global.settings.NoteRoundConerPercent,
-//                        drawPitchLabel = Global.settings.DrawPitchLabels
-//                    )
-//                    2 -> GLInstancedWaterfall(
-//                        modifier = waterfallModifier,
-//                        trackColors = trackColors,
-//                        currTick = currentTick,
-//                        minPitch = Global.settings.MinPitch,
-//                        maxPitch = Global.settings.MaxPitch,
-//                        midi = midi,
-//                        hpb = hpb,
-//                        activeNoteOutput = midiActiveKeys,
-//                        onVerticalDragged = { deltaYpx += it },
-//                        drawOctaveLine = Global.settings.DrawOctaveLines,
-//                        drawSectionLine = Global.settings.DrawSectionLines,
-//                        noteRoundPercent = Global.settings.NoteRoundConerPercent,
-//                        drawPitchLabel = Global.settings.DrawPitchLabels
-//                    )
-//                }
+                var ready by remember(midi) { mutableStateOf(false) }
+                midi?.let {
+                    waterfall(
+                        waterfallModifier,
+                        currentTick,
+                        midi,
+                        Global.settings.MinPitch,
+                        Global.settings.MaxPitch,
+                        trackColors,
+                        hpb,
+                        1.dp,
+                        0.75f,
+                        midiActiveKeys,
+                        Global.settings.DrawSectionLines,
+                        Global.settings.DrawOctaveLines,
+                        Global.settings.NoteRoundConerPercent,
+                        Global.settings.DrawPitchLabels,
+                        { deltaYpx += it }
+                    ) {
+                        if (status.renderingReadyFor == midi) {
+                            if (!ready) {
+                                onRendererReady(midi)
+                                ready = true
+                            }
+                        }
+                    }
+                }
             }
 
             LaunchedEffect(isPlaying, midi, hpb) {
                 while (true) {
                     withFrameMillis {
+                        midi ?: return@withFrameMillis
                         if (deltaYpx != 0f && !isPlaying) {
                             val deltaTick = deltaYpx * midi.ppq / with(density) { hpb.toPx() }
                             currentTick = Global.player.preciseTick + deltaTick
@@ -238,6 +206,7 @@ fun MidiDownRegion(
             }
             LaunchedEffect(midi) {
                 focusRequester.requestFocus()
+                midi ?: return@LaunchedEffect
                 Global.player.setMidi(midi, Global.settings.midiFileSettings[midi.path])
                 Global.player.seek(midi.startTick.toLong() - midi.ppq * Global.settings.PlaybackStartDistance)
                 Logger.i { "Set player midi to $midi" }

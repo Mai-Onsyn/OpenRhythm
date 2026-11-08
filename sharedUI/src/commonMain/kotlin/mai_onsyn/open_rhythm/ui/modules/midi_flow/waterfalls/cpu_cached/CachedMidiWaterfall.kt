@@ -19,6 +19,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import mai_onsyn.open_rhythm.core.midi.Midi
 import mai_onsyn.open_rhythm.ui.modules.midi_flow.waterfalls.BaseMidiWaterfall
+import mai_onsyn.open_rhythm.ui.modules.midi_flow.waterfalls.NoteRenderScope
 import mai_onsyn.open_rhythm.ui.modules.midi_flow.waterfalls.filterWindowNotes
 
 
@@ -38,7 +39,8 @@ fun CachedMidiWaterfall(
     drawOctaveLine: Boolean = true,
     noteRoundPercent: Float = 0.2f,
     drawPitchLabel: Boolean = false,
-    onVerticalDragged: (Float) -> Unit = {}
+    onVerticalDragged: (Float) -> Unit = {},
+    onFrameEnd: NoteRenderScope.() -> Unit
 ) {
     var renderedTimes by remember { mutableStateOf(0) }
     var canvasSize by remember { mutableStateOf(IntSize.Zero) }
@@ -93,5 +95,10 @@ fun CachedMidiWaterfall(
             activeNoteOutput[note.note.pitch] = note.color
         }
         status.activeNoteCount = activeNoteOutput.size
+
+        LaunchedEffect(renderedTimes, imageBitmapCache) {
+            if (imageBitmapCache != null && renderedTimes >= 1) status.renderingReadyFor = midi
+        }
+        onFrameEnd()
     }
 }

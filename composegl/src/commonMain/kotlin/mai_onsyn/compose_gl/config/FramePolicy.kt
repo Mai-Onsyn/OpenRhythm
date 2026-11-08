@@ -3,7 +3,10 @@ package mai_onsyn.compose_gl.config
 /** 帧从哪来。 */
 sealed interface FramePolicy {
     /**
-     * 只有调用 [mai_onsyn.compose_gl.scope.GLRenderScope.requestRender] 才渲染一帧。
+     * 只有被请求才渲染一帧。
+     *
+     * 请求方式：[mai_onsyn.compose_gl.GLCanvasHandle.requestRender]（回调之外），
+     * 或在 [mai_onsyn.compose_gl.scope.GLRenderScope.onDraw] 里调用同名方法请求下一帧。
      *
      * 这是默认策略，符合「改了状态才需要重画」的心智模型，空闲时零开销。
      */

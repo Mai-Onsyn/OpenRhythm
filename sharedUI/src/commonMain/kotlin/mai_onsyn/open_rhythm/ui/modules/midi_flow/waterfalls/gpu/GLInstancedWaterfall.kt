@@ -25,7 +25,8 @@ fun GLInstancedWaterfall(
     drawOctaveLine: Boolean = true,
     noteRoundPercent: Float = 0.2f,
     drawPitchLabel: Boolean = false,
-    onVerticalDragged: (Float) -> Unit = {}
+    onVerticalDragged: (Float) -> Unit = {},
+    onFrameEnd: NoteRenderScope.() -> Unit
 ) {
     BaseMidiWaterfall(
         modifier = modifier,
@@ -46,7 +47,8 @@ fun GLInstancedWaterfall(
             midi,
             trackColors,
             activeNoteOutput,
-            noteRoundPercent
+            noteRoundPercent,
+            onFrameEnd
         )
     }
 }
@@ -57,5 +59,6 @@ expect fun NoteRenderScope.OpenGLWaterfall(
     midi: Midi,
     trackColors: List<Color>,
     activeNoteOutput: MutableMap<Int, Color>,
-    roundCorners: Float
+    roundCorners: Float,
+    onFrameEnd: NoteRenderScope.() -> Unit
 )

@@ -44,6 +44,7 @@ interface NoteRenderScope : BoxScope {
 }
 
 class WaterfallRenderingStatus(
+    var renderingReadyFor: Midi? = null,
     var currentNoteCount: Int = -1,
     var activeNoteCount: Int = -1
 )

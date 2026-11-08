@@ -1,16 +1,19 @@
 package mai_onsyn.open_rhythm.ui.modules.midi_flow.waterfalls.gpu
 
-import androidx.compose.runtime.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.key
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
-import co.touchlab.kermit.Logger
 import com.materialkolor.ktx.darken
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import mai_onsyn.compose_gl.GLCanvas
 import mai_onsyn.compose_gl.config.FramePolicy
 import mai_onsyn.compose_gl.config.GLConfig
+import mai_onsyn.compose_gl.rememberGLCanvasHandle
 import mai_onsyn.open_rhythm.core.midi.Midi
 import mai_onsyn.open_rhythm.core.util.Time
 import mai_onsyn.open_rhythm.ui.modules.midi_flow.waterfalls.NoteRenderScope
@@ -20,18 +23,14 @@ import mai_onsyn.open_rhythm.ui.modules.midi_flow.waterfalls.gpu.pool.NoteChunkB
 import mai_onsyn.open_rhythm.ui.utility.isBlackKey
 import org.lwjgl.opengl.GL46C.*
 
-//private val im = InstancedManager(
-//    1, 0.0, 1,
-//    NoteChunkBuilder(1, Midi("", 480, 1), mutableListOf(), mutableListOf(), mutableMapOf(), Size.Zero)
-//)
-
 @Composable
 actual fun NoteRenderScope.OpenGLWaterfall(
     modifier: Modifier,
     midi: Midi,
     trackColors: List<Color>,
     activeNoteOutput: MutableMap<Int, Color>,
-    roundCorners: Float
+    roundCorners: Float,
+    onFrameEnd: NoteRenderScope.() -> Unit
 ) {
     val im = remember(midi, trackColors, roundCorners) {
         InstancedManager(midi.ppq, currTick, visibleTickCount,
@@ -39,27 +38,23 @@ actual fun NoteRenderScope.OpenGLWaterfall(
         )
     }
 
-    // [0]=min [1]=max [2]=sum [3]=count
-//    val perfStats = remember { mutableMapOf<String, LongArray>() }
-//
-//    fun recordPerf(key: String, value: Long) {
-//        if (value < 1000L) return
-//        val s = perfStats.getOrPut(key) { longArrayOf(Long.MAX_VALUE, Long.MIN_VALUE, 0L, 0L) }
-//        if (value < s[0]) s[0] = value
-//        if (value > s[1]) s[1] = value
-//        s[2] += value
-//        s[3]++
-//    }
     SideEffect {
         val activeNotes = filterWindowNotes(midi, currTick, 0, maxNoteDurationList, trackColors)
         activeNoteOutput.clear()
         for (a in activeNotes) {
             activeNoteOutput[a.note.pitch] = if (isBlackKey(a.note.pitch)) a.color.darken(1.5f) else a.color
         }
+        status.activeNoteCount = activeNotes.size
+    }
+
+    val handle = rememberGLCanvasHandle()
+    LaunchedEffect(currTick) {
+        handle.requestRender()
     }
 
     key(im) { GLCanvas(
         modifier = modifier,
+        handle = handle,
         onCanvasCreated = {
             im.initGL()
             glEnable(GL_BLEND)
@@ -71,7 +66,13 @@ actual fun NoteRenderScope.OpenGLWaterfall(
             im.dispose()
         },
         onCanvasResized = {},
-        framePolicy = FramePolicy.Continuous(100),
+        fallbackContent = {
+            Box(
+                modifier = Modifier.matchParentSize()
+            ) {
+                Text("OpenGL rendering is NOT supported on your device!")
+            }
+        },
         config = GLConfig(msaa = 4)
     ) {
         val frameStart = Time.nanos
@@ -95,5 +96,8 @@ actual fun NoteRenderScope.OpenGLWaterfall(
 //                    "$k[min=${s[0]} max=${s[1]} avg=${s[2] / s[3]}]"
 //                }
 //            }
+
+        status.renderingReadyFor = midi
+        onFrameEnd()
     } }
 }

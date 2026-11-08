@@ -20,6 +20,7 @@ import org.jetbrains.skia.Image as SkiaImage
 import org.jetbrains.skia.Rect
 import mai_onsyn.compose_gl.config.FramePolicy
 import mai_onsyn.compose_gl.ComposeGL
+import mai_onsyn.compose_gl.GLCanvasHandle
 import mai_onsyn.compose_gl.config.DesktopSurfaceMode
 import mai_onsyn.compose_gl.config.GLConfig
 import mai_onsyn.compose_gl.error.GLException
@@ -36,6 +37,7 @@ internal actual fun PlatformGLCanvas(
     modifier: Modifier,
     config: GLConfig,
     framePolicy: FramePolicy,
+    handle: GLCanvasHandle?,
     onCanvasCreated: GLRenderScope.() -> Unit,
     onCanvasResized: GLRenderScope.(IntSize) -> Unit,
     onDraw: GLRenderScope.() -> Unit,
@@ -53,6 +55,7 @@ internal actual fun PlatformGLCanvas(
                 framePolicy = framePolicy,
                 refreshRateHz = rememberDisplayRefreshRateHz(),
                 density = LocalDensity.current.density,
+                handle = handle,
                 // 该模式已确认不可用（互操作层不合成 heavyweight 画布），仅为保留代码路径而适配。
                 onSurfaceCreated = { scope -> onCanvasCreated(scope) },
                 onSurfaceResized = { scope, size -> onCanvasResized(scope, size) },
@@ -112,6 +115,16 @@ internal actual fun PlatformGLCanvas(
             // host 按 sessionKey 常驻，这里只让渲染线程退出；重新挂载直接复用它。
             surface.dispose()
         }
+    }
+
+    // 句柄的挂载周期跟着 surface 走，但 handle 本身活在调用方的 composition 里。
+    // 单独一个 effect：handle 变化不该导致 surface 重建。
+    DisposableEffect(surface, handle) {
+        handle?.attach(
+            request = { surface.requestRender() },
+            applyPause = { surface.paused = it },
+        )
+        onDispose { handle?.detach() }
     }
 
     Box(

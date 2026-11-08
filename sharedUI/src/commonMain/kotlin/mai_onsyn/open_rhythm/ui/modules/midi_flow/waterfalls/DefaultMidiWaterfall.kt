@@ -32,7 +32,8 @@ fun DefaultMidiWaterfall(
     drawOctaveLine: Boolean = true,
     noteRoundPercent: Float = 0.2f,
     drawPitchLabel: Boolean = false,
-    onVerticalDragged: (Float) -> Unit = {}
+    onVerticalDragged: (Float) -> Unit = {},
+    onFrameEnd: NoteRenderScope.() -> Unit
 ) {
     BaseMidiWaterfall(
         modifier = modifier,
@@ -82,6 +83,9 @@ fun DefaultMidiWaterfall(
             for (pack in toDrawNotes) { if (isBlackKey(pack.note.pitch)) drawNote(pack, true) }
             status.currentNoteCount = toDrawNotes.size
             status.activeNoteCount = activeNoteCount
+
+            status.renderingReadyFor = midi
+            onFrameEnd()
         }
     }
 }

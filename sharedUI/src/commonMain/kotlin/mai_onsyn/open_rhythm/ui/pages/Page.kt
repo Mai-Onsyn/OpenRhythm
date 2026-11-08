@@ -128,6 +128,7 @@ fun AppNavigation(
                     maxWidth > 600.dp,
                     onBack,
                     {
+                        if (currentOperateMidiPath != it.data.path) currentOperateMidi = null
                         scope.launch(Dispatchers.IO) {
                             currentOperateMidi = Global.fileLoader.loadFile(it.data.path)
                             when (it.playMode) {

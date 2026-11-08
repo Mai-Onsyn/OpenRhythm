@@ -35,6 +35,12 @@ interface GLRenderScope {
     /** 上一帧的耗时统计。 */
     val stats: FrameStats
 
-    /** 请求下一帧。这是 OnRequest 模式下唯一的驱动入口。 */
+    /**
+     * 请求下一帧 —— 在回调内部推进动画的标准写法。
+     *
+     * 与 [mai_onsyn.compose_gl.GLCanvasHandle.requestRender] 等价，两者都只是"排一帧"。
+     * 区别只在可见范围：这个 scope 只在回调执行期间有意义，**回调之外请用句柄**
+     * （[mai_onsyn.compose_gl.rememberGLCanvasHandle]），否则拿不到驱动入口。
+     */
     fun requestRender()
 }

@@ -34,6 +34,9 @@ import mai_onsyn.compose_gl.scope.GLRenderScope
  * | [onDraw] | 每帧 | 画一帧（**库不会帮你 glClear**） |
  * | [onCanvasDisposed] | **每次卸载**，与 [onCanvasCreated] 严格配对 | 释放上面那些资源 |
  *
+ * 上面这些都是"库调你"。反方向 —— "你叫库画一帧" —— 走 [handle]，因为它不能是回调：
+ * `OnRequest` 模式下唯一能触发 [onDraw] 的入口就在回调外面。
+ *
  * ## 三条不变量
  *
  * 1. 所有回调都在**同一条渲染线程**上执行（桌面＝该会话的线程，安卓＝该画布的线程），
@@ -49,20 +52,28 @@ import mai_onsyn.compose_gl.scope.GLRenderScope
  * ComposeGL.onContextCreated = { renderer.compileShaders() }
  * ComposeGL.onContextDestroyed = { renderer.releasePrograms() }
  *
+ * val gl = rememberGLCanvasHandle()                  // 回调之外的驱动入口
+ *
  * GLCanvas(
+ *     handle = gl,
  *     onCanvasCreated = { renderer.uploadMesh() },   // 每次挂载
  *     onCanvasDisposed = { renderer.releaseMesh() }, // 每次卸载
  * ) {
  *     renderer.draw(width, height)                   // onDraw：尾随 lambda
  * }
+ *
+ * // 状态变了，从任何线程叫它重画一帧
+ * gl.requestRender()
  * ```
  *
  * @param onDraw 每帧的绘制回调。语义是「这一帧如何重画整个画面」，不是增量补画。
  *   放在参数表末尾，便于用尾随 lambda。
  * @param enabled 为 false 时**彻底销毁**上下文与所有资源，区域留空；重新置 true 会重新初始化。
- *   只是"暂时不画"请用 `FramePolicy` 或 `paused`，不要用它。
+ *   只是"暂时不画"请用 [GLCanvasHandle.paused]（保留资源）或换 [framePolicy]，不要用它。
  * @param config 渲染配置。**改动会导致上下文 / render target 重建**，别在每帧改它。
  * @param framePolicy 帧驱动策略，可在运行中切换（不会重建 surface）。
+ * @param handle 回调之外的驱动句柄，用 [rememberGLCanvasHandle] 创建。
+ *   `OnRequest` 模式下靠它请求重画；`Continuous` 模式下不需要，可以不传。
  * @param sessionKey GL 会话标识。**同一个 key 的画布共用一个常驻 GL 上下文**：
  *   画布卸载时上下文不销毁，下次挂载直接复用。不同 key 各自独立。
  * @param fallbackContent GL 不可用时渲染的内容。
@@ -74,6 +85,7 @@ fun GLCanvas(
     config: GLConfig = GLConfig(),
     framePolicy: FramePolicy = FramePolicy.OnRequest,
     sessionKey: String = DEFAULT_SESSION_KEY,
+    handle: GLCanvasHandle? = null,
     onCanvasCreated: GLRenderScope.() -> Unit = {},
     onCanvasResized: GLRenderScope.(IntSize) -> Unit = { _, _ -> },
     onCanvasDisposed: GLRenderScope.() -> Unit = {},
@@ -92,6 +104,7 @@ fun GLCanvas(
                 modifier = Modifier.fillMaxSize(),
                 config = config,
                 framePolicy = framePolicy,
+                handle = handle,
                 onCanvasCreated = onCanvasCreated,
                 onCanvasResized = onCanvasResized,
                 onDraw = onDraw,

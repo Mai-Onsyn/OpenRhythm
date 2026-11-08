@@ -24,6 +24,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
 import mai_onsyn.compose_gl.ComposeGL
+import mai_onsyn.compose_gl.GLCanvasHandle
 import mai_onsyn.compose_gl.config.AndroidSurfaceMode
 import mai_onsyn.compose_gl.config.FramePolicy
 import mai_onsyn.compose_gl.config.GLConfig
@@ -74,6 +75,7 @@ internal actual fun PlatformGLCanvas(
     modifier: Modifier,
     config: GLConfig,
     framePolicy: FramePolicy,
+    handle: GLCanvasHandle?,
     onCanvasCreated: GLRenderScope.() -> Unit,
     onCanvasResized: GLRenderScope.(IntSize) -> Unit,
     onDraw: GLRenderScope.() -> Unit,
@@ -108,12 +110,21 @@ internal actual fun PlatformGLCanvas(
         surface.density = density
         surface.framePolicy = framePolicy
         surface.refreshRateHz = refreshRateHz
-        surface.paused = !lifecycleStarted
+        // 退到后台一律停帧；句柄的暂停与它取或。lifecycle 变化会触发重组，这里每次都会重算
+        surface.paused = !lifecycleStarted || handle?.paused == true
     }
 
     DisposableEffect(surface) {
         surface.start()
         onDispose { surface.dispose() }
+    }
+
+    DisposableEffect(surface, handle) {
+        handle?.attach(
+            request = { surface.requestRender() },
+            applyPause = { surface.paused = !lifecycleStarted || it },
+        )
+        onDispose { handle?.detach() }
     }
 
     when (mode) {

@@ -80,12 +80,17 @@ fun PlayPage(
     val focusRequester = remember { FocusRequester() }
 
     DisposableEffect(Unit) {
-        if (Global.settings.AutoStartPlayback && drawStatusBar) {
-            isPlaying = true
-            Logger.i { "Auto play started" }
-        }
         onDispose {
             Global.player.practiceMode = false
+        }
+    }
+
+    var rendererReady by remember(midi) { mutableStateOf(false) }
+
+    LaunchedEffect(rendererReady) {
+        if (rendererReady && Global.settings.AutoStartPlayback && drawStatusBar) {
+            isPlaying = true
+            Logger.i { "Auto play started" }
         }
     }
 
@@ -114,8 +119,6 @@ fun PlayPage(
                 }
             }
         }
-
-        var rendererReady by remember(midi) { mutableStateOf(false) }
 
         MidiDownRegion(
             modifier = Modifier

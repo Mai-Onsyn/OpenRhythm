@@ -1,9 +1,13 @@
 package mai_onsyn.open_rhythm.ui.modules.midi_flow.waterfalls.gpu.pool
 
 import androidx.compose.ui.geometry.Size
+import mai_onsyn.open_rhythm.bridge.Global
 import mai_onsyn.open_rhythm.ui.modules.midi_flow.waterfalls.gpu.Shader
+import mai_onsyn.open_rhythm.ui.modules.midi_flow.waterfalls.gpu.Shader.Companion.inject
 import kotlin.math.ceil
 import kotlin.math.floor
+
+private const val DRAW_SHADOW = "#define DRAW_SHADOW"
 
 class InstancedManager(
     var chunkTickSize: Int,
@@ -150,7 +154,11 @@ class InstancedManager(
      * GL Canvas的init块调用 初始化GL资源
      */
     fun initGL() {
-        shader = Shader(Shader.VANILLA_VERTEX, Shader.VANILLA_FRAGMENT)
+        shader = if (Global.settings.DrawNoteShadow) {
+            Shader(Shader.VANILLA_VERTEX.inject(DRAW_SHADOW), Shader.VANILLA_FRAGMENT.inject(DRAW_SHADOW))
+        } else {
+            Shader(Shader.VANILLA_VERTEX, Shader.VANILLA_FRAGMENT)
+        }
         shader.use()
         quadRect.init()
         uniforms.initialize(shader.program)

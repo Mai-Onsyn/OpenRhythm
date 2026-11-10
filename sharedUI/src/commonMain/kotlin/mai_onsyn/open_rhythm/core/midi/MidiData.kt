@@ -9,7 +9,7 @@ data class Note(
     val velocity: Int,
     val channel: Int,
     var depth: UInt
-) {
+) : Comparable<Note> {
     companion object {
         fun toString(pitch: Int): String {
             val pitchClass = pitch.mod(12)
@@ -19,6 +19,8 @@ data class Note(
     }
 
     override fun toString(): String = "Note(tick=$tick, pitch=${toString(pitch)}, duration=$duration, velocity=$velocity, channel=$channel)"
+
+    override fun compareTo(other: Note): Int = depth.compareTo(other.depth)
 }
 
 class MidiTrack(

@@ -185,7 +185,7 @@ fun BaseMidiWaterfall(
                 ShowText("Frame Time=${frameTime}")
                 if (rStatus.currentNoteCount != -1) ShowText("Rendering Notes=${rStatus.currentNoteCount}")
                 if (rStatus.activeNoteCount != -1) ShowText("Active Notes=${rStatus.activeNoteCount}")
-                if (rStatus.glFPS != -1f) ShowText("Gl FPS=${rStatus.glFPS.roundToInt()}")
+                if (rStatus.glFPS != -1f) ShowText("GL FPS=${rStatus.glFPS.roundToInt()}")
             }
         }
     }

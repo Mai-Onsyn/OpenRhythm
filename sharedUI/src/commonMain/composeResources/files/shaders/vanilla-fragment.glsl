@@ -5,9 +5,6 @@ in vec2 vUv;
 in vec2 vSizePx;
 in vec4 vColor;
 in float vTickY;
-#ifdef DRAW_SHADOW
-in vec2 uvScale;
-#endif
 
 uniform float roundedCorners;
 uniform float chunkTickSize;
@@ -23,11 +20,13 @@ float sdRoundBox(vec2 p, vec2 halfSize, float radius) {
 }
 
 float roundBoxCoverage(float distancePx) {
-    float aaWidth = max(fwidth(distancePx), 0.0001);
+//    float aaWidth = max(fwidth(distancePx), 0.0001);
+    float aaWidth = 1.0;
     return clamp(0.5 - distancePx / aaWidth, 0.0, 1.0);
 }
 
 void main() {
+    if (vTickY < 0.0 || vTickY >= chunkTickSize) discard;
 
     vec2 halfSize = max(vSizePx * 0.5, vec2(0.0001));
     float radius = roundedCorners * halfSize.x;
@@ -47,16 +46,15 @@ void main() {
         float distanceShadowPx = sdRoundBox(ps, halfSize, radius);
         float coverageS = roundBoxCoverage(distanceShadowPx);
         if (coverageS <= 0.0) {
-//            fragColor = vec4(1.0, 1.0, 1.0, 1.0);
             discard;
         }
-
-        else fragColor = vec4(0.0, 0.0, 0.0, coverageS * 0.12);
+        else {
+            fragColor = vec4(0.0, 0.0, 0.0, coverageS * 0.12);
+        }
         #else
         discard;
         #endif
     } else {
-        if (vTickY < 0.0 || vTickY >= chunkTickSize) discard;
         vec4 color = vColor;
         color.rgb *= color.a;
         fragColor = color * coverage;

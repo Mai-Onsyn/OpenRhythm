@@ -57,6 +57,8 @@ class AppActivity: SplashActivity() {
         initAndroid(this)
         LogManager.initialize()
         ComposeGL.androidSurfaceMode = AndroidSurfaceMode.TextureView
+        val maxMemory = Runtime.getRuntime().maxMemory()
+        Logger.d { "Android max heap memory: $maxMemory" }
 
         setContent {
             val configuration = LocalConfiguration.current

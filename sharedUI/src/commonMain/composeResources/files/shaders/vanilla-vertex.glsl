@@ -14,9 +14,6 @@ out vec2 vUv;
 out vec2 vSizePx;
 out vec4 vColor;
 out float vTickY;
-#ifdef DRAW_SHADOW
-out vec2 uvScale;
-#endif
 
 const vec2 shadowOffset = vec2(1.1, 1.07);
 
@@ -29,6 +26,7 @@ void main() {
     float xFrac = rectVertex.x + quadRect.x * rectVertex.y;
     float yFrac = (tickFromNow + quadRect.y * rectVertex.w) * pxPerTick / safeSize.y;
     vUv = quadRect;
+    vTickY = rectVertex.z + quadRect.y * rectVertex.w;
     #else
     float xFrac = rectVertex.x + quadRect.x * rectVertex.y * shadowOffset.x;
     float yAddition = (1.0 - quadRect.y) * rectVertex.y * (shadowOffset.y - 1.0) * safeSize.x / safeSize.y;
@@ -36,14 +34,12 @@ void main() {
 
     float extraHeightPx = rectVertex.y * safeSize.x * (shadowOffset.y - 1.0);
     float noteHeightPx = rectVertex.w * pxPerTick;
-    uvScale = vec2(
-        shadowOffset.x,
-        1.0 + extraHeightPx / noteHeightPx
-    );
     vUv = vec2(
         quadRect.x * shadowOffset.x,
         quadRect.y * (1.0 + extraHeightPx / noteHeightPx) - extraHeightPx / noteHeightPx
     );
+    float extraTick = extraHeightPx / max(pxPerTick, 0.000001);
+    vTickY = rectVertex.z + quadRect.y * rectVertex.w - (1.0 - quadRect.y) * extraTick;
     #endif
 
     vec2 ndc = vec2(
@@ -61,6 +57,4 @@ void main() {
         float(rectColor.x),
         float(rectColor.w)
     ) * 0.0039215686274509803921568627451;
-
-    vTickY = rectVertex.z + quadRect.y * rectVertex.w;
 }

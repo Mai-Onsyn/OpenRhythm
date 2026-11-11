@@ -65,6 +65,7 @@ actual fun NoteRenderScope.OpenGLWaterfall(
             if (Global.settings.UploadAllVBOs) im.uploadAll(midi.totalTicks.toDouble())
         },
         onCanvasDisposed = {
+            glClear(GL_COLOR_BUFFER_BIT)
             im.dispose()
         },
         onCanvasResized = {},
@@ -75,7 +76,7 @@ actual fun NoteRenderScope.OpenGLWaterfall(
                 Text("OpenGL rendering is NOT supported on your device!")
             }
         },
-        config = GLConfig(msaa = 4)
+//        config = GLConfig(msaa = 4)
     ) {
         glClear(GL_COLOR_BUFFER_BIT)
         im.screenHeightTick = visibleTickCount

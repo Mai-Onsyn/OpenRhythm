@@ -140,6 +140,7 @@ fun FileManageRail(
                 onDispose {
                     if (playingIdx != -1) {
                         Global.player.stop()
+                        Global.player.setMidi(null)
                         Logger.d { "Stop playback: exit page" }
                     }
                 }

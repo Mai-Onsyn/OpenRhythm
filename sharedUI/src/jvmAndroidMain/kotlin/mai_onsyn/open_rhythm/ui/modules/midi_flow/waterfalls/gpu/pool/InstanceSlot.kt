@@ -12,6 +12,7 @@ class InstanceSlot(
     var vbo: Int = 0
     var uploaded: Boolean = false
     var initialized: Boolean = false
+    var uploadedInstanceCount = 0
 
     companion object {
         val INSTANCE_STRIDE = 4 * 5
@@ -56,14 +57,15 @@ class InstanceSlot(
 
     // 复用已有vbo
     fun upload(builder: NoteChunkBuilder) {
-        if (uploaded || chunk == null) return
+        if (uploaded || chunk == null || chunk!!.entities == null) return
 
+        uploadedInstanceCount = chunk!!.entities!!.size
         val buffer = ByteBuffer
-            .allocateDirect(chunk!!.entities.size * INSTANCE_STRIDE)
+            .allocateDirect(uploadedInstanceCount * INSTANCE_STRIDE)
             .order(ByteOrder.nativeOrder())
 
         for (e in chunk!!.entities) {
-            val (fracX, fracW, tickInChunk, durationTick, color, depth) = builder.buildGLRect(chunk!!.id, e) ?: NULL_RECT
+            val (fracX, fracW, tickInChunk, durationTick, color, _) = builder.buildGLRect(chunk!!.id, e) ?: NULL_RECT
             buffer.putFloat(fracX)
             buffer.putFloat(fracW)
             buffer.putFloat(tickInChunk)
@@ -82,7 +84,7 @@ class InstanceSlot(
 
     fun draw() {
         glBindVertexArray(vao)
-        glDrawArraysInstanced(GL_TRIANGLES, 0, 6, chunk!!.entities.size)
+        glDrawArraysInstanced(GL_TRIANGLES, 0, 6, uploadedInstanceCount)
         glBindVertexArray(0)
     }
 

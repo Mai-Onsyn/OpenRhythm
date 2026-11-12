@@ -82,6 +82,7 @@ fun PlayPage(
     DisposableEffect(Unit) {
         onDispose {
             Global.player.practiceMode = false
+            Global.player.setMidi(null)
         }
     }
 

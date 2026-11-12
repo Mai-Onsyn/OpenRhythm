@@ -123,6 +123,7 @@ fun BindTrackPlay(
             if (playingIndex != -1) {
                 Global.player.stop()
                 Logger.d { "Stopped playback: idx=-1 (stop flag)" }
+                Global.player.setMidi(null)
             }
         }
     }

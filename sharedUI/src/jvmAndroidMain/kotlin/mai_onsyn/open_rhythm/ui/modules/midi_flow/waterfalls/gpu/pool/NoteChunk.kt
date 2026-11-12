@@ -6,9 +6,9 @@ class NoteChunk(
     val startTick: Double,
     val durationTicks: Double,
     val id: Int,
-    val entities: List<DrawableNote>
+    var entities: List<DrawableNote>? = null
 ) {
     override fun toString(): String {
-        return "Chunk(startTick=$startTick, durationTicks=$durationTicks, id=$id, entitie=${entities.size})"
+        return "Chunk(startTick=$startTick, durationTicks=$durationTicks, id=$id, entitie=${entities?.size})"
     }
 }

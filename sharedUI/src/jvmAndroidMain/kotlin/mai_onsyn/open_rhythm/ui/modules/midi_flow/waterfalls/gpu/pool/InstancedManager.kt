@@ -120,6 +120,7 @@ class InstancedManager(
             }
             if (!slot.initialized) slot.initialize(quadRect.vbo)
             if (!slot.uploaded) slot.upload(chunkBuilder)
+            slot.chunk?.entities = null
         }
     }
 

@@ -34,6 +34,8 @@ class MidiPlayer2(
     var enablePC = true
     var enablePB = true
     var interactChannel = 0
+    val totalTicks: Int
+        get() = midi?.totalTicks ?: 0
 
     var practiceMode = false
     var blocker = NoteBlocker()

@@ -36,7 +36,11 @@ void main() {
     float distancePx = sdRoundBox(p, halfSize, radius);
     float coverage = roundBoxCoverage(distancePx);
 
-    if (coverage <= 0.0) {
+    vec4 shapeColor = vColor;
+    shapeColor.rgb *= shapeColor.a;
+    shapeColor *= coverage;
+
+    if (coverage < 1.0) {
         #ifdef DRAW_SHADOW
         vec2 ps = vec2(
             (vUv.x - 0.5 + shadowRectCenterOffset.x) * vSizePx.x,
@@ -45,18 +49,18 @@ void main() {
 
         float distanceShadowPx = sdRoundBox(ps, halfSize, radius);
         float coverageS = roundBoxCoverage(distanceShadowPx);
-        if (coverageS <= 0.0) {
+        if (coverageS <= 0.0 && coverage <= 0.0) {
             discard;
         }
         else {
-            fragColor = vec4(0.0, 0.0, 0.0, coverageS * 0.12);
+            vec4 shadow = vec4(0.0, 0.0, 0.0, coverageS * 0.12);
+            fragColor = shadow + shapeColor * (1.0 - shadow.a);
         }
         #else
-        discard;
+        if (coverage <= 0.0) discard;
+        else fragColor = shapeColor;
         #endif
     } else {
-        vec4 color = vColor;
-        color.rgb *= color.a;
-        fragColor = color * coverage;
+        fragColor = shapeColor;
     }
 }

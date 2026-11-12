@@ -102,16 +102,13 @@ class UserSetting(
     var MaxLogCount     by st.observable("MaxLogCount",     5000)
 
     // =====Overlay=====
-    var ShowCurrentTick         by st.observable("ShowCurrentTick",             false)
-    var ShowFps                 by st.observable("ShowFps",                     false)
-    var ShowFrameTime           by st.observable("ShowFrameTime",               false)
-    var ShowRenderingNoteCount  by st.observable("ShowRenderingNoteCount",      false)
-    var ShowActiveNoteCount     by st.observable("ShowActiveNoteCount",         false)
     var ShowDebugInfos          by st.observable("ShowDebugInfos",              false)
 
-    // =====Experiment=====
+    // =====Performance=====
     var WaterfallRenderingMode  by st.observable("WaterfallRenderingMode",      0)  // 0=cpu realtime; 1=cpu static; 2 gpu realtime
     var UploadAllVBOs           by st.observable("UploadAllVBOs",               true)
+    var MaxMidiChannelSize      by st.observable("MaxMidiChannelSize",          512)
+    var VelocityThreshold       by st.observable("VelocityThreshold",           20)
 
     // =====User Data=====
     val libraryFolderList by st.list("LibraryFolderList", mutableListOf(), UILibraryFolder.serializer())

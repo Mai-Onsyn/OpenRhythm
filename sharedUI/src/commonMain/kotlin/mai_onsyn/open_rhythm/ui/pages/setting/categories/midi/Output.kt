@@ -3,6 +3,7 @@ package mai_onsyn.open_rhythm.ui.pages.setting.categories.midi
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
@@ -190,6 +191,24 @@ fun MidiOutputSettings() {
                     Global.settings.EnableOutputMidiPBEvent = it
                     Global.player.enablePB = it
                 }
+            )
+        }
+
+        item(
+            "Minimal note velocity",
+            "Notes with a velocity lower than this value won't be sent to the output device."
+        ) {
+            val callback: (Int) -> Unit = {
+                if (it in 0..128) {
+                    Global.settings.VelocityThreshold = it
+                    Global.player.velocityThreshold = it
+                }
+            }
+            CompactOutlinedTextField(
+                modifier = Modifier.size(80.dp, 40.dp),
+                value = Global.settings.VelocityThreshold,
+                onValueChange = callback,
+                onConfirm = { callback(Global.settings.VelocityThreshold) }
             )
         }
     }

@@ -1,5 +1,6 @@
 package mai_onsyn.open_rhythm.ui.pages.setting.categories.advance
 
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -12,23 +13,24 @@ import androidx.compose.ui.unit.dp
 import mai_onsyn.open_rhythm.bridge.Global
 import mai_onsyn.open_rhythm.bridge.Platform
 import mai_onsyn.open_rhythm.bridge.PlatformInfos
-import mai_onsyn.open_rhythm.ui.icons.ic_experiment
+import mai_onsyn.open_rhythm.ui.icons.ic_flash_on
+import mai_onsyn.open_rhythm.ui.modules.CompactOutlinedTextField
 import mai_onsyn.open_rhythm.ui.modules.dialog.ConfirmDialog
 import mai_onsyn.open_rhythm.ui.pages.setting.SettingsCard
 import mai_onsyn.open_rhythm.ui.utility.str
 import openrhythm.sharedui.generated.resources.*
 
 @Composable
-fun ExperimentSettings() {
+fun PerformanceSettings() {
     SettingsCard(
-        title = str(Res.string.set_experiment_title),
-        icon = ic_experiment,
+        title = "Performance",
+        icon = ic_flash_on,
         modifier = Modifier.widthIn(400.dp, 800.dp)
     ) {
         val items = mutableListOf(
-            "CPU Realtime",
+            "Compose Canvas",
 //            str(Res.string.set_experiment_useCachedWaterfall),
-            "CPU Static",
+            "CPU Static Bitmap",
             "GPU Instanced"
         )
         val modeDescs = mutableListOf(
@@ -81,5 +83,21 @@ fun ExperimentSettings() {
             initial = Global.settings.UploadAllVBOs,
             onToggled = { Global.settings.UploadAllVBOs = it }
         )
+
+        item(
+            "Max event channel size",
+            "The buffer size of the built-in MIDI event sender needs to be adjusted based on the device's performance."
+        ) {
+            val callback: (Int) -> Unit = {
+                Global.settings.MaxMidiChannelSize = it
+                Global.player.setMaxChannelSize(it)
+            }
+            CompactOutlinedTextField(
+                modifier = Modifier.size(80.dp, 40.dp),
+                value = Global.settings.MaxMidiChannelSize,
+                onValueChange = callback,
+                onConfirm = { callback(Global.settings.MaxMidiChannelSize) }
+            )
+        }
     }
 }

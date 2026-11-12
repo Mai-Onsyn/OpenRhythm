@@ -97,4 +97,6 @@ private fun MidiPlayer2.init() {
     enableCC = Global.settings.EnableOutputMidiCCEvent
     enablePC = Global.settings.EnableOutputMidiPCEvent
     enablePB = Global.settings.EnableOutputMidiPBEvent
+    setMaxChannelSize(Global.settings.MaxMidiChannelSize)
+    velocityThreshold = Global.settings.VelocityThreshold
 }

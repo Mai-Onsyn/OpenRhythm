@@ -24,7 +24,7 @@ fun AdvancedSettings() {
         Spacer(Modifier.weight(1f))
 
         DebugSettings()
-        ExperimentSettings()
+        PerformanceSettings()
         LogSettings()
         SettingSettings()
 

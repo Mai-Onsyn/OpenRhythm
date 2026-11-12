@@ -19,7 +19,7 @@ class MidiPlayer2(
     private val scope = CoroutineScope(Dispatchers.IO)
     private var senderThread: Job? = null
     private var playbackThread: Job? = null
-    private val eventChannel = Channel<ByteArray>(512, BufferOverflow.DROP_LATEST)
+    private var eventChannel = Channel<ByteArray>(512, BufferOverflow.DROP_LATEST)
 
     private var midi: Midi? = null
     private var config: MidiFileSettings? = null
@@ -34,8 +34,7 @@ class MidiPlayer2(
     var enablePC = true
     var enablePB = true
     var interactChannel = 0
-    val totalTicks: Int
-        get() = midi?.totalTicks ?: 0
+    var velocityThreshold = -1
 
     var practiceMode = false
     var blocker = NoteBlocker()
@@ -57,6 +56,13 @@ class MidiPlayer2(
         this.config = config
         reset()
         buildEventSequence(midi)
+    }
+
+    fun setMaxChannelSize(size: Int) {
+        senderThread?.cancel()
+        eventChannel.close()
+        eventChannel = Channel(size, BufferOverflow.DROP_LATEST)
+        launchGuardThread()
     }
 
     val isPlaying: Boolean
@@ -188,7 +194,7 @@ class MidiPlayer2(
             if (enableNote) for ((pitch, tick, duration, velocity, channel) in track.notes) {
                 velocityCount[velocity] = (velocityCount[velocity] ?: 0) + 1
                 noteCount++
-                if (velocity > 20) {
+                if (velocity >= velocityThreshold) {
                     eventList.add(NoteEvent.noteOn(tick, pitch, velocity, channel))
                     eventList.add(NoteEvent.noteOff(tick + duration, pitch, velocity, channel))
                 } else filteredCount++
@@ -209,10 +215,10 @@ class MidiPlayer2(
             .joinToString(", ") { "${it.key}:${it.value}" }
         if (noteCount != 0) {
             Logger.d { "Velocity distribution (top $topN) [$velocityDist]" }
-            Logger.d { "Filtered $filteredCount of $noteCount (${filteredCount.toFloat() / noteCount}%)" }
+            Logger.i { "Filtered $filteredCount of $noteCount (${filteredCount.toFloat() / noteCount}%) notes which's velocity less than $velocityThreshold" }
         }
 
-        Logger.d { "Built ${eventList.size} events for MIDI ${midi.name}" }
+        Logger.i { "Built ${eventList.size} events for MIDI ${midi.name}" }
         eventList.sortWith(compareBy({ it.tick }, { it.order }))
     }
 
@@ -220,17 +226,7 @@ class MidiPlayer2(
         senderThread = scope.launch {
             for (msg in eventChannel) {
                 try {
-//                    config?.trackSettings
-//                    if (msg[0].toInt() and 0xF0 == 0xB0) {
-//                        val cc = MidiCCEvent(0, msg)
-//                        val newCC = MidiCCEvent.of(0, cc.channel, cc.controller, cc.value)
-//                        midiOutput?.send()
-//                    }
                     midiOutput?.send(msg, 0, msg.size, 0)
-//                    Logger.v { "Send event: ${msg.contentToString()}" }
-//                    if (msg[0].toInt() and 0xF0 == 0xC0) {
-//                        Logger.w { "Send PC to channel ${msg[0].toInt() and 0x0F}, value ${msg[1].toInt()}" }
-//                    }
                 } catch (e: Exception) {
                     Logger.e { "Error while sending message: ${e.message}" }
                 }

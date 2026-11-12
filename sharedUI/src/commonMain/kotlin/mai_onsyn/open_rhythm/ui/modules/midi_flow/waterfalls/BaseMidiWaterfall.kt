@@ -107,7 +107,7 @@ fun BaseMidiWaterfall(
     var countedFrames by remember { mutableStateOf(0) }
     var lastClearFrameCounterTime by remember { mutableStateOf(0L) }
 
-    if (Global.settings.ShowFps) {
+    if (Global.settings.ShowDebugInfos) {
         LaunchedEffect(Unit) {
             while (true) {
                 delay(1.seconds)

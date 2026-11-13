@@ -65,7 +65,16 @@ internal class WindowRenderThread(
     }
 
     override fun beforeDraw(width: Int, height: Int) {
-        if (useMsaa) framebuffer.bind()
+        if (useMsaa) {
+            framebuffer.bind()
+        } else {
+            // surface 尺寸变化（旋转、分屏、insets 变化）时，默认帧缓冲会自动跟随，
+            // 但 viewport 是 GL 状态位，不会自己变——旋转后会一直停在 eglMakeCurrent
+            // 时的旧尺寸上，画面按旧画布尺寸拉伸。与桌面路径保持一致：每帧显式
+            // 绑回默认帧缓冲并重设视口。
+            GLES30.glBindFramebuffer(GLES30.GL_FRAMEBUFFER, 0)
+            GLES20.glViewport(0, 0, width, height)
+        }
     }
 
     override fun present(width: Int, height: Int) {

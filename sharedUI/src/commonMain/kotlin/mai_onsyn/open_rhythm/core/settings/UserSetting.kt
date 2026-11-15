@@ -109,6 +109,7 @@ class UserSetting(
     var UploadAllVBOs           by st.observable("UploadAllVBOs",               true)
     var MaxMidiChannelSize      by st.observable("MaxMidiChannelSize",          512)
     var VelocityThreshold       by st.observable("VelocityThreshold",           20)
+    var BlackMIDISizeThreshold  by st.observable("BlackMIDISizeThreshold",      1048576L)
 
     // =====User Data=====
     val libraryFolderList by st.list("LibraryFolderList", mutableListOf(), UILibraryFolder.serializer())

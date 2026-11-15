@@ -1,6 +1,7 @@
 package mai_onsyn.open_rhythm.ui.modules
 
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -18,13 +19,14 @@ import mai_onsyn.open_rhythm.core.util.Time
 fun PrimaryOperationButton(
     title: String,
     onClick: () -> Unit,
-) = PrimaryOperationButton(Modifier, title, onClick)
+) = PrimaryOperationButton(Modifier, title, onClick = onClick)
 
 @Composable
 fun PrimaryOperationButton(
     modifier: Modifier = Modifier,
     title: String,
-    onClick: () -> Unit,
+    colors: ButtonColors = ButtonDefaults.buttonColors(),
+    onClick: () -> Unit
 ) {
     var lastClickTime by remember { mutableStateOf(0L) }
     Button(
@@ -35,11 +37,8 @@ fun PrimaryOperationButton(
                 onClick()
             }
         },
-        shape = MaterialTheme.shapes.small,
-        colors = ButtonDefaults.buttonColors(
-            containerColor = MaterialTheme.colorScheme.primary,
-            contentColor = MaterialTheme.colorScheme.onPrimary
-        ),
+//        shape = MaterialTheme.shapes.small,
+        colors = colors,
         modifier = modifier.pointerHoverIcon(PointerIcon.Hand)
     ) {
         Text(

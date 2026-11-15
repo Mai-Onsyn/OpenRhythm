@@ -19,7 +19,8 @@ data class UIMidiData(
     val duration: Double,
     val pianoOnly: Boolean,
     val trackCount: Int,
-    val noteCount: Int
+    val noteCount: Int,
+    val fileSize: Long
 )
 
 @OptIn(ExperimentalAtomicApi::class)
@@ -32,9 +33,10 @@ class MidiFileLoader {
     private val loadingFolderDeferred = mutableMapOf<String, CompletableDeferred<List<UIMidiData>>>()
     private val loadingFileDeferred = mutableMapOf<String, CompletableDeferred<Midi>>()
 
-    suspend fun loadFolder(path: String): List<UIMidiData> = load(
-        path, cachedFolderContentInfos, loadingFolderDeferred
-    ) { _loadFolder(path) }
+    suspend fun loadFolder(path: String): List<UIMidiData> = _loadFolder(path)
+//        load(
+//        path, cachedFolderContentInfos, loadingFolderDeferred
+//    ) { _loadFolder(path) }
 
     suspend fun loadFile(path: String): Midi = load(
         path, cachedFileInfos, loadingFileDeferred
@@ -54,7 +56,7 @@ class MidiFileLoader {
         loader: suspend () -> T
     ): T = withContext(Dispatchers.IO) {
         mtx.withLock {
-            cache[path]?.let { return@withContext it }
+//            cache[path]?.let { return@withContext it }
         }
 
         val deferred = mtx.withLock {
@@ -112,6 +114,13 @@ class MidiFileLoader {
             midFiles.map { file ->
                 async {     // 并行优化加载
                     try {
+                        val fileSize = file.size()
+                        val filePath = file.absolutePath()
+                        if (fileSize > Global.settings.BlackMIDISizeThreshold && mtx.withLock { !cachedFileInfos.containsKey(filePath) }) {
+                            return@async UIMidiData(file.nameWithoutExtension, filePath, 0.0, false, 0, 0, fileSize).also {
+                                mtx.withLock { loadedFileCount++ }
+                            }
+                        }
                         val midi = _loadFile(file)
                         var pianoOnly = true
                         for (track in midi.tracks) {
@@ -122,11 +131,12 @@ class MidiFileLoader {
                         }
                         UIMidiData(
                             fileName = file.nameWithoutExtension,
-                            path = file.absolutePath(),
+                            path = filePath,
                             duration = midi.msAtTick(midi.totalTicks.toLong()),
                             pianoOnly = pianoOnly,
                             trackCount = midi.tracks.size,
-                            midi.totalNotes
+                            noteCount = midi.totalNotes,
+                            fileSize = fileSize
                         ).also { mtx.withLock {
                             loadedFileCount++
                         } }

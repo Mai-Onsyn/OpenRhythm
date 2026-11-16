@@ -9,6 +9,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.PointerIcon
@@ -20,6 +21,7 @@ import co.touchlab.kermit.Logger
 import mai_onsyn.open_rhythm.bridge.Global
 import mai_onsyn.open_rhythm.core.midi.UIMidiData
 import mai_onsyn.open_rhythm.ui.icons.ic_graphic_eq
+import mai_onsyn.open_rhythm.ui.modules.LoadingSpinner
 import mai_onsyn.open_rhythm.ui.modules.OpacitySurface
 import mai_onsyn.open_rhythm.ui.modules.PrimaryOperationButton
 import mai_onsyn.open_rhythm.ui.modules.dialog.DialogPopup
@@ -28,9 +30,12 @@ import mai_onsyn.open_rhythm.ui.utility.toFileSize
 @Composable
 fun FileRailItemBM(
     modifier: Modifier = Modifier,
-    target: UIMidiData
+    target: UIMidiData,
+    onRefresh: () -> Unit
 ) {
     var showInfoSelector by remember { mutableStateOf(false) }
+
+    var loading by rememberSaveable { mutableStateOf(false) }
     Surface(
         modifier = modifier.pointerHoverIcon(PointerIcon.Hand),
         shape = MaterialTheme.shapes.medium,
@@ -92,10 +97,14 @@ fun FileRailItemBM(
                     )
                 }
             }
+
+            if (loading) {
+                LoadingSpinner(Modifier.size(24.dp))
+            }
         }
     }
 
-    var fileToLoad by remember { mutableStateOf(0) }
+    var fileToLoad by rememberSaveable { mutableStateOf(0) }
     DialogPopup(
         visible = showInfoSelector,
         onDismissRequest = { showInfoSelector = false }
@@ -109,7 +118,11 @@ fun FileRailItemBM(
     }
     LaunchedEffect(fileToLoad) {
         if (fileToLoad == 1) {
-            Global.fileLoader.loadFile(target.path)
+            loading = true
+            Global.fileLoader.loadFile(target.path) { midi ->
+                onRefresh()
+                loading = false
+            }
         }
     }
 }

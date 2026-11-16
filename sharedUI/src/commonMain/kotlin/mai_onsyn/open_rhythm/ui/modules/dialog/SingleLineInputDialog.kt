@@ -38,8 +38,8 @@ fun SingleLineInputDialog(
     ) {
         Box(
             modifier = Modifier
-                .size(400.dp, 300.dp)
-                .padding(48.dp),
+                .width(400.dp)
+                .padding(24.dp),
             contentAlignment = Alignment.Center
         ) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {

@@ -19,7 +19,7 @@ class MidiPlayer2(
     private val scope = CoroutineScope(Dispatchers.IO)
     private var senderThread: Job? = null
     private var playbackThread: Job? = null
-    private var eventChannel = Channel<ByteArray>(512, BufferOverflow.DROP_LATEST)
+    private var eventChannel = Channel<ByteArray>(512, BufferOverflow.SUSPEND)
 
     private var midi: Midi? = null
     private var config: MidiFileSettings? = null
@@ -61,7 +61,7 @@ class MidiPlayer2(
     fun setMaxChannelSize(size: Int) {
         senderThread?.cancel()
         eventChannel.close()
-        eventChannel = Channel(size, BufferOverflow.DROP_LATEST)
+        eventChannel = Channel(size, BufferOverflow.SUSPEND)
         launchGuardThread()
     }
 
@@ -215,7 +215,7 @@ class MidiPlayer2(
             .joinToString(", ") { "${it.key}:${it.value}" }
         if (noteCount != 0) {
             Logger.d { "Velocity distribution (top $topN) [$velocityDist]" }
-            Logger.i { "Filtered $filteredCount of $noteCount (${filteredCount.toFloat() / noteCount}%) notes which's velocity less than $velocityThreshold" }
+            Logger.i { "Filtered $filteredCount of $noteCount (${filteredCount.toFloat() / noteCount * 100}%) notes which's velocity less than $velocityThreshold" }
         }
 
         Logger.i { "Built ${eventList.size} events for MIDI ${midi.name}" }

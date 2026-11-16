@@ -25,6 +25,8 @@ import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.key.*
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
@@ -47,6 +49,10 @@ fun DialogPopup(
 
     RootPopup {
         val focusRequester = remember { FocusRequester() }
+
+
+        val focusManager = LocalFocusManager.current
+        val keyboardController = LocalSoftwareKeyboardController.current
         Box(
             contentAlignment = Alignment.Center,
             modifier = Modifier
@@ -56,7 +62,11 @@ fun DialogPopup(
                 .background(MaterialTheme.colorScheme.scrim.copy(alpha = 0.32f * showProgress))
                 .safeDrawingPadding()
                 .pointerInput(Unit) {
-                    detectTapGestures { onDismissRequest() }
+                    detectTapGestures {
+                        onDismissRequest()
+                        focusManager.clearFocus()
+                        keyboardController?.hide()
+                    }
                 }
                 .onKeyEvent {
                     if (it.type == KeyEventType.KeyDown && it.key == Key.Escape) {
@@ -79,7 +89,10 @@ fun DialogPopup(
                         scaleY = scale
                     }
                     .pointerInput(Unit) {
-                        detectTapGestures {}
+                        detectTapGestures {
+                            focusManager.clearFocus()
+                            keyboardController?.hide()
+                        }
                     }
             ) {
                 Surface(

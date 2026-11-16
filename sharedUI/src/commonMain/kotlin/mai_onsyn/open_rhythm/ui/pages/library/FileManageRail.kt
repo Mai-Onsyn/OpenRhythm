@@ -1,34 +1,27 @@
 package mai_onsyn.open_rhythm.ui.pages.library
 
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.material3.*
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.CornerRadius
-import androidx.compose.ui.input.pointer.PointerIcon
-import androidx.compose.ui.input.pointer.pointerHoverIcon
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import co.touchlab.kermit.Logger
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.ensureActive
 import mai_onsyn.open_rhythm.bridge.Global
 import mai_onsyn.open_rhythm.core.midi.UIMidiData
-import mai_onsyn.open_rhythm.core.util.Time
-import mai_onsyn.open_rhythm.ui.icons.ic_edit_square
-import mai_onsyn.open_rhythm.ui.icons.ic_music_note
-import mai_onsyn.open_rhythm.ui.modules.*
-import mai_onsyn.open_rhythm.ui.modules.dialog.DialogPopup
+import mai_onsyn.open_rhythm.ui.modules.LoadingSpinner
+import mai_onsyn.open_rhythm.ui.utility.UiState
 import mai_onsyn.open_rhythm.ui.utility.str
 import openrhythm.sharedui.generated.resources.Res
-import mai_onsyn.open_rhythm.ui.utility.UiState
-import openrhythm.sharedui.generated.resources.*
+import openrhythm.sharedui.generated.resources.lib_loadFailed
+import openrhythm.sharedui.generated.resources.lib_loadingMidi
 
 @Composable
 fun FileManageRail(
@@ -39,10 +32,12 @@ fun FileManageRail(
     onEnterTrackEdit: (UIMidiData) -> Unit,
     refresher: Int
 ) {
+    var fileRailRefresher by remember { mutableStateOf(0) }
     val uiState by produceState<UiState<List<UIMidiData>>>(
         initialValue = UiState.Loading,
         key1 = path,
-        key2 = refresher
+        key2 = refresher,
+        fileRailRefresher
     ) {
         value = UiState.Loading
         value = try {
@@ -150,9 +145,10 @@ fun FileManageRail(
                     .fillMaxSize()
             ) {
                 itemsIndexed(midiFiles) { index, midiData ->
-                    if (midiData.fileSize > Global.settings.BlackMIDISizeThreshold && midiData.noteCount == 0) FileRailItemBM(
+                    if (!midiData.loaded) FileRailItemBM(
                         modifier = Modifier.fillMaxSize(),
-                        target = midiData
+                        target = midiData,
+                        onRefresh = { fileRailRefresher++ }
                     )
                     else FileRailItem(
                         modifier = Modifier.fillMaxWidth(),

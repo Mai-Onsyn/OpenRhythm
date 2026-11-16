@@ -20,7 +20,8 @@ data class UIMidiData(
     val pianoOnly: Boolean,
     val trackCount: Int,
     val noteCount: Int,
-    val fileSize: Long
+    val fileSize: Long,
+    val loaded: Boolean
 )
 
 @OptIn(ExperimentalAtomicApi::class)
@@ -33,14 +34,14 @@ class MidiFileLoader {
     private val loadingFolderDeferred = mutableMapOf<String, CompletableDeferred<List<UIMidiData>>>()
     private val loadingFileDeferred = mutableMapOf<String, CompletableDeferred<Midi>>()
 
-    suspend fun loadFolder(path: String): List<UIMidiData> = _loadFolder(path)
-//        load(
-//        path, cachedFolderContentInfos, loadingFolderDeferred
-//    ) { _loadFolder(path) }
+    suspend fun loadFolder(path: String): List<UIMidiData> = //_loadFolder(path)
+        load(
+        path, cachedFolderContentInfos, loadingFolderDeferred
+    ) { _loadFolder(path) }
 
-    suspend fun loadFile(path: String): Midi = load(
+    suspend fun loadFile(path: String, onLoaded: (Midi) -> Unit = {}): Midi = load(
         path, cachedFileInfos, loadingFileDeferred
-    ) { _loadFile(path) }
+    ) { _loadFile(path, onLoaded) }
 
     fun isFolderLoaded(path: String): Boolean = cachedFolderContentInfos.containsKey(path)
 
@@ -56,7 +57,7 @@ class MidiFileLoader {
         loader: suspend () -> T
     ): T = withContext(Dispatchers.IO) {
         mtx.withLock {
-//            cache[path]?.let { return@withContext it }
+            cache[path]?.let { return@withContext it }
         }
 
         val deferred = mtx.withLock {
@@ -116,19 +117,25 @@ class MidiFileLoader {
                     try {
                         val fileSize = file.size()
                         val filePath = file.absolutePath()
-                        if (fileSize > Global.settings.BlackMIDISizeThreshold && mtx.withLock { !cachedFileInfos.containsKey(filePath) }) {
-                            return@async UIMidiData(file.nameWithoutExtension, filePath, 0.0, false, 0, 0, fileSize).also {
-                                mtx.withLock { loadedFileCount++ }
-                            }
+                        val shouldPlaceholder = fileSize > Global.settings.BlackMIDISizeThreshold && mtx.withLock {
+                            !cachedFileInfos.containsKey(filePath) &&
+                                    !loadingFileDeferred.containsKey(filePath)
                         }
-                        val midi = _loadFile(file)
-                        var pianoOnly = true
-                        for (track in midi.tracks) {
-                            if (track.trackInst != 0) {
-                                pianoOnly = false
-                                break
-                            }
+                        if (shouldPlaceholder) {
+                            return@async UIMidiData(
+                                fileName = file.nameWithoutExtension,
+                                path = filePath,
+                                duration = 0.0,
+                                pianoOnly = false,
+                                trackCount = 0,
+                                noteCount = 0,
+                                fileSize = fileSize,
+                                loaded = false
+                            ).also { mtx.withLock { loadedFileCount++ } }
                         }
+
+                        val midi = loadFile(filePath)
+                        val pianoOnly = midi.tracks.all { it.trackInst == 0 }
                         UIMidiData(
                             fileName = file.nameWithoutExtension,
                             path = filePath,
@@ -136,7 +143,8 @@ class MidiFileLoader {
                             pianoOnly = pianoOnly,
                             trackCount = midi.tracks.size,
                             noteCount = midi.totalNotes,
-                            fileSize = fileSize
+                            fileSize = fileSize,
+                            loaded = true
                         ).also { mtx.withLock {
                             loadedFileCount++
                         } }
@@ -149,9 +157,9 @@ class MidiFileLoader {
         }
     }
 
-    private suspend fun _loadFile(path: String): Midi = _loadFile(PlatformFile(path))
+    private suspend fun _loadFile(path: String, onLoaded: (Midi) -> Unit = {}): Midi = _loadFile(PlatformFile(path), onLoaded)
 
-    private suspend fun _loadFile(file: PlatformFile): Midi {
+    private suspend fun _loadFile(file: PlatformFile, onLoaded: (Midi) -> Unit = {}): Midi {
         val (bytes, name) = withContext(Dispatchers.IO) {
             if (file.exists() && file.isRegularFile() && file.extension == "mid") {
                 file.readBytes() to file.nameWithoutExtension
@@ -162,6 +170,30 @@ class MidiFileLoader {
             if (Global.settings.UseParserV1) parseMidiV1(name, bytes)
             else parseMidi(name, bytes, file.absolutePath()).apply { if (Global.settings.SortTracksByPitch) sortTracksByPitches() }
         }
+        upgradeFolderCache(file.absolutePath(), midi)
+        onLoaded(midi)
         return midi
+    }
+
+    private suspend fun upgradeFolderCache(path: String, midi: Midi) {
+        mtx.withLock {
+            for ((folderPath, list) in cachedFolderContentInfos) {
+                val idx = list.indexOfFirst { it.path == path }
+                if (idx < 0) continue
+                val old = list[idx]
+                if (old.loaded) continue
+                val upgraded = UIMidiData(
+                    fileName = old.fileName,
+                    path = path,
+                    duration = midi.msAtTick(midi.totalTicks.toLong()),
+                    pianoOnly = midi.tracks.all { it.trackInst == 0 },
+                    trackCount = midi.tracks.size,
+                    noteCount = midi.totalNotes,
+                    fileSize = old.fileSize,
+                    loaded = true
+                )
+                cachedFolderContentInfos[folderPath] = list.toMutableList().also { it[idx] = upgraded }
+            }
+        }
     }
 }

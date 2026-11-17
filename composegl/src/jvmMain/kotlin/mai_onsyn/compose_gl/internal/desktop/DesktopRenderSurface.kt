@@ -140,6 +140,11 @@ internal class DesktopRenderSurface(
     }
 
     fun dispose() {
+        callbacks.canvasCreated = {}
+        callbacks.resized = { _, _ -> }
+        callbacks.draw = {}
+        callbacks.canvasDisposed = {}
+        callbacks.failure = {}
         synchronized(lock) {
             stopped = true
             pending = false
@@ -265,6 +270,7 @@ internal class DesktopRenderSurface(
                 )
             }
         } finally {
+            scope.requestHandler = null
             if (canvasCreated) {
                 // 卸载回调：上下文仍然 current，用户在这里删 VBO/VAO 是安全的
                 runCatching { callbacks.canvasDisposed(scope) }

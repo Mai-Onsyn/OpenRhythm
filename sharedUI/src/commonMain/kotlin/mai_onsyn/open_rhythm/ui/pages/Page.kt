@@ -158,6 +158,12 @@ fun AppNavigation(
             }
 
             composable<PlayScreen> {
+                DisposableEffect(Unit) {
+                    onDispose {
+                        currentOperateMidi = null
+                        Global.player.setMidi(null)
+                    }
+                }
                 PlayPage(currentOperateMidi, onBack, Global.settings.WaterfallRenderingMode)
             }
 
@@ -170,6 +176,12 @@ fun AppNavigation(
             }
 
             composable<TrackEditScreen> {
+                DisposableEffect(Unit) {
+                    onDispose {
+                        currentOperateMidi = null
+                        Global.player.setMidi(null)
+                    }
+                }
                 TrackEditPage(currentOperateMidi, currentOperateMidiPath, maxWidth > 600.dp, onBack)
             }
         }

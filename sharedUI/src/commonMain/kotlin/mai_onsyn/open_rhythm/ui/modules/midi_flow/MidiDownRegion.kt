@@ -99,6 +99,9 @@ fun MidiDownRegion(
                         }
                     }
                 }
+                .pointerInput(Unit) {
+                    detectTapGestures { focusRequester.requestFocus() }
+                }
                 .onKeyEvent {
                     if (it.key == Key.Spacebar && it.type == KeyEventType.KeyDown) {
                         Logger.d { "Space bar pressed, switch playback state to ${!currentIsPlaying}" }

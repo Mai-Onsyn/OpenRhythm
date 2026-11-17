@@ -5,6 +5,7 @@ import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -29,6 +30,7 @@ import androidx.compose.ui.input.pointer.*
 import androidx.compose.ui.keepScreenOn
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.unit.dp
 import co.touchlab.kermit.Logger
 import kotlinx.coroutines.delay
@@ -54,6 +56,7 @@ fun PlayPage(
     if (drawStatusBar) BackHandler { onBack() }
 
     var isPlaying by remember { mutableStateOf(false) }
+    var enablePlayPauseInput by remember { mutableStateOf(false) }
 
     val displayMidi = remember(midi) {
         midi?.apply {
@@ -89,6 +92,10 @@ fun PlayPage(
     var rendererReady by remember(midi) { mutableStateOf(false) }
 
     LaunchedEffect(rendererReady) {
+        if (rendererReady) {
+            enablePlayPauseInput = true
+            focusRequester.requestFocus()
+        }
         if (rendererReady && Global.settings.AutoStartPlayback && drawStatusBar) {
             isPlaying = true
             Logger.i { "Auto play started" }
@@ -139,7 +146,7 @@ fun PlayPage(
             trackColors = trackColors,
             isPlaying = isPlaying,
             keyboardRatio = if (Global.settings.KeyboardAutoAspect) Global.settings.KeyboardAspectRatio else 0f,
-            onPlayStateChange = { isPlaying = it },
+            onPlayStateChange = { if (enablePlayPauseInput) isPlaying = it },
             onProgressChange = { playProgress = it },
             focusRequester = focusRequester,
             renderer = renderer,
@@ -164,8 +171,11 @@ fun PlayPage(
                     onClick = {
                         statusBarVisible = true
                         dropdownButtonVisible = false
+                        focusRequester.requestFocus()
                     },
-                    modifier = Modifier.alpha(0.6f).pointerHoverIcon(PointerIcon.Hand),
+                    modifier = Modifier
+                        .alpha(0.6f)
+                        .pointerHoverIcon(PointerIcon.Hand),
                     colors = IconButtonDefaults.iconButtonColors(
                         containerColor = MaterialTheme.colorScheme.secondaryContainer,
                         contentColor = MaterialTheme.colorScheme.onSecondaryContainer
@@ -236,14 +246,12 @@ fun PlayPage(
                     .pointerInput(Unit) {
                         awaitPointerEventScope {
                             while (true) {
-                                awaitPointerEvent(PointerEventPass.Final)
+                                awaitPointerEvent(PointerEventPass.Main).changes.forEach { it.consume() }
                             }
                         }
                     }
-                    .onKeyEvent { it.key != Key.Escape }
                     .background(Color.Black.copy(alpha = 0.4f))
             ) {
-
                 Row(
                     modifier = Modifier.align(Alignment.Center),
                     verticalAlignment = Alignment.CenterVertically,

@@ -1,6 +1,7 @@
 package mai_onsyn.open_rhythm.ui.pages.play_screen
 
 import androidx.compose.foundation.focusable
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -12,6 +13,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
 import mai_onsyn.open_rhythm.bridge.Global
 import mai_onsyn.open_rhythm.ui.icons.ic_arrow_back
@@ -48,6 +50,9 @@ fun StatusBar(
                 .padding(horizontal = 8.dp)
                 .padding(top = 4.dp)
                 .height(72.dp)
+                .pointerInput(Unit) {
+                    detectTapGestures { focusRequester?.requestFocus() }
+                }
         ) {
             IconButton(
                 onClick = {

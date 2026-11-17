@@ -196,6 +196,15 @@ internal abstract class FrameLoopThread(
                 onStop()
             } catch (_: Throwable) {
             }
+            // 断链：常驻的 EglSession.onContextDestroy 捕获了这个 scope，
+            // 而 scope.requestHandler 指回本线程 —— 不清掉的话，线程连同
+            // callbacks.draw 里捕获的 im / midi / status 会被会话永久钉住。
+            scope.requestHandler = null
+            callbacks.canvasCreated = {}
+            callbacks.resized = { _, _ -> }
+            callbacks.draw = {}
+            callbacks.canvasDisposed = {}
+            callbacks.failure = {}
             GLThreadGuard.exit()
         }
     }

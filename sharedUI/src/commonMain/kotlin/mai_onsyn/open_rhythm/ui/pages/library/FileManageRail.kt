@@ -114,6 +114,7 @@ fun FileManageRail(
                 if (playingIdx == -1) {
                     if (Global.player.isPlaying) {
                         Global.player.stop()
+                        Global.player.setMidi(null)
                         Logger.d { "Stopped playback: idx=-1 (stop flag)" }
                     }
                     return@LaunchedEffect

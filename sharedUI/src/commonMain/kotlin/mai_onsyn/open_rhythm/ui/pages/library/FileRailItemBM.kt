@@ -25,8 +25,13 @@ import mai_onsyn.open_rhythm.ui.modules.LoadingSpinner
 import mai_onsyn.open_rhythm.ui.modules.OpacitySurface
 import mai_onsyn.open_rhythm.ui.modules.PrimaryOperationButton
 import mai_onsyn.open_rhythm.ui.modules.dialog.DialogPopup
+import mai_onsyn.open_rhythm.ui.utility.str
 import mai_onsyn.open_rhythm.ui.utility.toFileSize
+import openrhythm.sharedui.generated.resources.*
 
+/**
+ * OMG 逆天代码能跑通就不要动了
+ */
 val loadingSet = mutableStateSetOf<String>()
 
 @Composable
@@ -42,8 +47,10 @@ fun FileRailItemBM(
         modifier = modifier.pointerHoverIcon(PointerIcon.Hand),
         shape = MaterialTheme.shapes.medium,
         onClick = {
-            showInfoSelector = !loading
-            if (!loading) Logger.d { "Open info selector for black midi: ${target.fileName}" }
+            if (!loading) {
+                showInfoSelector = true
+                Logger.d { "Open info selector for black midi: ${target.fileName}" }
+            }
         }
     ) {
         Row(
@@ -90,7 +97,7 @@ fun FileRailItemBM(
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Text(
-                        text = "Not loaded",
+                        text = "Not Loaded",
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.primary,
                         fontWeight = FontWeight.Bold,
@@ -155,7 +162,7 @@ fun BlackMidiLoadConfirmContent(
             .padding(horizontal = 24.dp, vertical = 20.dp),
     ) {
         Text(
-            text = "Load this MIDI file?",
+            text = str(Res.string.lib_bmConfirmTitle),
             style = MaterialTheme.typography.headlineSmall,
             color = MaterialTheme.colorScheme.onErrorContainer,
         )
@@ -163,16 +170,16 @@ fun BlackMidiLoadConfirmContent(
         Spacer(Modifier.height(8.dp))
 
         Text(
-            text = "This MIDI needs to be manually confirmed before loading because it may contain a huge number of notes.\nLoading this kind of MIDI can use a lot of memory and might cause the program to crash or the system to become unresponsive.",
+            text = str(Res.string.lib_bmConfirmMessage),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
 
         Spacer(Modifier.height(16.dp))
 
-        InfoRow(label = "File name", value = midiName)
+        InfoRow(label = str(Res.string.common_fileName), value = midiName)
         Spacer(Modifier.height(6.dp))
-        InfoRow(label = "File size", value = fileSize.toFileSize())
+        InfoRow(label = str(Res.string.common_fileSize), value = fileSize.toFileSize())
 
         Spacer(Modifier.height(20.dp))
 
@@ -183,10 +190,10 @@ fun BlackMidiLoadConfirmContent(
             TextButton(
                 modifier = Modifier.pointerHoverIcon(PointerIcon.Hand),
                 onClick = onCancel
-            ) { Text("Cancel") }
+            ) { Text(str(Res.string.common_cancel)) }
             Spacer(Modifier.width(8.dp))
             PrimaryOperationButton(
-                title = "Still loading!",
+                title = str(Res.string.lib_bmConfirmButton),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = MaterialTheme.colorScheme.error,
                     contentColor = MaterialTheme.colorScheme.onError,

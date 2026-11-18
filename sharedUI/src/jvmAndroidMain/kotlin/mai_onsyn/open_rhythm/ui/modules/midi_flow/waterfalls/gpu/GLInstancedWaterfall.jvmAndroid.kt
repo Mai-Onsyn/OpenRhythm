@@ -18,6 +18,8 @@ import mai_onsyn.open_rhythm.ui.modules.midi_flow.waterfalls.gpu.pool.InstancedM
 import mai_onsyn.open_rhythm.ui.modules.midi_flow.waterfalls.gpu.pool.NoteChunkBuilder
 import mai_onsyn.open_rhythm.ui.utility.FrequencyCounter
 import mai_onsyn.open_rhythm.ui.utility.isBlackKey
+import mai_onsyn.open_rhythm.ui.utility.str
+import openrhythm.sharedui.generated.resources.*
 
 @Composable
 actual fun NoteRenderScope.OpenGLWaterfall(
@@ -73,7 +75,7 @@ actual fun NoteRenderScope.OpenGLWaterfall(
             Box(
                 modifier = Modifier.matchParentSize()
             ) {
-                Text("OpenGL rendering is NOT supported on your device!")
+                Text(str(Res.string.render_glUnsupported))
             }
         },
 //        config = GLConfig(msaa = 4)

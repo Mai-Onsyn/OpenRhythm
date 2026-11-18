@@ -159,7 +159,7 @@ private fun ReorderableCollectionItemScope.FolderRow(
             }
             var fileCount by rememberSaveable { mutableStateOf(0) }
             Text(
-                text = "$fileCount files",
+                text = str(Res.string.lib_fileCount, fileCount),
                 style = MaterialTheme.typography.labelMedium,
                 color = colorScheme.primary,
                 fontWeight = FontWeight.Bold

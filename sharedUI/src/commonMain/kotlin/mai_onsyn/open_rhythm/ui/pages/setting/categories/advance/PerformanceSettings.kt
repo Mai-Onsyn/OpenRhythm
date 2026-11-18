@@ -23,26 +23,28 @@ import openrhythm.sharedui.generated.resources.*
 @Composable
 fun PerformanceSettings() {
     SettingsCard(
-        title = "Performance",
+        title = str(Res.string.set_perf_title),
         icon = ic_flash_on,
         modifier = Modifier.widthIn(400.dp, 800.dp)
     ) {
         val items = mutableListOf(
             "Compose Canvas",
-//            str(Res.string.set_experiment_useCachedWaterfall),
             "CPU Static Bitmap",
             "GPU Instanced"
         )
         val modeDescs = mutableListOf(
-            "Use CPU to rendering the waterfall realtime, it's the safest choice",
-            str(Res.string.set_experiment_useCachedWaterfall_desc),
-            "Use GPU parallel rendering the waterfall realtime, to improve the performance extremely",
+            str(Res.string.set_perf_mode_canvas_desc),
+            str(Res.string.set_perf_mode_cached_desc),
+            str(Res.string.set_perf_mode_gl_desc),
         )
+
+        val glNeedRestartMsg = str(Res.string.set_perf_glNeedRestart)
+        val glUnavailableMsg = str(Res.string.set_perf_glUnavailable)
 
         var showWaringDialog by remember { mutableStateOf(false) }
         var waringMessage by remember { mutableStateOf("") }
         itemWithDropDownMenu(
-            name = "Rendering mode",
+            name = str(Res.string.set_perf_renderingMode),
             description = modeDescs[Global.settings.WaterfallRenderingMode],
             items = items,
             initial = Global.settings.WaterfallRenderingMode,
@@ -50,14 +52,14 @@ fun PerformanceSettings() {
                 if (it == 2) when (PlatformInfos.platform) {
                     Platform.Windows -> {
                         if (!PlatformInfos.rendererBackend.contains("OPENGL")) {
-                            waringMessage = "If you want to use GPU Instanced rendering mode, you have to restart the application, otherwise it could use an incredible amount of memory!"
+                            waringMessage = glNeedRestartMsg
                             showWaringDialog = true
                         }
                         Global.settings.WaterfallRenderingMode = it
                     }
                     Platform.Android -> Global.settings.WaterfallRenderingMode = it
                     else -> {
-                        waringMessage = "The GPU Instanced rendering mode might not be available on your device."
+                        waringMessage = glUnavailableMsg
                         showWaringDialog = true
                     }
                 } else Global.settings.WaterfallRenderingMode = it
@@ -69,7 +71,7 @@ fun PerformanceSettings() {
             visible = showWaringDialog,
             onDismissRequest = { showWaringDialog = false },
             onConfirm = { showWaringDialog = false },
-            title = "Waring",
+            title = str(Res.string.common_warning),
             message = waringMessage,
             isDangerous = true,
             showCancel = false
@@ -78,15 +80,15 @@ fun PerformanceSettings() {
 
         animatedSwitch(
             visible = Global.settings.WaterfallRenderingMode == 2,
-            name = "Full upload",
-            description = "At the start of playback, upload all the notes to the GPU, trading memory usage(20B/Note) for ultimate rendering performance.",
+            name = str(Res.string.set_perf_fullUpload),
+            description = str(Res.string.set_perf_fullUpload_desc),
             initial = Global.settings.UploadAllVBOs,
             onToggled = { Global.settings.UploadAllVBOs = it }
         )
 
         item(
-            "Max event channel size",
-            "The buffer size of the built-in MIDI event sender needs to be adjusted based on the device's performance."
+            str(Res.string.set_perf_maxChannelSize),
+            str(Res.string.set_perf_maxChannelSize_desc)
         ) {
             val callback: (Int) -> Unit = {
                 Global.settings.MaxMidiChannelSize = it

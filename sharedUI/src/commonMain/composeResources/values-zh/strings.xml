@@ -9,6 +9,10 @@
     <string name="common_confirm">确定</string>
     <string name="common_cancel">取消</string>
     <string name="common_hexCode">HEX Code</string>
+    <string name="common_warning">警告</string>
+    <string name="common_loading">加载中...</string>
+    <string name="common_fileName">文件名</string>
+    <string name="common_fileSize">文件大小</string>
 
     <string name="track_loadingMidi">Loading MIDI...</string>
     <string name="track_pageTitle">编辑轨道</string>
@@ -75,6 +79,9 @@
     <string name="lib_playModeFullExerciseDesc">所有音符会等待你按下</string>
     <string name="lib_playModeSingleExerciseDesc">音符会等待你按下，但只练习歌曲中的一条轨道</string>
     <string name="lib_trackLabel">Track</string>
+    <string name="lib_trackCount">%1$d 个轨道</string>
+    <string name="lib_fileCount">%1$d 个文件</string>
+    <string name="lib_modeNoDesc">无说明</string>
     <string name="lib_rename">重命名</string>
     <string name="lib_showPath">显示本地路径</string>
     <string name="lib_delete">删除</string>
@@ -83,6 +90,9 @@
     <string name="lib_pathOf">%1$s的位置</string>
     <string name="lib_deleteTitle">删除 %1$s?</string>
     <string name="lib_deleteMessage">你确定要删除这个文件夹吗？\n(这不会实际删除你设备上的文件)</string>
+    <string name="lib_bmConfirmTitle">加载这个 MIDI 文件？</string>
+    <string name="lib_bmConfirmMessage">该 MIDI 可能包含巨量音符，加载前需要你手动确认。\n加载这类文件会占用大量内存，可能导致程序崩溃或系统卡死。</string>
+    <string name="lib_bmConfirmButton">仍然加载</string>
 
     <string name="set_note_title">音符</string>
     <string name="set_note_drawPitchLabels">显示音高</string>
@@ -137,6 +147,8 @@
     <string name="set_midiCCEventsDescription">演奏时的控制事件，比如踏板</string>
     <string name="set_midiPCEventsDescription">切换通道乐器的事件</string>
     <string name="set_midiPBEventsDescription">动态调整音高以实现滑音、颤音和其他效果的事件</string>
+    <string name="set_midiMinVelocity">最低音符力度</string>
+    <string name="set_midiMinVelocityDescription">力度低于该值的音符不会发送到输出设备。</string>
     <string name="set_midiTrackAndChannelTitle">轨道 &amp; 通道</string>
     <string name="set_midiTrackDefaultColors">轨道默认颜色</string>
     <string name="set_midiTriggerColor">触发颜色</string>
@@ -183,17 +195,8 @@
     <string name="set_debug_title">调试</string>
     <string name="set_debug_dontParseMidi">禁用MIDI解析</string>
     <string name="set_debug_dontParseMidi_desc">除非你需要查看原始MIDI数据否则 *极度* 不建议禁用</string>
-    <string name="set_debug_overlayLayer">叠加层</string>
-    <string name="set_debug_showCurrentTick">显示当前tick</string>
-    <string name="set_debug_showCurrentTick_desc">瀑布流底部位置的MIDI tick</string>
-    <string name="set_debug_showFps">显示FPS</string>
-    <string name="set_debug_showFps_desc">瀑布流渲染的 Frame per second</string>
-    <string name="set_debug_showFrameTime">显示帧时间</string>
-    <string name="set_debug_showFrameTime_desc">瀑布流两帧之间的实际毫秒间隔</string>
-    <string name="set_debug_showRenderingNoteCount">显示正在渲染的音符数量</string>
-    <string name="set_debug_showRenderingNoteCount_desc">当前屏幕上渲染的音符的总数</string>
-    <string name="set_debug_showActiveNoteCount">显示已激活音符数量</string>
-    <string name="set_debug_showActiveNoteCount_desc">当前已按下的音符的数量</string>
+    <string name="set_debug_showDebugInfos">显示调试信息</string>
+    <string name="set_debug_showDebugInfos_desc">在瀑布流上显示对应渲染器的调试信息</string>
 
     <string name="set_log_title">日志</string>
     <string name="set_log_level">日志等级</string>
@@ -204,9 +207,17 @@
     <string name="set_log_exportSuccess">成功导出 %1$d 条日志到 %2$s</string>
     <string name="set_log_exportFailed">导出日志失败：%1$s：%2$s</string>
 
-    <string name="set_experiment_title">实验性功能</string>
-    <string name="set_experiment_useCachedWaterfall">静态瀑布流渲染</string>
-    <string name="set_experiment_useCachedWaterfall_desc">使用静态帧缓存替代实时瀑布流渲染，可极大地提升性能，但会造成难以置信的内存消耗！</string>
+    <string name="set_perf_title">性能</string>
+    <string name="set_perf_renderingMode">渲染模式</string>
+    <string name="set_perf_mode_canvas_desc">使用 Compose 内置画布实时渲染瀑布流，最稳妥的选择</string>
+    <string name="set_perf_mode_cached_desc">使用静态帧缓存替代实时帧渲染，可大幅提升性能，但会造成难以置信的内存消耗！</string>
+    <string name="set_perf_mode_gl_desc">使用 GPU 并行渲染瀑布流，在较新的设备上是性能最佳的选择</string>
+    <string name="set_perf_glNeedRestart">想要使用 GPU 实例化渲染模式，必须重启应用，否则可能占用难以置信的内存！</string>
+    <string name="set_perf_glUnavailable">你的设备可能无法使用 GPU 实例化渲染模式</string>
+    <string name="set_perf_fullUpload">全量上传</string>
+    <string name="set_perf_fullUpload_desc">播放开始时把全部音符上传到 GPU，用显存（20B/音符）换取极致渲染性能</string>
+    <string name="set_perf_maxChannelSize">最大事件通道数</string>
+    <string name="set_perf_maxChannelSize_desc">内置 MIDI 事件发送器的缓冲区大小，需要根据设备性能调整</string>
 
     <string name="set_other_title">其他</string>
     <string name="set_other_resetAllMidiFileSettings">重置所有MIDI文件配置</string>
@@ -218,4 +229,7 @@
     <string name="set_other_resetAllSettings_desc">你需要重启应用程序来应用此项更改</string>
     <string name="set_other_resetSettingsTitle">重置设置</string>
     <string name="set_other_resetSettingsConfirm">你确定你想要重置所有设置吗？\n（此操作无法恢复！）</string>
+
+    <string name="render_glUnsupported">你的设备不支持 OpenGL 渲染！</string>
+    <string name="render_glUnsupportedIos">iOS 不支持 OpenGL 渲染！</string>
 </resources>

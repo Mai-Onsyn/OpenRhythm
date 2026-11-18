@@ -196,8 +196,8 @@ fun MidiOutputSettings() {
         }
 
         item(
-            "Minimal note velocity",
-            "Notes with a velocity lower than this value won't be sent to the output device."
+            str(Res.string.set_midiMinVelocity),
+            str(Res.string.set_midiMinVelocityDescription)
         ) {
             val callback: (Int) -> Unit = {
                 if (it in 0..128) {

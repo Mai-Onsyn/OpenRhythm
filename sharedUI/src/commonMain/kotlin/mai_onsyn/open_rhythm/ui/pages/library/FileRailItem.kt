@@ -74,7 +74,7 @@ fun FileRailItem(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "${target.trackCount} track${if (target.trackCount > 1) "s" else ""}",
+                        text = str(Res.string.lib_trackCount, target.trackCount),
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         maxLines = 1,
@@ -188,7 +188,7 @@ private fun DialogContent(
                 0 -> str(Res.string.lib_playModeAutoDesc)
                 1 -> str(Res.string.lib_playModeFullExerciseDesc)
                 2 -> str(Res.string.lib_playModeSingleExerciseDesc)
-                else -> "No descriptions"
+                else -> str(Res.string.lib_modeNoDesc)
             },
             style = MaterialTheme.typography.labelMedium
         )

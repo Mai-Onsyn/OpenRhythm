@@ -9,6 +9,10 @@
     <string name="common_confirm">Confirm</string>
     <string name="common_cancel">Cancel</string>
     <string name="common_hexCode">HEX Code</string>
+    <string name="common_warning">Warning</string>
+    <string name="common_loading">Loading...</string>
+    <string name="common_fileName">File name</string>
+    <string name="common_fileSize">File size</string>
 
     <string name="track_loadingMidi">Loading MIDI...</string>
     <string name="track_pageTitle">Tracks</string>
@@ -75,6 +79,9 @@
     <string name="lib_playModeFullExerciseDesc">The next note plays only after you press the current one correctly</string>
     <string name="lib_playModeSingleExerciseDesc">Same as Full Exercise, but for a single track only</string>
     <string name="lib_trackLabel">Track</string>
+    <string name="lib_trackCount">%1$d tracks</string>
+    <string name="lib_fileCount">%1$d files</string>
+    <string name="lib_modeNoDesc">No descriptions</string>
     <string name="lib_rename">Rename</string>
     <string name="lib_showPath">Show Path</string>
     <string name="lib_delete">Delete</string>
@@ -83,6 +90,9 @@
     <string name="lib_pathOf">Path of %1$s</string>
     <string name="lib_deleteTitle">Delete %1$s?</string>
     <string name="lib_deleteMessage">Are you sure you want to remove this folder from the library?\n(The actual files will not be deleted.)</string>
+    <string name="lib_bmConfirmTitle">Load this MIDI file?</string>
+    <string name="lib_bmConfirmMessage">This MIDI needs to be manually confirmed before loading because it may contain a huge number of notes.\nLoading this kind of MIDI can use a lot of memory and might cause the program to crash or the system to become unresponsive.</string>
+    <string name="lib_bmConfirmButton">Load anyway</string>
 
     <string name="set_note_title">Note</string>
     <string name="set_note_drawPitchLabels">Show pitch labels</string>
@@ -137,6 +147,8 @@
     <string name="set_midiCCEventsDescription">Control events such as pedal presses</string>
     <string name="set_midiPCEventsDescription">Events for changing instruments</string>
     <string name="set_midiPBEventsDescription">Adjust pitch dynamically for glissando, vibrato, and other effects</string>
+    <string name="set_midiMinVelocity">Minimal note velocity</string>
+    <string name="set_midiMinVelocityDescription">Notes with a velocity lower than this value won't be sent to the output device.</string>
     <string name="set_midiTrackAndChannelTitle">Track and channel</string>
     <string name="set_midiTrackDefaultColors">Track default colors</string>
     <string name="set_midiTriggerColor">Trigger color</string>
@@ -183,17 +195,8 @@
     <string name="set_debug_title">Debug</string>
     <string name="set_debug_dontParseMidi">Don't parse MIDI</string>
     <string name="set_debug_dontParseMidi_desc">NOT RECOMMENDED unless you need the original track data</string>
-    <string name="set_debug_overlayLayer">Overlay layer</string>
-    <string name="set_debug_showCurrentTick">Show current tick</string>
-    <string name="set_debug_showCurrentTick_desc">Show the MIDI tick position at the bottom of the waterfall</string>
-    <string name="set_debug_showFps">Show FPS</string>
-    <string name="set_debug_showFps_desc">Frames per second of the waterfall view</string>
-    <string name="set_debug_showFrameTime">Show frame time</string>
-    <string name="set_debug_showFrameTime_desc">Milliseconds between waterfall frames</string>
-    <string name="set_debug_showRenderingNoteCount">Show number of rendered notes</string>
-    <string name="set_debug_showRenderingNoteCount_desc">Number of notes currently rendered on screen</string>
-    <string name="set_debug_showActiveNoteCount">Show active note count</string>
-    <string name="set_debug_showActiveNoteCount_desc">Total number of notes currently active</string>
+    <string name="set_debug_showDebugInfos">Show debug infos</string>
+    <string name="set_debug_showDebugInfos_desc">Show the corresponding renderer's debug info on the waterfall</string>
 
     <string name="set_log_title">Log</string>
     <string name="set_log_level">Log level</string>
@@ -204,9 +207,17 @@
     <string name="set_log_exportSuccess">Successfully exported %1$d logs to %2$s</string>
     <string name="set_log_exportFailed">Failed to export logs: %1$s: %2$s</string>
 
-    <string name="set_experiment_title">Experiments</string>
-    <string name="set_experiment_useCachedWaterfall">Static waterfall rendering</string>
-    <string name="set_experiment_useCachedWaterfall_desc">Using a static framebuffer instead of real-time rendering works really well performance-wise, but it can lead to crazy memory usage</string>
+    <string name="set_perf_title">Performance</string>
+    <string name="set_perf_renderingMode">Rendering mode</string>
+    <string name="set_perf_mode_canvas_desc">Use compose internal Canvas to rendering the waterfall realtime, it's the safest choice</string>
+    <string name="set_perf_mode_cached_desc">Using a static framebuffer instead of real-time rendering works really well performance-wise, but it can lead to crazy memory usage</string>
+    <string name="set_perf_mode_gl_desc">Use GPU parallel rendering the waterfall realtime, to improve the performance extremely</string>
+    <string name="set_perf_glNeedRestart">If you want to use GPU Instanced rendering mode, you have to restart the application, otherwise it could use an incredible amount of memory!</string>
+    <string name="set_perf_glUnavailable">The GPU Instanced rendering mode might not be available on your device.</string>
+    <string name="set_perf_fullUpload">Full upload</string>
+    <string name="set_perf_fullUpload_desc">At the start of playback, upload all the notes to the GPU, trading memory usage(20B/Note) for ultimate rendering performance.</string>
+    <string name="set_perf_maxChannelSize">Max event channel size</string>
+    <string name="set_perf_maxChannelSize_desc">The buffer size of the built-in MIDI event sender needs to be adjusted based on the device's performance.</string>
 
     <string name="set_other_title">Other</string>
     <string name="set_other_resetAllMidiFileSettings">Reset all MIDI file settings</string>
@@ -218,4 +229,7 @@
     <string name="set_other_resetAllSettings_desc">You need to restart the app for the change to take effect</string>
     <string name="set_other_resetSettingsTitle">Reset Settings</string>
     <string name="set_other_resetSettingsConfirm">Are you sure you want to reset all settings? \nThis action cannot be undone!</string>
+
+    <string name="render_glUnsupported">OpenGL rendering is NOT supported on your device!</string>
+    <string name="render_glUnsupportedIos">OpenGL renderer is NOT supported on ios!</string>
 </resources>

@@ -42,7 +42,9 @@ import mai_onsyn.open_rhythm.ui.modules.LoadingSpinner
 import mai_onsyn.open_rhythm.ui.modules.getContrastTextColor
 import mai_onsyn.open_rhythm.ui.modules.midi_flow.MidiDownRegion
 import mai_onsyn.open_rhythm.ui.theme.TrackColorDefaults
+import mai_onsyn.open_rhythm.ui.utility.str
 import kotlin.math.roundToInt
+import openrhythm.sharedui.generated.resources.*
 import kotlin.time.Duration.Companion.seconds
 
 @OptIn(ExperimentalComposeUiApi::class)
@@ -260,7 +262,7 @@ fun PlayPage(
                     val color = getContrastTextColor(Global.settings.WaterfallBackgroundColor)
                     LoadingSpinner(Modifier.size(32.dp), strokeWidth = 5.dp, baseColor = color)
                     Text(
-                        text = "Loading...",
+                        text = str(Res.string.common_loading),
                         style = MaterialTheme.typography.displayMedium,
                         color = color
                     )

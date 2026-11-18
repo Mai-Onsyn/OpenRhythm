@@ -10,6 +10,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import mai_onsyn.open_rhythm.core.midi.Midi
 import mai_onsyn.open_rhythm.ui.modules.midi_flow.waterfalls.NoteRenderScope
+import mai_onsyn.open_rhythm.ui.utility.str
+import openrhythm.sharedui.generated.resources.*
 
 @Composable
 actual fun NoteRenderScope.OpenGLWaterfall(
@@ -22,7 +24,7 @@ actual fun NoteRenderScope.OpenGLWaterfall(
 ) {
     Box(modifier.align(Alignment.Center)) {
         Text(
-            text = "OpenGL renderer is NOT supported on ios!",
+            text = str(Res.string.render_glUnsupportedIos),
             style = MaterialTheme.typography.displayMedium,
             modifier = Modifier.align(Alignment.Center),
             maxLines = 10

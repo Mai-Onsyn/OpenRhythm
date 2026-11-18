@@ -34,6 +34,8 @@ class MidiFileLoader {
     private val loadingFolderDeferred = mutableMapOf<String, CompletableDeferred<List<UIMidiData>>>()
     private val loadingFileDeferred = mutableMapOf<String, CompletableDeferred<Midi>>()
 
+    fun fileIsLoading(path: String): Boolean = loadingFileDeferred.containsKey(path)
+
     suspend fun loadFolder(path: String): List<UIMidiData> = //_loadFolder(path)
         load(
         path, cachedFolderContentInfos, loadingFolderDeferred

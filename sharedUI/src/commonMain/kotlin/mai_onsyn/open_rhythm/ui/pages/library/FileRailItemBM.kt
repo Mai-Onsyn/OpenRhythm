@@ -27,6 +27,8 @@ import mai_onsyn.open_rhythm.ui.modules.PrimaryOperationButton
 import mai_onsyn.open_rhythm.ui.modules.dialog.DialogPopup
 import mai_onsyn.open_rhythm.ui.utility.toFileSize
 
+val loadingSet = mutableStateSetOf<String>()
+
 @Composable
 fun FileRailItemBM(
     modifier: Modifier = Modifier,
@@ -35,13 +37,13 @@ fun FileRailItemBM(
 ) {
     var showInfoSelector by remember { mutableStateOf(false) }
 
-    var loading by rememberSaveable { mutableStateOf(false) }
+    var loading by rememberSaveable { mutableStateOf(Global.fileLoader.fileIsLoading(target.path)) }
     Surface(
         modifier = modifier.pointerHoverIcon(PointerIcon.Hand),
         shape = MaterialTheme.shapes.medium,
         onClick = {
-            showInfoSelector = true
-            Logger.d { "Open info selector for black midi: ${target.fileName}" }
+            showInfoSelector = !loading
+            if (!loading) Logger.d { "Open info selector for black midi: ${target.fileName}" }
         }
     ) {
         Row(
@@ -116,11 +118,23 @@ fun FileRailItemBM(
             onCancel = { showInfoSelector = false }
         )
     }
+    LaunchedEffect(Unit) {
+        if (loading && fileToLoad == 0) {
+            loadingSet.add(target.path)
+        }
+    }
+    LaunchedEffect(loadingSet.contains(target.path)) {
+        if (!loadingSet.contains(target.path)) {
+            loading = false
+            onRefresh()
+        }
+    }
     LaunchedEffect(fileToLoad) {
         if (fileToLoad == 1) {
             loading = true
             Global.fileLoader.loadFile(target.path) { midi ->
                 onRefresh()
+                loadingSet.remove(target.path)
                 loading = false
             }
         }

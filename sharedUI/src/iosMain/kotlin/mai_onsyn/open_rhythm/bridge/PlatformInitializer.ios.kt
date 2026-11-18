@@ -45,6 +45,9 @@ actual fun registerGlobalKeyEventDispatcher(keyEventDispatcher: GlobalKeyEventDi
 }
 
 actual fun setupMidiOutput(output: MidiOutput, name: String, context: Any) {}
+
+actual fun closeMidiOutput(output: MidiOutput) = output.close()
+
 actual fun createFontFamily(): FontFamily {
     return FontFamily.Default
 }

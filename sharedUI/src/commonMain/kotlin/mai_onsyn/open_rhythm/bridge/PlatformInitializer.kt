@@ -26,4 +26,6 @@ expect fun registerGlobalKeyEventDispatcher(keyEventDispatcher: GlobalKeyEventDi
 
 expect fun setupMidiOutput(output: MidiOutput, name: String, context: Any)
 
+expect fun closeMidiOutput(output: MidiOutput)
+
 expect fun createFontFamily(): FontFamily

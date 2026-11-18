@@ -8,17 +8,7 @@ import javax.sound.midi.Synthesizer
 
 fun loadSoundbankToKtmidiOutput(output: MidiOutput, sf2File: File): Boolean {
     try {
-        // 从 JvmMidiOutput 中反射获取 private 字段 'port'
-        val portField = output.javaClass.getDeclaredField("port").apply {
-            isAccessible = true
-        }
-        val port = portField.get(output) ?: return false
-
-        // 从 JvmMidiReceiverPortDetails 中反射获取字段 'device'
-        val deviceField = port.javaClass.getDeclaredField("device").apply {
-            isAccessible = true
-        }
-        val device = deviceField.get(port) as? Synthesizer ?: return false
+        val device = getDeviceReflect(output) ?: return false
 
         // 确保设备已打开
         if (!device.isOpen) {
@@ -41,4 +31,18 @@ fun loadSoundbankToKtmidiOutput(output: MidiOutput, sf2File: File): Boolean {
         Logger.e(e) { "Failed to pick soundbank from ${sf2File.absolutePath}" }
         return false
     }
+}
+
+fun getDeviceReflect(output: MidiOutput): Synthesizer? {
+    // 从 JvmMidiOutput 中反射获取 private 字段 'port'
+    val portField = output.javaClass.getDeclaredField("port").apply {
+        isAccessible = true
+    }
+    val port = portField.get(output) ?: return null
+
+    // 从 JvmMidiReceiverPortDetails 中反射获取字段 'device'
+    val deviceField = port.javaClass.getDeclaredField("device").apply {
+        isAccessible = true
+    }
+    return deviceField.get(port) as? Synthesizer
 }

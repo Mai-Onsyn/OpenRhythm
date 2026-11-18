@@ -79,3 +79,5 @@ actual fun setupMidiOutput(output: MidiOutput, name: String, context: Any) {}
 actual fun createFontFamily(): FontFamily {
     return FontFamily.Default
 }
+
+actual fun closeMidiOutput(output: MidiOutput) = output.close()

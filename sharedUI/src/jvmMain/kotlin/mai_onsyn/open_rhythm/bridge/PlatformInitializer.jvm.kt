@@ -80,6 +80,14 @@ actual fun setupMidiOutput(output: MidiOutput, name: String, context: Any) {
     }
 }
 
+actual fun closeMidiOutput(output: MidiOutput) {
+    getDeviceReflect(output)?.let {
+        it.unloadAllInstruments(it.defaultSoundbank)
+        it.close()
+    }
+    output.close()
+}
+
 @OptIn(ExperimentalTextApi::class)
 actual fun createFontFamily(): FontFamily {
     return FontFamily(

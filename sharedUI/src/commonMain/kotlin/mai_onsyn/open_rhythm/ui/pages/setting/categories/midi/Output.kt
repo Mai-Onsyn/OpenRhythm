@@ -16,6 +16,7 @@ import androidx.compose.ui.unit.dp
 import co.touchlab.kermit.Logger
 import kotlinx.coroutines.launch
 import mai_onsyn.open_rhythm.bridge.Global
+import mai_onsyn.open_rhythm.bridge.closeMidiOutput
 import mai_onsyn.open_rhythm.bridge.setupMidiOutput
 import mai_onsyn.open_rhythm.ui.icons.ic_graphic_eq
 import mai_onsyn.open_rhythm.ui.modules.CompactOutlinedTextField
@@ -76,7 +77,7 @@ fun MidiOutputSettings() {
                     onSelect = {
                         coroutineScope.launch {
                             try {
-                                Global.player.midiOutput?.close()
+                                Global.player.midiOutput?.let { output -> closeMidiOutput(output) }
                                 Global.player.setOutput(Global.midiAccess.openOutput(devices[it].id).let { output ->
                                     if (devices[it].name == "Gervill") {
                                         setupMidiOutput(output, "Gervill", Global.settings.GervillSF2Path)
@@ -143,7 +144,7 @@ fun MidiOutputSettings() {
                 onValueChange = { Global.settings.GervillSF2Path = it },
                 onConfirm = {
                     coroutineScope.launch {
-                        Global.player.midiOutput?.close()
+                        Global.player.midiOutput?.let { closeMidiOutput(it) }
                         val portDetails = Global.midiAccess.outputs.toList().firstOrNull { it.name == "Gervill" } ?: return@launch
                         Global.player.setOutput(Global.midiAccess.openOutput(portDetails.id).let { output ->
                             setupMidiOutput(output, "Gervill", Global.settings.GervillSF2Path)

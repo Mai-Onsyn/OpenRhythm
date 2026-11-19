@@ -37,12 +37,12 @@ compose.desktop {
             "-Xms512m",
             "-XX:MaxRAMPercentage=80.0",
             "--enable-native-access=ALL-UNNAMED",
-            "-Xlog:gc",
+//            "-Xlog:gc",
             "-XX:+ExplicitGCInvokesConcurrent"
         )
 
         buildTypes.release.proguard {
-            isEnabled = !(org.gradle.internal.os.OperatingSystem.current().isMacOsX)
+            isEnabled = org.gradle.internal.os.OperatingSystem.current().isWindows
             version = "7.9.1"
             configurationFiles.from("proguard.txt")
             obfuscate = false  // 混淆

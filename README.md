@@ -6,91 +6,45 @@
 
 ## 🤔 What Is This?
 
-Open Rhythm is a piano visualization & MIDI practice tool — a Synthesia-style experience that's open source. It plays standard MIDI 1 (`.mid`) files with a flowing waterfall visualization, lets you jam freely, and offers a follow-along practice mode.
+Open Rhythm is a MIDI visualization & piano practice tool built on Compose Multiplatform — a Synthesia-style experience that's open source.
 
+## 🌍 Supported Platforms
 
+- **JVM Desktop** (Windows / Linux / macOS)
+- **Android** (phones / tablets)
 
-## 🌍 Cross-Platform
+**iOS** – Planned, but not implemented yet (…I don't own an Apple device 😔)
 
-Built on Compose Multiplatform. Currently supported:
+## ✨ Design Philosophy
 
-- 💻 **JVM Desktop** (Windows / Linux / macOS)
-- 📱 **Android** (phones / tablets)
+- Aim for the same experience as Synthesia, but **fully yours** — every single corner of the interface can be DIY'd!
+- Made for ordinary people: simple and easy to use.
+- One tool that merges piano practice, multi-instrument MIDI playback, Black MIDI playback, and special-effect piano (the legendary "giant pancake" 🥞).
 
-📱 **iOS** – 🚨 Planned, but not implemented yet (…I don't own an Apple device 😔)
+## 💪 What It Can Do
 
+- Parses MIDI files, auto-splits tracks, and detects instruments & events; parsed results are cached so subsequent loads are faster. Black MIDI is never loaded automatically.
+- Per-track configuration: instrument, color, volume, and overall enable/disable.
+- Multiple MIDI input devices + a single output device (with SF2 soundfont loading for the Gervill synth on JVM). Your computer keyboard works as a virtual MIDI input with fully customizable key mapping.
+- An output-device-independent player system: play at any speed multiplier, start from anywhere in the track.
+- Follow-Along Practice mode just like Synthesia's — optionally practice a single track — plus the standard Free Play mode.
+- Theme / primary color / waterfall background image / octave lines / bar lines / note corner radius & shadows / keyboard height & pitch range, and so on — all adjustable, with live previews on the settings pages.
+- Switchable rendering modes per scenario: Compose Canvas (regular practice & playback), CPU static-frame caching (millions of notes), OpenGL instancing (tens of millions of notes / special effects).
 
+## ⚠️ Attentions
 
-## ✨ Highlights
-
-### MIDI Engine
-
-- Parses MIDI 1 files, auto-splits tracks, and detects instruments & events
-- Per-track configuration: instrument, color, volume, and overall enable/disable
-- Caches parsed MIDI files for faster subsequent loads
-- Multiple MIDI input devices
-- Single MIDI output device (with SF2 soundfont loading for the Gervill synth on JVM)
-- Computer keyboard works as a virtual MIDI input with fully customizable key mapping
-- Independently filter the send/receive of Note, CC, PC, and PB events
-
-### Playback & Interaction
-
-- A pure-Kotlin MIDI player/event sender driven by coroutine timing + linear tick interpolation
-- Playback at any speed multiplier
-- Start from anywhere in the track, regardless of MIDI state
-- Drag the waterfall to scrub the playback position precisely
-
-### Practice Modes
-
-- **Follow-Along Practice**: once you hit play, notes wait until you press the right key to continue (optionally practice a single track)
-- **Free Play**: no falling waterfall — hit a key and a note floats upward, perfect for improvising
-- Virtual keyboard and optional note-name labels on falling notes
-
-### UI Customization
-
-- UI adapts to landscape & portrait
-- Light / Dark / System theme with a fully customizable primary color
-- Waterfall background: follow-theme, solid color, or custom image (with opacity & blur)
-- Octave & bar lines with customizable color and thickness
-- Adjustable note height, corner radius, shadows, and name labels
-- Virtual keyboard: key colors, drag-to-resize height, shadows, pitch-range display, and auto aspect ratio
-- Status bar can be completely hidden during playback
-- Settings pages (waterfall / keyboard) show live previews when the window is wide enough
-
-### Extras
-
-- Built-in logging system with adjustable level and log-file export
-- All settings persist across sessions, with one-click reset
-
-
-
-## ⚠️ Known Limitations
-
-### Performance
-
-Being JVM-based and relying on Compose Canvas, the waterfall can visibly drop frames on very large MIDI files (>500KB, 3000+ notes on screen).
-
-On Android, FileKit implementation and JVM quirks make MIDI loading & parsing 15×+ slower than desktop. Although parallelism has been employed to improve efficiency, loading speed is still severely bottlenecked by Android I/O performance.
-
-### Size & Memory
-
-Compose Multiplatform leans on the JVM, so Desktop needs to bundle the JVM and Skia — which makes the package hefty.
-
-JVM memory (ZGC) is well managed, but Compose's native layer holds onto memory fairly aggressively and recycles it late, so overall memory usage runs on the higher side. This is mainly caused by Skia GPU-accelerated rendering caches. Switching to CPU rendering can reduce memory consumption by half, but at the cost of poor performance.
-
-### Platform Limitations
-
-As the developer, I only have Windows and Android devices. The Linux and macOS builds are produced in virtual machines, so I can only build x64 versions. If you are using an ARM-based macOS/Linux device, please run the x64 build on Apple Silicon (macOS), or build an ARM version yourself. In addition, building in virtual machines has limitations, so I cannot guarantee that unknown bugs will not occur on Linux and macOS. (For example, my macOS virtual machine has no audio output device, so I cannot open the Gervill synthesizer; in theory, it should work on a physical machine.)
-
-As for iOS devices, I currently have no way to support them at all.
+- **The desktop build is hefty, and so is its memory.** Desktop has to bundle the JVM and Skia, which makes the package hefty; Compose's native layer recycles memory fairly aggressively and late, so overall usage runs on the higher side — mainly Skia's GPU-accelerated rendering caches. Switching to CPU rendering roughly halves memory consumption, but at the cost of noticeably worse performance.
+- **Attempt Black MIDI with due respect for your RAM.** When the JVM GC can't keep up, loading and playing Black MIDI can momentarily claim several GB — or even tens of GB — of memory. Devices with 16 GB or less are, for now, not recommended for playing Black MIDI. On Android the JVM memory limit bites harder, so larger Black MIDI files may fail to load at all (straight to OOM and a polite exit 👋). I plan to rewrite this part in JNI later to fix it.
+- **The Linux / macOS builds come with caveats.** As the developer, I only have Windows and Android devices. The Linux and macOS builds are produced in virtual machines, so I can only build x64 versions. If you're on an ARM-based macOS/Linux device, please run the x64 build on Apple Silicon, or build an ARM version yourself. Building in virtual machines has limitations, so I cannot guarantee that unknown bugs won't show up on Linux and macOS (for example, my macOS virtual machine has no audio output device, so I cannot open the Gervill synthesizer; in theory, it should work on a physical machine).
+- **OpenGL instanced rendering has only been verified on Windows and Android.** Linux support may come later; macOS and iOS will not be supported.
 
 ## 🗺️ Roadmap
 
-- 3D shadows on the virtual keyboard
-- MIDI video rendering
-- An external scripting language (kotlite planned) to control waterfall / virtual-keyboard rendering
+- Offline MIDI video rendering.
+- Importable custom waterfall shaders (planned: Kotlin scripting + OpenGL) for your own special effects.
+- Rewrite MIDI parsing and note instance data upload in JNI to reduce memory usage.
 
-
+The project is still iterating. If you run into problems, please open an issue with your system and device details — PRs are welcome too. And if it happens to be useful to you, go ahead and drop a star ⭐
 
 ## 🚀 Quick Start (Build & Run)
 
@@ -101,21 +55,18 @@ Just fire it up from the project root:
 ./gradlew run
 
 # Build Windows / macOS / Linux executable programs
-./gradlew createReleaseDistributable # Universal portable program
-./gradlew packageReleaseDmg # macOS installer
-./gradlew packageReleaseMsi # Windows installer
-./gradlew packageReleaseDeb # Linux installer
-
-# Build Android apk
-# Please use the Generate App Bundles or APKs tool from Android Studio or IDEA
+./gradlew createReleaseDistributable   # Universal portable program
+./gradlew packageReleaseDmg            # macOS installer
+./gradlew packageReleaseMsi            # Windows installer
+./gradlew packageReleaseDeb            # Linux installer
 ```
 
-## 📄 License
+For the Android package, please use the **Generate App Bundles or APKs** tool from Android Studio or IDEA.
 
-GPL‑v3.0 — see the [LICENSE](https://github.com/Mai-Onsyn/OpenRhythm/blob/master/LICENSE.txt) file.
+---
 
+**Download**: [Releases](https://github.com/Mai-Onsyn/OpenRhythm/releases)
 
+**License**: GPL-v3.0 — see the [LICENSE](https://github.com/Mai-Onsyn/OpenRhythm/blob/master/LICENSE.txt) file.
 
-## 🔗 Project Home
-
-[GitHub](https://github.com/Mai-Onsyn/OpenRhythm)
+🔗 **Project Home**: [GitHub](https://github.com/Mai-Onsyn/OpenRhythm)

@@ -91,7 +91,7 @@
     <string name="lib_deleteTitle">Delete %1$s?</string>
     <string name="lib_deleteMessage">Are you sure you want to remove this folder from the library?\n(The actual files will not be deleted.)</string>
     <string name="lib_bmConfirmTitle">Load this MIDI file?</string>
-    <string name="lib_bmConfirmMessage">This MIDI needs to be manually confirmed before loading because it may contain a huge number of notes.\nLoading this kind of MIDI can use a lot of memory and might cause the program to crash or the system to become unresponsive.</string>
+    <string name="lib_bmConfirmMessage">This MIDI needs to be manually confirmed before loading because it may contain a huge number of notes.\nLoading this file can use a lot of memory and might cause the program to crash or the system to become unresponsive!</string>
     <string name="lib_bmConfirmButton">Load anyway</string>
 
     <string name="set_note_title">Note</string>

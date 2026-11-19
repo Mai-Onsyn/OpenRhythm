@@ -59,7 +59,7 @@ class InstanceSlot(
     fun upload(builder: NoteChunkBuilder) {
         if (uploaded || chunk == null || chunk!!.entities == null) return
 
-        uploadedInstanceCount = chunk!!.entities!!.size
+        uploadedInstanceCount = chunk!!.noteCount
         val buffer = ByteBuffer
             .allocateDirect(uploadedInstanceCount * INSTANCE_STRIDE)
             .order(ByteOrder.nativeOrder())

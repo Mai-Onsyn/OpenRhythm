@@ -79,7 +79,7 @@
     <string name="lib_playModeFullExerciseDesc">所有音符会等待你按下</string>
     <string name="lib_playModeSingleExerciseDesc">音符会等待你按下，但只练习歌曲中的一条轨道</string>
     <string name="lib_trackLabel">Track</string>
-    <string name="lib_trackCount">%1$d 个轨道</string>
+    <string name="lib_trackCount">%1$d 条轨道</string>
     <string name="lib_fileCount">%1$d 个文件</string>
     <string name="lib_modeNoDesc">无说明</string>
     <string name="lib_rename">重命名</string>
@@ -91,7 +91,7 @@
     <string name="lib_deleteTitle">删除 %1$s?</string>
     <string name="lib_deleteMessage">你确定要删除这个文件夹吗？\n(这不会实际删除你设备上的文件)</string>
     <string name="lib_bmConfirmTitle">加载这个 MIDI 文件？</string>
-    <string name="lib_bmConfirmMessage">该 MIDI 可能包含巨量音符，加载前需要你手动确认。\n加载这类文件会占用大量内存，可能导致程序崩溃或系统卡死。</string>
+    <string name="lib_bmConfirmMessage">该 MIDI 可能包含巨量音符，加载前需要手动确认。\n加载该文件会占用大量内存，可能导致程序崩溃甚至系统卡死！</string>
     <string name="lib_bmConfirmButton">仍然加载</string>
 
     <string name="set_note_title">音符</string>

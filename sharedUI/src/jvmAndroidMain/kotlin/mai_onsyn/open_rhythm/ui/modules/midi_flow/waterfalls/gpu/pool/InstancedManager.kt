@@ -76,11 +76,13 @@ class InstancedManager(
             val slot = pool[i]
             if (slot.chunk == null) {
                 val chunkStartTick = (startChunk + i) * chunkTickSize.toDouble()
+                val entities = chunkBuilder.buildDrawableNotes(chunkStartTick)
                 slot.chunk = NoteChunk(
                     startTick = chunkStartTick,
                     durationTicks = chunkTickSize.toDouble(),
                     id = startChunk + i,
-                    entities = chunkBuilder.buildDrawableNotes(chunkStartTick)
+                    entities = entities,
+                    noteCount = entities.size
                 )
             }
         }
@@ -109,11 +111,13 @@ class InstancedManager(
             val slot = slotById.getOrPut(chunkID) {
                 val chunkStartTick = chunkID * chunkTickSize.toDouble()
                 val newSlot = InstanceSlot(null)
+                val entities = chunkBuilder.buildDrawableNotes(chunkStartTick)
                 newSlot.chunk = NoteChunk(
                     startTick = chunkStartTick,
                     durationTicks = chunkTickSize.toDouble(),
                     id = chunkID,
-                    entities = chunkBuilder.buildDrawableNotes(chunkStartTick)
+                    entities = entities,
+                    noteCount = entities.size
                 )
                 pool.add(newSlot)          // 追加到末尾备用
                 newSlot
@@ -169,5 +173,14 @@ class InstancedManager(
         pool.forEach(InstanceSlot::dispose)
         quadRect.dispose()
         shader.dispose()
+    }
+
+    fun calcRenderingNoteCount(): Int {
+        var sum = 0
+        for (i in 0 until screenChunkCount) {
+            val slot = pool[i]
+            slot.chunk?.let { sum += it.noteCount }
+        }
+        return sum
     }
 }

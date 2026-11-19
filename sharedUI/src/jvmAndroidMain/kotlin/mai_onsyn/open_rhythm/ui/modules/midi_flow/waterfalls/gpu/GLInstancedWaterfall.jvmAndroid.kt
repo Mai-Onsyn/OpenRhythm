@@ -91,6 +91,7 @@ actual fun NoteRenderScope.OpenGLWaterfall(
         status.glFPS = fpsCounter.getAverageFrequency()
 
         status.renderingReadyFor = midi
+        status.currentNoteCount = im.calcRenderingNoteCount()
         onFrameEnd()
     } }
 }

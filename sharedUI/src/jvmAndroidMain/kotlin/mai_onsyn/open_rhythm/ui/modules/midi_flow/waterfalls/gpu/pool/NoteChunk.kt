@@ -6,6 +6,7 @@ class NoteChunk(
     val startTick: Double,
     val durationTicks: Double,
     val id: Int,
+    val noteCount: Int = 0,
     var entities: List<DrawableNote>? = null
 ) {
     override fun toString(): String {
